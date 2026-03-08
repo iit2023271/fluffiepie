@@ -3,10 +3,11 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, Tag, MapPin, CalendarIcon, Clock } from "lucide-react";
+import { ChevronLeft, Tag, MapPin, CalendarIcon, Clock, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays, isBefore, startOfDay } from "date-fns";
 import { z } from "zod";
+import { useStoreInfo } from "@/hooks/useStoreInfo";
 
 const addressSchema = z.object({
   firstName: z.string().trim().min(1, "First name is required").max(50),
