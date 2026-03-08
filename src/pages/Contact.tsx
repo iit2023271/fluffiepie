@@ -1,9 +1,11 @@
-import { Phone, Mail, MapPin, Clock, MessageCircle, Send } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, MessageCircle, Send, LogIn } from "lucide-react";
 import { useStoreInfo } from "@/hooks/useStoreInfo";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
+import { Link } from "react-router-dom";
 
 const container = {
   hidden: { opacity: 0 },
