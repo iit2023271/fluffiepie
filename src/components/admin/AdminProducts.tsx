@@ -471,6 +471,12 @@ export default function AdminProducts() {
                   <input type="number" value={form.base_price} onChange={(e) => setForm({ ...form, base_price: parseInt(e.target.value) || 0 })}
                     className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
                 </div>
+                <div>
+                  <label className="text-xs font-medium mb-1 block">Original Price (₹) <span className="text-muted-foreground font-normal">— optional, shown as strikethrough</span></label>
+                  <input type="number" value={form.original_price || ""} onChange={(e) => setForm({ ...form, original_price: e.target.value ? parseInt(e.target.value) : null })}
+                    placeholder="Leave empty for no discount"
+                    className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
+                </div>
               </div>
 
               {/* SKU & Stock */}
