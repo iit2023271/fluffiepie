@@ -60,6 +60,7 @@ export default function AdminOrders() {
   const [statusFilter, setStatusFilter] = useState("");
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
+  const [showAllOrders, setShowAllOrders] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
@@ -236,9 +237,11 @@ export default function AdminOrders() {
       const orderDate = new Date(o.created_at);
       const matchDateFrom = !dateFrom || orderDate >= startOfDay(dateFrom);
       const matchDateTo = !dateTo || orderDate <= endOfDay(dateTo);
-      return matchSearch && matchStatus && matchDateFrom && matchDateTo;
+      // When searching, show all orders; otherwise default to today only unless "All Orders" is toggled
+      const matchToday = search ? true : showAllOrders ? true : isToday(orderDate);
+      return matchSearch && matchStatus && matchDateFrom && matchDateTo && matchToday;
     });
-  }, [orders, search, statusFilter, dateFrom, dateTo]);
+  }, [orders, search, statusFilter, dateFrom, dateTo, showAllOrders]);
 
   useEffect(() => { setCurrentPage(1); }, [search, statusFilter, dateFrom, dateTo]);
 
@@ -338,11 +341,31 @@ export default function AdminOrders() {
         </div>
       </div>
 
+      {/* Today / All Orders Toggle */}
+      <div className="flex items-center gap-2 mb-4">
+        <Button
+          variant={showAllOrders ? "outline" : "default"}
+          size="sm"
+          className="text-xs rounded-xl"
+          onClick={() => setShowAllOrders(false)}
+        >
+          📅 Today's Orders
+        </Button>
+        <Button
+          variant={showAllOrders ? "default" : "outline"}
+          size="sm"
+          className="text-xs rounded-xl"
+          onClick={() => setShowAllOrders(true)}
+        >
+          📋 All Orders
+        </Button>
+      </div>
+
       {/* Status Filter Pills */}
       <div className="flex flex-wrap gap-2 mb-4">
         <button onClick={() => setStatusFilter("")}
           className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${!statusFilter ? "bg-foreground text-background shadow-md" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"}`}>
-          All Orders ({orders.length})
+          All Statuses ({filtered.length})
         </button>
         {statusOptions.map(s => {
           const cfg = STATUS_CONFIG[s];
@@ -556,65 +579,70 @@ export default function AdminOrders() {
                           )}
                         </div>
                         <div className="flex items-center gap-2">
-                          {/* Undo / Go back button for delivered or cancelled */}
-                          {getPrevStatus(order.status) && !nextStatus && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs h-8 gap-1.5 rounded-xl border-amber-300 text-amber-700 hover:bg-amber-50"
-                              onClick={() => setUndoConfirm({ open: true, orderId: order.id, prevStatus: getPrevStatus(order.status)! })}
-                            >
-                              <Undo2 className="w-3.5 h-3.5" /> Undo to {STATUS_CONFIG[getPrevStatus(order.status)!]?.label}
-                            </Button>
-                          )}
-
-                          {/* Quick next-step button */}
-                          {nextStatus && (
+                          {/* No status change actions for delivered or cancelled orders */}
+                          {order.status !== "delivered" && order.status !== "cancelled" && (
                             <>
-                              {getPrevStatus(order.status) && (
+                              {/* Undo / Go back button */}
+                              {getPrevStatus(order.status) && !nextStatus && (
                                 <Button
                                   size="sm"
-                                  variant="ghost"
-                                  className="text-xs h-8 px-2 rounded-xl text-muted-foreground hover:text-amber-700"
+                                  variant="outline"
+                                  className="text-xs h-8 gap-1.5 rounded-xl border-amber-300 text-amber-700 hover:bg-amber-50"
                                   onClick={() => setUndoConfirm({ open: true, orderId: order.id, prevStatus: getPrevStatus(order.status)! })}
-                                  title={`Undo to ${STATUS_CONFIG[getPrevStatus(order.status)!]?.label}`}
                                 >
-                                  <Undo2 className="w-3.5 h-3.5" />
+                                  <Undo2 className="w-3.5 h-3.5" /> Undo to {STATUS_CONFIG[getPrevStatus(order.status)!]?.label}
                                 </Button>
                               )}
-                              <Button
-                                size="sm"
-                                className="text-xs h-8 gap-1.5 rounded-xl"
-                                onClick={() => handleStatusChange(order.id, nextStatus)}
-                              >
-                                {STATUS_CONFIG[nextStatus].emoji} Mark {STATUS_CONFIG[nextStatus].label}
-                              </Button>
+
+                              {/* Quick next-step button */}
+                              {nextStatus && (
+                                <>
+                                  {getPrevStatus(order.status) && (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="text-xs h-8 px-2 rounded-xl text-muted-foreground hover:text-amber-700"
+                                      onClick={() => setUndoConfirm({ open: true, orderId: order.id, prevStatus: getPrevStatus(order.status)! })}
+                                      title={`Undo to ${STATUS_CONFIG[getPrevStatus(order.status)!]?.label}`}
+                                    >
+                                      <Undo2 className="w-3.5 h-3.5" />
+                                    </Button>
+                                  )}
+                                  <Button
+                                    size="sm"
+                                    className="text-xs h-8 gap-1.5 rounded-xl"
+                                    onClick={() => handleStatusChange(order.id, nextStatus)}
+                                  >
+                                    {STATUS_CONFIG[nextStatus].emoji} Mark {STATUS_CONFIG[nextStatus].label}
+                                  </Button>
+                                </>
+                              )}
+
+                              {/* Status dropdown for manual selection */}
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button variant="outline" size="sm" className="text-xs h-8 px-2.5 rounded-xl">
+                                    <ChevronDown className="w-3.5 h-3.5" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-48 p-1.5" align="end">
+                                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold px-2 py-1.5">Change Status</p>
+                                  {statusOptions.map(s => (
+                                    <button
+                                      key={s}
+                                      onClick={() => { handleStatusChange(order.id, s); }}
+                                      disabled={order.status === s}
+                                      className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-medium transition-colors ${order.status === s ? "opacity-40 cursor-not-allowed" : "hover:bg-secondary"}`}
+                                    >
+                                      <span>{STATUS_CONFIG[s].emoji}</span>
+                                      <span>{STATUS_CONFIG[s].label}</span>
+                                      {order.status === s && <CheckCircle2 className="w-3 h-3 ml-auto text-primary" />}
+                                    </button>
+                                  ))}
+                                </PopoverContent>
+                              </Popover>
                             </>
                           )}
-
-                          {/* Status dropdown for manual selection */}
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button variant="outline" size="sm" className="text-xs h-8 px-2.5 rounded-xl">
-                                <ChevronDown className="w-3.5 h-3.5" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-48 p-1.5" align="end">
-                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold px-2 py-1.5">Change Status</p>
-                              {statusOptions.map(s => (
-                                <button
-                                  key={s}
-                                  onClick={() => { handleStatusChange(order.id, s); }}
-                                  disabled={order.status === s}
-                                  className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-medium transition-colors ${order.status === s ? "opacity-40 cursor-not-allowed" : "hover:bg-secondary"}`}
-                                >
-                                  <span>{STATUS_CONFIG[s].emoji}</span>
-                                  <span>{STATUS_CONFIG[s].label}</span>
-                                  {order.status === s && <CheckCircle2 className="w-3 h-3 ml-auto text-primary" />}
-                                </button>
-                              ))}
-                            </PopoverContent>
-                          </Popover>
 
                           {/* Notes toggle */}
                           <Button variant="ghost" size="sm" className="text-xs h-8 gap-1 rounded-xl px-2.5" onClick={() => toggleExpand(order.id)}>
