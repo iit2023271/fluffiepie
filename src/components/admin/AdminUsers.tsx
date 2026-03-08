@@ -14,7 +14,6 @@ interface UserDetail {
   profile: any;
   addresses: any[];
   orders: any[];
-  roles: any[];
   tags: string[];
 }
 
