@@ -521,15 +521,12 @@ export default function Index() {
     }
   };
 
-  // Sections to show in nav (exclude banners, hero, spacers)
-  const navSections = config.sections.filter(
-    s => s.visible && s.id !== "banners" && s.id !== "hero" && !(s.customData?.type === "spacer")
-  );
-
-  const getSectionLabel = (s: HomepageSection) => {
-    if (BUILTIN_SECTION_IDS.includes(s.id)) return SECTION_LABELS[s.id] || s.id;
-    return s.label || CUSTOM_TYPE_LABELS[s.customType!]?.label || "Section";
-  };
+  // Build nav items from config
+  const navItems = config.sectionNav.enabled
+    ? config.sectionNav.items
+        .filter(item => item.visible)
+        .filter(item => config.sections.some(s => s.id === item.sectionId && s.visible))
+    : [];
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(`section-${id}`);
