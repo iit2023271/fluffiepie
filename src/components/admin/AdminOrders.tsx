@@ -616,23 +616,59 @@ export default function AdminOrders() {
                     {/* Notes */}
                     <div className="px-5 py-4 border-t border-border space-y-3">
                       <div className="flex items-center justify-between">
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Internal Notes</p>
-                        <span className="text-[10px] text-muted-foreground">Only visible to admins</span>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Notes</p>
                       </div>
+
+                      {/* Note type toggle */}
+                      <div className="flex gap-1 p-1 bg-muted/50 rounded-xl w-fit">
+                        <button
+                          onClick={() => setNewNoteType("internal")}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${newNoteType === "internal" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                        >
+                          🔒 Internal
+                        </button>
+                        <button
+                          onClick={() => setNewNoteType("customer")}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${newNoteType === "customer" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                        >
+                          👤 Customer Visible
+                        </button>
+                      </div>
+
                       <div className="flex gap-2">
-                        <Textarea placeholder="Add a note..." value={newNote} onChange={(e) => setNewNote(e.target.value)} rows={2} className="text-sm rounded-xl" />
+                        <Textarea
+                          placeholder={newNoteType === "customer" ? "Write a note visible to the customer..." : "Add an internal note (admin only)..."}
+                          value={newNote} onChange={(e) => setNewNote(e.target.value)} rows={2}
+                          className={`text-sm rounded-xl ${newNoteType === "customer" ? "border-primary/40 focus-visible:ring-primary/30" : ""}`}
+                        />
                         <Button size="icon" className="shrink-0 self-end rounded-xl" onClick={() => addNote(order.id)} disabled={!newNote.trim()}>
                           <Send className="w-4 h-4" />
                         </Button>
                       </div>
+
+                      {newNoteType === "customer" && (
+                        <p className="text-[10px] text-primary flex items-center gap-1">
+                          ⚠️ This note will be visible to the customer on their dashboard
+                        </p>
+                      )}
+
                       {notes.length === 0 ? (
                         <p className="text-xs text-muted-foreground italic text-center py-2">No notes yet</p>
                       ) : (
                         <div className="space-y-2">
                           {notes.map((n: any) => (
-                            <div key={n.id} className="bg-muted/30 rounded-xl p-3">
+                            <div key={n.id} className={`rounded-xl p-3 ${n.note_type === "customer" ? "bg-primary/5 border border-primary/20" : "bg-muted/30"}`}>
                               <div className="flex items-start justify-between gap-2">
                                 <div>
+                                  <div className="flex items-center gap-1.5 mb-1">
+                                    <span className="text-[10px] font-semibold uppercase tracking-wider">
+                                      {n.note_type === "customer" ? (
+                                        <span className="text-primary">👤 Customer Visible</span>
+                                      ) : (
+                                        <span className="text-muted-foreground">🔒 Internal</span>
+                                      )}
+                                    </span>
+                                  </div>
                                   <p className="text-sm">{n.note}</p>
                                   <p className="text-[10px] text-muted-foreground mt-1">{getRelativeDate(new Date(n.created_at))}</p>
                                 </div>
