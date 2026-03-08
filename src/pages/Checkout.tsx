@@ -27,6 +27,7 @@ import { useDeliveryConfig } from "@/hooks/useDeliveryConfig";
 
 export default function Checkout() {
   const { config: deliveryConfig } = useDeliveryConfig();
+  const { storeInfo } = useStoreInfo();
   const { state, totalPrice, dispatch } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
