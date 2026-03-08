@@ -17,7 +17,8 @@ export interface CustomSectionData {
   ctaButtonLink?: string;
   ctaBg?: "primary" | "blush" | "cream" | "muted";
   ctaBgImage?: string;
-  ctaHeight?: "compact" | "medium" | "tall" | "full";
+  ctaHeight?: "compact" | "medium" | "tall" | "full" | "custom";
+  ctaCustomHeight?: number;
   ctaImageFit?: "cover" | "contain";
   ctaLayout?: "center" | "left" | "right";
   ctaOverlayOpacity?: number;
