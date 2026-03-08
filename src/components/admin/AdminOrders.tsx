@@ -104,12 +104,13 @@ export default function AdminOrders() {
     out_for_delivery: "Out for Delivery", delivered: "Delivered", cancelled: "Cancelled",
   };
 
-  const sendNotification = async (order: any, newStatus: string) => {
+  const sendNotification = async (order: any, newStatus: string, composeWindow?: Window | null) => {
     try {
       // Fetch customer email from profiles
       const { data: profile } = await supabase.from("profiles").select("email, full_name").eq("user_id", order.user_id).maybeSingle();
       const email = profile?.email;
       if (!email) {
+        if (composeWindow && !composeWindow.closed) composeWindow.close();
         toast.error("Customer email not found — cannot send notification");
         return;
       }
@@ -121,26 +122,34 @@ export default function AdminOrders() {
 
       const subject = `Order #${shortId} — ${statusLabel}`;
       const body = `Hi ${customerName},\n\nYour order #${shortId} status has been updated to: ${statusLabel}.\n\n${itemsList ? `Order Items:\n${itemsList}\n\n` : ""}Total: ₹${Number(order.total).toLocaleString()}\n\nThank you for ordering with us!`;
-
       const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      const a = document.createElement("a");
-      a.href = gmailUrl;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      toast.success("Gmail compose opened!");
-    } catch (e) { console.error("Notification failed:", e); }
+
+      if (composeWindow && !composeWindow.closed) {
+        composeWindow.location.href = gmailUrl;
+        toast.success("Gmail compose opened!");
+        return;
+      }
+
+      await navigator.clipboard.writeText(gmailUrl);
+      toast.success("Gmail link copied — paste it in a new tab to open compose");
+    } catch (e) {
+      if (composeWindow && !composeWindow.closed) composeWindow.close();
+      console.error("Notification failed:", e);
+      toast.error("Could not open Gmail in preview. Please use the published site.");
+    }
   };
 
   const updateStatus = async (orderId: string, newStatus: string) => {
     const order = orders.find(o => o.id === orderId);
+    const composeWindow = order ? window.open("about:blank", "_blank") : null;
     const { error } = await supabase.from("orders").update({ status: newStatus }).eq("id", orderId);
-    if (error) toast.error("Failed to update status");
+    if (error) {
+      if (composeWindow && !composeWindow.closed) composeWindow.close();
+      toast.error("Failed to update status");
+    }
     else {
       toast.success(`Order updated to "${STATUS_CONFIG[newStatus]?.label || newStatus}"`);
-      if (order) sendNotification(order, newStatus);
+      if (order) sendNotification(order, newStatus, composeWindow);
       loadOrders();
     }
   };
