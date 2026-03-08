@@ -44,6 +44,7 @@ export default function ForgotPassword() {
       });
       if (error) throw error;
       toast.success("Password reset link sent to your email");
+      setCooldown(60);
       setStep("sent");
     } catch (error: any) {
       toast.error(error.message || "Failed to send reset link");
