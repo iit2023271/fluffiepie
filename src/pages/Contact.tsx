@@ -26,6 +26,7 @@ export default function Contact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) { toast.error("Please sign in to send a message"); return; }
     if (!name || !email || !message) {
       toast.error("Please fill in all fields");
       return;
@@ -33,7 +34,7 @@ export default function Contact() {
     setSending(true);
     const { error } = await supabase
       .from("contact_messages" as any)
-      .insert({ name, email, message } as any);
+      .insert({ name, email, message, user_id: user.id } as any);
     setSending(false);
     if (error) {
       toast.error("Failed to send message. Please try again.");
