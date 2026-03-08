@@ -470,6 +470,7 @@ export default function Index() {
           medium: "min-h-[280px] md:min-h-[350px] py-12 md:py-16",
           tall: "min-h-[380px] md:min-h-[500px] py-16 md:py-20",
           full: "min-h-[60vh] md:min-h-[80vh] py-16 md:py-20",
+          custom: "py-12 md:py-16",
         };
         const layoutAlign: Record<string, string> = {
           center: "text-center items-center",
