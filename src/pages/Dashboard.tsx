@@ -270,7 +270,16 @@ export default function Dashboard() {
             {reviewingOrder && (
               <div className="space-y-6">
                 {(reviewingOrder.items as any[]).map((item: any) => {
-                  const key = `${item.productId}-${reviewingOrder.id}`;
+                  const productId = item.productId || item.product_id || null;
+                  if (!productId) {
+                    return (
+                      <div key={item.name} className="p-3 rounded-xl bg-secondary/50">
+                        <p className="text-sm font-medium">{item.name}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Unable to review — order data missing product reference</p>
+                      </div>
+                    );
+                  }
+                  const key = `${productId}-${reviewingOrder.id}`;
                   const alreadyReviewed = existingReviews.has(key);
                   if (alreadyReviewed) {
                     return (
@@ -285,7 +294,7 @@ export default function Dashboard() {
                   return (
                     <ReviewForm
                       key={key}
-                      productId={item.productId}
+                      productId={productId}
                       productName={item.name}
                       orderId={reviewingOrder.id}
                       userId={user!.id}
