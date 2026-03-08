@@ -43,11 +43,17 @@ export default function AdminOrders() {
     else { toast.success(`Order updated to ${newStatus}`); loadOrders(); }
   };
 
-  const filtered = orders.filter((o) => {
-    const matchSearch = o.id.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = !statusFilter || o.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  const filtered = useMemo(() => {
+    setCurrentPage(1);
+    return orders.filter((o) => {
+      const matchSearch = o.id.toLowerCase().includes(search.toLowerCase());
+      const matchStatus = !statusFilter || o.status === statusFilter;
+      return matchSearch && matchStatus;
+    });
+  }, [orders, search, statusFilter]);
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (
     <div>
