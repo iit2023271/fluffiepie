@@ -109,26 +109,32 @@ export default function Shop() {
     </div>
   );
 
-  // Mobile sidebar filter — vertical list like Bakingo/real apps
-  const MobileFilterSection = ({ title, options, selected, onSelect }: { title: string; options: string[]; selected: string; onSelect: (v: string) => void }) => (
-    <div className="py-3">
-      <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 px-1">{title}</h4>
-      <div className="flex flex-col gap-0.5">
+  // Sidebar filter — polished vertical list
+  const FilterSection = ({ title, options, selected, onSelect }: { title: string; options: string[]; selected: string; onSelect: (v: string) => void }) => (
+    <div className="py-4">
+      <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-2 flex items-center gap-1.5">
+        <span className="w-1 h-4 rounded-full bg-primary/40" />
+        {title}
+      </h4>
+      <div className="flex flex-col gap-1">
         {options.map((opt) => {
           const isSelected = selected === opt;
           return (
             <button
               key={opt}
               onClick={() => onSelect(opt)}
-              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${
+              className={`group flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all duration-200 ${
                 isSelected
-                  ? "bg-primary/10 text-primary font-semibold border border-primary/20"
-                  : "text-foreground hover:bg-secondary"
+                  ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+                  : "text-foreground hover:bg-secondary/80 hover:pl-4"
               }`}
             >
-              <span>{opt}</span>
-              {isSelected && (
-                <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+              <span className="flex items-center gap-2">
+                {isSelected && <Check className="w-3.5 h-3.5" />}
+                {opt}
+              </span>
+              {!isSelected && (
+                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/20 group-hover:bg-primary/40 transition-colors" />
               )}
             </button>
           );
@@ -159,40 +165,55 @@ export default function Shop() {
 
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-6 gap-3">
-        {/* Filter sheet trigger — visible on ALL screen sizes */}
+        {/* Filter sheet trigger */}
         <Sheet>
           <SheetTrigger asChild>
-            <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border text-sm font-medium bg-card hover:bg-secondary transition-colors">
-              <SlidersHorizontal className="w-4 h-4" />
+            <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-medium bg-card hover:bg-secondary transition-all hover:shadow-sm group">
+              <SlidersHorizontal className="w-4 h-4 group-hover:text-primary transition-colors" />
               Filters
               {activeFilterCount > 0 && (
-                <Badge variant="default" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] rounded-full">
+                <Badge variant="default" className="ml-1 h-5 min-w-5 px-1.5 flex items-center justify-center text-[10px] rounded-full animate-scale-in">
                   {activeFilterCount}
                 </Badge>
               )}
             </button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[300px] p-0 flex flex-col">
-            <SheetHeader className="px-5 pt-5 pb-3 border-b border-border">
-              <div className="flex items-center justify-between">
-                <SheetTitle className="text-lg font-display font-bold flex items-center gap-2">
-                  <SlidersHorizontal className="w-4 h-4" /> Filters
-                </SheetTitle>
+          <SheetContent side="left" className="w-[320px] p-0 flex flex-col border-r-0 shadow-2xl">
+            {/* Header with gradient accent */}
+            <div className="relative">
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-accent to-primary" />
+              <SheetHeader className="px-5 pt-6 pb-4">
+                <div className="flex items-center justify-between">
+                  <SheetTitle className="text-xl font-display font-bold flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-primary" />
+                    </div>
+                    Filters
+                  </SheetTitle>
+                  {activeFilterCount > 0 && (
+                    <button onClick={clearFilters} className="text-xs text-primary font-semibold hover:underline px-3 py-1.5 rounded-lg hover:bg-primary/5 transition-colors">
+                      Clear all
+                    </button>
+                  )}
+                </div>
                 {activeFilterCount > 0 && (
-                  <button onClick={clearFilters} className="text-xs text-primary font-medium hover:underline">
-                    Clear all
-                  </button>
+                  <div className="flex items-center gap-2 mt-2">
+                    <div className="h-1.5 flex-1 rounded-full bg-secondary overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-primary transition-all duration-500"
+                        style={{ width: `${Math.min((activeFilterCount / allFilters.length) * 100, 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-muted-foreground font-medium">{activeFilterCount} active</span>
+                  </div>
                 )}
-              </div>
-              {activeFilterCount > 0 && (
-                <p className="text-xs text-muted-foreground mt-1">{activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""} active</p>
-              )}
-            </SheetHeader>
+              </SheetHeader>
+            </div>
 
             <ScrollArea className="flex-1 px-4">
-              <div className="py-2 divide-y divide-border">
+              <div className="divide-y divide-border/50">
                 {allFilters.map(f => (
-                  <MobileFilterSection
+                  <FilterSection
                     key={f.type}
                     title={f.label}
                     options={f.values}
@@ -203,9 +224,11 @@ export default function Shop() {
               </div>
             </ScrollArea>
 
-            <div className="p-4 border-t border-border">
+            {/* Footer with results button */}
+            <div className="p-5 border-t border-border bg-card/50 backdrop-blur-sm">
               <SheetClose asChild>
-                <button className="w-full py-3 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors">
+                <button className="w-full py-3.5 bg-primary text-primary-foreground rounded-xl text-sm font-bold hover:bg-primary/90 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                  <Search className="w-4 h-4" />
                   Show {filtered.length} result{filtered.length !== 1 ? "s" : ""}
                 </button>
               </SheetClose>
