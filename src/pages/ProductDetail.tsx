@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, ShoppingCart, Heart, Minus, Plus, ChevronLeft, Truck, Shield, Clock, X, ChevronRight, ZoomIn } from "lucide-react";
@@ -236,18 +236,29 @@ export default function ProductDetail() {
   );
 }
 
-/* ── Fullscreen Lightbox ─────────────────────────────────── */
+/* ── Fullscreen Lightbox with touch gestures ──────────────── */
 function Lightbox({ images, initialIndex, onClose }: { images: string[]; initialIndex: number; onClose: () => void }) {
   const [index, setIndex] = useState(initialIndex);
   const [scale, setScale] = useState(1);
+  const [translate, setTranslate] = useState({ x: 0, y: 0 });
 
-  const prev = useCallback(() => { setIndex(i => (i - 1 + images.length) % images.length); setScale(1); }, [images.length]);
-  const next = useCallback(() => { setIndex(i => (i + 1) % images.length); setScale(1); }, [images.length]);
+  // Touch tracking refs
+  const touchStart = useRef<{ x: number; y: number; time: number } | null>(null);
+  const lastTouchEnd = useRef(0);
+  const pinchStartDist = useRef(0);
+  const pinchStartScale = useRef(1);
+  const isPinching = useRef(false);
+  const panStart = useRef<{ x: number; y: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const prev = useCallback(() => { setIndex(i => (i - 1 + images.length) % images.length); setScale(1); setTranslate({ x: 0, y: 0 }); }, [images.length]);
+  const next = useCallback(() => { setIndex(i => (i + 1) % images.length); setScale(1); setTranslate({ x: 0, y: 0 }); }, [images.length]);
 
   const toggleZoom = useCallback(() => {
-    setScale(s => s === 1 ? 2 : 1);
+    setScale(s => { const ns = s === 1 ? 2 : 1; if (ns === 1) setTranslate({ x: 0, y: 0 }); return ns; });
   }, []);
 
+  // Keyboard
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -258,6 +269,82 @@ function Lightbox({ images, initialIndex, onClose }: { images: string[]; initial
     return () => window.removeEventListener("keydown", handleKey);
   }, [onClose, prev, next]);
 
+  // Prevent body scroll when lightbox is open
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
+  // Distance between two touch points
+  const getTouchDist = (t0: React.Touch, t1: React.Touch) => {
+    const dx = t0.clientX - t1.clientX;
+    const dy = t0.clientY - t1.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      // Pinch start
+      isPinching.current = true;
+      pinchStartDist.current = getTouchDist(e.touches[0], e.touches[1]);
+      pinchStartScale.current = scale;
+    } else if (e.touches.length === 1) {
+      const t = e.touches[0];
+      touchStart.current = { x: t.clientX, y: t.clientY, time: Date.now() };
+      if (scale > 1) {
+        panStart.current = { x: translate.x, y: translate.y };
+      }
+    }
+  }, [scale, translate]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    if (e.touches.length === 2 && isPinching.current) {
+      const dist = getTouchDist(e.touches[0], e.touches[1]);
+      const newScale = Math.min(Math.max(pinchStartScale.current * (dist / pinchStartDist.current), 1), 4);
+      setScale(newScale);
+      if (newScale <= 1) setTranslate({ x: 0, y: 0 });
+    } else if (e.touches.length === 1 && scale > 1 && panStart.current) {
+      // Pan while zoomed
+      const t = e.touches[0];
+      const dx = t.clientX - (touchStart.current?.x ?? 0);
+      const dy = t.clientY - (touchStart.current?.y ?? 0);
+      setTranslate({ x: panStart.current.x + dx, y: panStart.current.y + dy });
+    }
+  }, [scale]);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (isPinching.current && e.touches.length < 2) {
+      isPinching.current = false;
+      if (scale <= 1.1) { setScale(1); setTranslate({ x: 0, y: 0 }); }
+      return;
+    }
+
+    // Double-tap to zoom
+    const now = Date.now();
+    if (now - lastTouchEnd.current < 300) {
+      toggleZoom();
+      lastTouchEnd.current = 0;
+      return;
+    }
+    lastTouchEnd.current = now;
+
+    // Swipe detection (only when not zoomed)
+    if (scale <= 1 && touchStart.current && !isPinching.current) {
+      const dx = (e.changedTouches[0]?.clientX ?? 0) - touchStart.current.x;
+      const dt = Date.now() - touchStart.current.time;
+      const absDx = Math.abs(dx);
+
+      if (absDx > 50 && dt < 400 && images.length > 1) {
+        if (dx < 0) next();
+        else prev();
+      }
+    }
+
+    touchStart.current = null;
+    panStart.current = null;
+  }, [scale, toggleZoom, next, prev, images.length]);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -266,6 +353,7 @@ function Lightbox({ images, initialIndex, onClose }: { images: string[]; initial
       transition={{ duration: 0.2 }}
       className="fixed inset-0 z-50 bg-foreground/90 backdrop-blur-md flex items-center justify-center"
       onClick={onClose}
+      ref={containerRef}
     >
       {/* Close button */}
       <button
@@ -282,41 +370,47 @@ function Lightbox({ images, initialIndex, onClose }: { images: string[]; initial
         </span>
       )}
 
-      {/* Prev */}
+      {/* Prev – hidden on mobile (use swipe) */}
       {images.length > 1 && (
         <button
           onClick={(e) => { e.stopPropagation(); prev(); }}
-          className="absolute left-3 md:left-6 z-10 w-10 h-10 rounded-full bg-background/20 hover:bg-background/40 flex items-center justify-center transition-colors"
+          className="absolute left-3 md:left-6 z-10 w-10 h-10 rounded-full bg-background/20 hover:bg-background/40 items-center justify-center transition-colors hidden md:flex"
         >
           <ChevronLeft className="w-5 h-5 text-background" />
         </button>
       )}
 
-      {/* Image */}
+      {/* Image with touch gestures */}
       <motion.div
         key={index}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.2 }}
-        className="max-w-[90vw] max-h-[85vh] flex items-center justify-center"
+        className="max-w-[90vw] max-h-[85vh] flex items-center justify-center touch-none"
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         <img
           src={images[index]}
           alt={`Image ${index + 1}`}
           onClick={toggleZoom}
-          className="max-w-full max-h-[85vh] object-contain rounded-lg cursor-zoom-in transition-transform duration-300"
-          style={{ transform: `scale(${scale})`, cursor: scale > 1 ? "zoom-out" : "zoom-in" }}
+          className="max-w-full max-h-[85vh] object-contain rounded-lg transition-transform duration-200 select-none"
+          style={{
+            transform: `scale(${scale}) translate(${translate.x / scale}px, ${translate.y / scale}px)`,
+            cursor: scale > 1 ? "grab" : "zoom-in",
+          }}
           draggable={false}
         />
       </motion.div>
 
-      {/* Next */}
+      {/* Next – hidden on mobile */}
       {images.length > 1 && (
         <button
           onClick={(e) => { e.stopPropagation(); next(); }}
-          className="absolute right-3 md:right-6 z-10 w-10 h-10 rounded-full bg-background/20 hover:bg-background/40 flex items-center justify-center transition-colors"
+          className="absolute right-3 md:right-6 z-10 w-10 h-10 rounded-full bg-background/20 hover:bg-background/40 items-center justify-center transition-colors hidden md:flex"
         >
           <ChevronRight className="w-5 h-5 text-background" />
         </button>
@@ -328,8 +422,8 @@ function Lightbox({ images, initialIndex, onClose }: { images: string[]; initial
           {images.map((img, i) => (
             <button
               key={i}
-              onClick={(e) => { e.stopPropagation(); setIndex(i); setScale(1); }}
-              className={`w-12 h-12 rounded-lg overflow-hidden border-2 transition-colors ${
+              onClick={(e) => { e.stopPropagation(); setIndex(i); setScale(1); setTranslate({ x: 0, y: 0 }); }}
+              className={`w-10 h-10 md:w-12 md:h-12 rounded-lg overflow-hidden border-2 transition-colors ${
                 i === index ? "border-background" : "border-transparent opacity-50 hover:opacity-80"
               }`}
             >
