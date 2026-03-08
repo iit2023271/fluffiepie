@@ -6,7 +6,8 @@ import AdminDashboard from "@/components/admin/AdminDashboard";
 import AdminProducts from "@/components/admin/AdminProducts";
 import AdminOrders from "@/components/admin/AdminOrders";
 import AdminUsers from "@/components/admin/AdminUsers";
-import { LayoutDashboard, Package, ShoppingCart, Users, LogOut, ChevronLeft } from "lucide-react";
+import AdminSettings from "@/components/admin/AdminSettings";
+import { LayoutDashboard, Package, ShoppingCart, Users, LogOut, ChevronLeft, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -14,7 +15,8 @@ const tabs = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { key: "products", label: "Products", icon: Package },
   { key: "orders", label: "Orders", icon: ShoppingCart },
-  { key: "users", label: "Users", icon: Users },
+  { key: "users", label: "Customers", icon: Users },
+  { key: "settings", label: "Settings", icon: Settings },
 ] as const;
 
 type TabKey = typeof tabs[number]["key"];
@@ -54,7 +56,6 @@ export default function AdminPanel() {
   return (
     <div className="min-h-screen bg-secondary/30">
       <div className="flex">
-        {/* Sidebar */}
         <aside className="w-64 bg-card border-r border-border min-h-screen p-4 hidden md:flex flex-col">
           <div className="mb-8">
             <Link to="/" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-4">
@@ -88,7 +89,6 @@ export default function AdminPanel() {
           </button>
         </aside>
 
-        {/* Mobile tabs */}
         <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40 flex">
           {tabs.map((tab) => (
             <button
@@ -104,12 +104,12 @@ export default function AdminPanel() {
           ))}
         </div>
 
-        {/* Content */}
         <main className="flex-1 p-4 md:p-8 pb-20 md:pb-8">
           {activeTab === "dashboard" && <AdminDashboard />}
           {activeTab === "products" && <AdminProducts />}
           {activeTab === "orders" && <AdminOrders />}
           {activeTab === "users" && <AdminUsers />}
+          {activeTab === "settings" && <AdminSettings />}
         </main>
       </div>
     </div>
