@@ -69,23 +69,26 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
               loading="lazy"
               decoding="async"
             />
-            {/* Badges */}
+            {/* Badge */}
             <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-              {product.isBestseller && (
-                <span className="px-2.5 py-1 bg-primary text-primary-foreground text-xs font-semibold rounded-full">
-                  Bestseller
+              {displayTag && (
+                <span
+                  className="px-2.5 py-1 text-xs font-semibold rounded-full"
+                  style={
+                    tagDef?.bgColor
+                      ? { backgroundColor: `hsl(${tagDef.bgColor})`, color: `hsl(${tagDef.textColor})` }
+                      : undefined
+                  }
+                  // Fallback classes for legacy tags
+                  {...(!tagDef?.bgColor && {
+                    className: `px-2.5 py-1 text-xs font-semibold rounded-full ${
+                      displayTag.name === "New" ? "bg-accent text-accent-foreground" : "bg-primary text-primary-foreground"
+                    }`,
+                  })}
+                >
+                  {displayTag.name}
                 </span>
               )}
-              {product.isNew && (
-                <span className="px-2.5 py-1 bg-accent text-accent-foreground text-xs font-semibold rounded-full">
-                  New
-                </span>
-              )}
-              {product.tags?.filter(t => t !== "Bestseller" && t !== "New").map(tag => (
-                <span key={tag} className="px-2.5 py-1 bg-secondary text-secondary-foreground text-xs font-semibold rounded-full">
-                  {tag}
-                </span>
-              ))}
             </div>
             {/* Wishlist */}
             <button
