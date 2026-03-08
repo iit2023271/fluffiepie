@@ -938,6 +938,70 @@ export default function AdminSettings() {
         </div>
       )}
 
+      {activeSection === "delivery" && (
+        <div className="bg-card rounded-2xl p-6 shadow-soft space-y-6">
+          <div>
+            <h3 className="font-display font-semibold text-lg flex items-center gap-2 mb-1">
+              <Truck className="w-5 h-5 text-primary" /> Delivery Settings
+            </h3>
+            <p className="text-xs text-muted-foreground mb-4">Configure delivery fees and available time slots</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Delivery Fee (₹)</label>
+              <input
+                type="number"
+                value={deliveryForm.delivery_fee}
+                onChange={(e) => setDeliveryForm(prev => ({ ...prev, delivery_fee: Number(e.target.value) }))}
+                className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Charged when order is below free delivery threshold</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Free Delivery Threshold (₹)</label>
+              <input
+                type="number"
+                value={deliveryForm.free_delivery_threshold}
+                onChange={(e) => setDeliveryForm(prev => ({ ...prev, free_delivery_threshold: Number(e.target.value) }))}
+                className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Orders above this amount get free delivery</p>
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2 block">Available Time Slots</label>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {deliveryForm.time_slots.map((slot) => (
+                <span key={slot} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border border-primary/30 bg-primary/5">
+                  {slot}
+                  <button onClick={() => removeTimeSlot(slot)} className="hover:text-destructive">
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                placeholder="e.g. 9:00 AM"
+                value={newTimeSlot}
+                onChange={(e) => setNewTimeSlot(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addTimeSlot()}
+                className="max-w-[200px] px-3 py-1.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background"
+              />
+              <Button size="sm" variant="outline" className="text-xs" onClick={addTimeSlot}>
+                <Plus className="w-3 h-3 mr-1" /> Add Slot
+              </Button>
+            </div>
+          </div>
+
+          <Button onClick={saveDeliveryConfig} disabled={savingDelivery} className="mt-2">
+            {savingDelivery ? "Saving..." : "Save Delivery Settings"}
+          </Button>
+        </div>
+      )}
+
       {/* Shared Delete Confirmation Dialog */}
       <ConfirmDialog
         open={deleteConfirm.open}
