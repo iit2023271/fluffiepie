@@ -510,6 +510,28 @@ export default function Dashboard() {
           </DialogContent>
         </Dialog>
 
+        {/* Wishlist */}
+        {tab === "wishlist" && (
+          <div>
+            {wishlistProducts.length === 0 ? (
+              <div className="text-center py-16 rounded-2xl bg-card shadow-soft">
+                <Heart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="font-display font-semibold text-lg mb-2">No favorites yet</h3>
+                <p className="text-sm text-muted-foreground mb-4">Tap the heart icon on any cake to save it here!</p>
+                <Link to="/shop" className="inline-flex px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90">
+                  Browse Cakes
+                </Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {wishlistProducts.map((product, i) => (
+                  <ProductCard key={product.id} product={product} index={i} isWishlisted={true} onToggleWishlist={toggleWishlist} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Addresses */}
         {tab === "addresses" && (
           <div className="p-6 rounded-2xl bg-card shadow-soft max-w-lg">
@@ -561,6 +583,17 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+
+        {/* Cancel Order Confirm */}
+        <ConfirmDialog
+          open={cancelConfirm.open}
+          onOpenChange={(open) => setCancelConfirm(prev => ({ ...prev, open }))}
+          title="Cancel Order"
+          description="Are you sure you want to cancel this order? This action cannot be undone."
+          confirmLabel="Yes, Cancel Order"
+          variant="destructive"
+          onConfirm={() => cancelOrder(cancelConfirm.orderId)}
+        />
       </motion.div>
     </div>
   );
