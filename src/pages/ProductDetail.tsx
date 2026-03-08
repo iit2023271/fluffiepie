@@ -197,7 +197,11 @@ export default function ProductDetail() {
             </button>
           </div>
 
-          {/* Trust badges */}
+          {/* Share + Trust badges */}
+          <div className="mb-6">
+            <ShareButtons title={product.name} />
+          </div>
+
           <div className="grid grid-cols-3 gap-3">
             {[
               { icon: Truck, text: "Free Delivery" },
@@ -230,6 +234,9 @@ export default function ProductDetail() {
           </div>
         </section>
       )}
+
+      {/* Recently Viewed */}
+      <RecentlyViewed excludeId={product.id} />
 
       {/* Lightbox */}
       <AnimatePresence>
