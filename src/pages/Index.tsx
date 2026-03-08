@@ -277,24 +277,7 @@ export default function Index() {
               transition={{ duration: 0.8, delay: 0.2, ease: [0.32, 0.72, 0, 1] }}
               className="relative"
             >
-              <motion.div
-                animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="relative rounded-3xl overflow-hidden shadow-elevated"
-              >
-                <img src={config.hero.heroImage || heroCake} alt="Premium cake" className="w-full" loading="eager" decoding="async" />
-              </motion.div>
-              {/* Decorative floating elements */}
-              <motion.div
-                animate={{ y: [0, -12, 0], x: [0, 5, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                className="absolute -top-4 -right-4 w-20 h-20 bg-accent/20 rounded-full blur-xl"
-              />
-              <motion.div
-                animate={{ y: [0, 10, 0], x: [0, -8, 0] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                className="absolute -bottom-6 -left-6 w-28 h-28 bg-primary/15 rounded-full blur-xl"
-              />
+                <img src={config.hero.heroImage || heroCake} alt="Premium cake" className="w-full rounded-3xl shadow-elevated" loading="eager" decoding="async" />
             </motion.div>
           </div>
         </div>
@@ -452,15 +435,7 @@ export default function Index() {
                   >
                     <div className="flex items-center gap-1 mb-3">
                       {Array.from({ length: r.rating }).map((_, j) => (
-                        <motion.div
-                          key={j}
-                          initial={{ opacity: 0, scale: 0 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: i * 0.15 + j * 0.08 }}
-                        >
-                          <Star className="w-4 h-4 fill-accent text-accent" />
-                        </motion.div>
+                        <Star key={j} className="w-4 h-4 fill-accent text-accent" />
                       ))}
                     </div>
                     <p className="text-sm text-foreground mb-4 leading-relaxed">"{r.comment}"</p>
@@ -509,7 +484,7 @@ export default function Index() {
           <section key={section.id} className={`relative py-16 overflow-hidden ${data.ctaBgImage ? "text-background" : bgMap[data.ctaBg || "primary"]}`}>
             {data.ctaBgImage && (
               <>
-                <img src={data.ctaBgImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                <img src={data.ctaBgImage} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
                 <div className="absolute inset-0 bg-foreground/50" />
               </>
             )}
@@ -595,7 +570,7 @@ export default function Index() {
                     transition={{ delay: i * 0.05 }}
                     className="relative rounded-2xl overflow-hidden bg-muted aspect-square"
                   >
-                    {img.url && <img src={img.url} alt={img.caption || ""} className="w-full h-full object-cover" />}
+                    {img.url && <img src={img.url} alt={img.caption || ""} className="w-full h-full object-cover" loading="lazy" decoding="async" />}
                     {img.caption && (
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-foreground/60 to-transparent p-3">
                         <p className="text-xs text-background font-medium">{img.caption}</p>

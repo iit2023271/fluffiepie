@@ -1,3 +1,4 @@
+import { memo, useMemo } from "react";
 import { useProducts } from "@/hooks/useProducts";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import ProductCard from "@/components/ProductCard";
@@ -7,15 +8,18 @@ interface Props {
   excludeId?: string;
 }
 
-export default function RecentlyViewed({ excludeId }: Props) {
+function RecentlyViewed({ excludeId }: Props) {
   const { viewedIds } = useRecentlyViewed();
   const { data: products = [] } = useProducts();
 
-  const recentProducts = viewedIds
-    .filter((id) => id !== excludeId)
-    .map((id) => products.find((p) => p.id === id))
-    .filter(Boolean)
-    .slice(0, 6);
+  const recentProducts = useMemo(() =>
+    viewedIds
+      .filter((id) => id !== excludeId)
+      .map((id) => products.find((p) => p.id === id))
+      .filter(Boolean)
+      .slice(0, 6),
+    [viewedIds, excludeId, products]
+  );
 
   if (recentProducts.length === 0) return null;
 
@@ -33,3 +37,5 @@ export default function RecentlyViewed({ excludeId }: Props) {
     </section>
   );
 }
+
+export default memo(RecentlyViewed);

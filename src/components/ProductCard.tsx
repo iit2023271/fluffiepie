@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Heart, ShoppingCart, Star, Plus, Minus, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,7 +15,7 @@ interface Props {
   onToggleWishlist?: (productId: string) => void;
 }
 
-export default function ProductCard({ product, index = 0, isWishlisted = false, onToggleWishlist }: Props) {
+function ProductCard({ product, index = 0, isWishlisted = false, onToggleWishlist }: Props) {
   const { state, dispatch } = useCart();
   const { user } = useAuth();
   const { productTags } = useStoreConfig();
@@ -30,7 +31,7 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
   const tagDef = activeTag ? productTags.find(t => t.name === activeTag) : null;
   const displayTag = tagDef || (product.isBestseller ? { name: "Bestseller", bgColor: "", textColor: "" } : product.isNew ? { name: "New", bgColor: "", textColor: "" } : null);
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (isSoldOut) {
@@ -47,18 +48,18 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
       },
     });
     toast.success(`${product.name} added to cart!`);
-  };
+  }, [product, defaultWeight, isSoldOut, dispatch]);
 
-  const handleIncrement = (e: React.MouseEvent) => {
+  const handleIncrement = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     dispatch({
       type: "UPDATE_QUANTITY",
       payload: { id: product.id, weight: defaultWeight, quantity: cartQty + 1 },
     });
-  };
+  }, [product.id, defaultWeight, cartQty, dispatch]);
 
-  const handleDecrement = (e: React.MouseEvent) => {
+  const handleDecrement = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (cartQty <= 1) {
@@ -70,9 +71,9 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
         payload: { id: product.id, weight: defaultWeight, quantity: cartQty - 1 },
       });
     }
-  };
+  }, [product.id, defaultWeight, cartQty, dispatch]);
 
-  const handleWishlist = (e: React.MouseEvent) => {
+  const handleWishlist = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (!user) {
@@ -81,7 +82,7 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
     }
     onToggleWishlist?.(product.id);
     toast.success(isWishlisted ? "Removed from favorites" : "Added to favorites! ❤️");
-  };
+  }, [user, product.id, isWishlisted, onToggleWishlist]);
 
   return (
     <motion.div
@@ -252,3 +253,5 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
     </motion.div>
   );
 }
+
+export default memo(ProductCard);

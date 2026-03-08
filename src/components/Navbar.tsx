@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ShoppingCart, Search, User, Menu, X, LogOut, Shield } from "lucide-react";
 import { useCart } from "@/context/CartContext";
@@ -15,7 +15,7 @@ const navLinks = [
   { label: "Contact", path: "/contact" },
 ];
 
-export default function Navbar() {
+function Navbar() {
   const { totalItems, dispatch } = useCart();
   const { user, signOut } = useAuth();
   const location = useLocation();
@@ -211,3 +211,5 @@ export default function Navbar() {
     </header>
   );
 }
+
+export default memo(Navbar);
