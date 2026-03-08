@@ -24,6 +24,11 @@ const ITEMS_PER_PAGE = 12;
 
 export default function Shop() {
   const [searchParams] = useSearchParams();
+
+  useSEO({
+    title: "Shop All Cakes",
+    description: "Browse our full collection of handcrafted cakes. Filter by occasion, flavour, and more. Fresh delivery to your doorstep.",
+  });
   const initialOccasion = searchParams.get("occasion") || "";
   const initialCategory = searchParams.get("category") || "";
   const initialFlavour = searchParams.get("flavour") || "";
