@@ -54,15 +54,44 @@ export default function AdminKitchen() {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  const dateKey = (d: Date) => `kitchen-prep-${format(d, "yyyy-MM-dd")}`;
+
+  // Load saved checked items from localStorage when date changes
+  const loadSavedChecks = (date: Date) => {
+    try {
+      const saved = localStorage.getItem(dateKey(date));
+      if (saved) {
+        setCheckedItems(new Set(JSON.parse(saved)));
+      } else {
+        setCheckedItems(new Set());
+      }
+    } catch {
+      setCheckedItems(new Set());
+    }
+    setHasUnsavedChanges(false);
+  };
+
+  // Save checked items to localStorage
+  const saveCheckedItems = () => {
+    try {
+      localStorage.setItem(dateKey(selectedDate), JSON.stringify(Array.from(checkedItems)));
+      setHasUnsavedChanges(false);
+      toast.success("Prep progress saved!");
+    } catch {
+      toast.error("Failed to save progress");
+    }
+  };
 
   // Load a wide range of orders and filter client-side by resolved delivery date
   useEffect(() => {
     loadOrders();
+    loadSavedChecks(selectedDate);
   }, [selectedDate]);
 
   const loadOrders = async () => {
     setLoading(true);
-    // Fetch orders from 2 days before to 2 days after to cover "Today/Tomorrow" slots
     const rangeStart = addDays(startOfDay(selectedDate), -2).toISOString();
     const rangeEnd = endOfDay(addDays(selectedDate, 1)).toISOString();
 
@@ -124,6 +153,7 @@ export default function AdminKitchen() {
       next.has(key) ? next.delete(key) : next.add(key);
       return next;
     });
+    setHasUnsavedChanges(true);
   };
 
   const dateLabel = useMemo(() => {
@@ -139,7 +169,6 @@ export default function AdminKitchen() {
 
   const goToDate = (offset: number) => {
     setSelectedDate((d) => addDays(d, offset));
-    setCheckedItems(new Set());
   };
 
   return (
