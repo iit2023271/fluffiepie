@@ -149,6 +149,7 @@ export default function AdminProducts() {
       else toast.success("Product created!");
     }
     setSaving(false);
+    setPendingAdditionalFiles([]);
     setShowForm(false);
     loadProducts();
   };
