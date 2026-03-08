@@ -166,6 +166,13 @@ export default function AdminMessages() {
                 </div>
                 <div className="flex gap-1">
                   <button
+                    onClick={() => setSelected(null)}
+                    className="p-2 rounded-lg hover:bg-secondary transition-colors"
+                    title="Close"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                  <button
                     onClick={() => toggleRead(selectedMsg)}
                     className="p-2 rounded-lg hover:bg-secondary transition-colors"
                     title={selectedMsg.is_read ? "Mark as unread" : "Mark as read"}
