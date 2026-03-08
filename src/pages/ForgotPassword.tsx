@@ -131,10 +131,11 @@ export default function ForgotPassword() {
                 </p>
                 <button
                   type="button"
-                  onClick={() => { setStep("email"); }}
-                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  disabled={cooldown > 0}
+                  onClick={() => { handleSendLink({ preventDefault: () => {} } as any); }}
+                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
                 >
-                  Didn't receive it? Try again
+                  {cooldown > 0 ? `Resend in ${cooldown}s` : "Didn't receive it? Resend"}
                 </button>
               </div>
             )}
