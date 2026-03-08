@@ -788,9 +788,14 @@ export default function AdminOrders() {
       <ConfirmDialog
         open={statusChangeConfirm.open}
         onOpenChange={(open) => setStatusChangeConfirm(prev => ({ ...prev, open }))}
-        title="Cancel Order"
-        description="Are you sure you want to cancel this order? The customer will be notified if email notifications are enabled."
-        confirmLabel="Cancel Order"
+        title={statusChangeConfirm.newStatus === "delivered" ? "Mark as Delivered" : "Cancel Order"}
+        description={
+          statusChangeConfirm.newStatus === "delivered"
+            ? "Are you sure you want to mark this order as delivered? This action is final and cannot be undone."
+            : "Are you sure you want to cancel this order? This action is final and cannot be undone."
+        }
+        confirmLabel={statusChangeConfirm.newStatus === "delivered" ? "Mark Delivered" : "Cancel Order"}
+        variant={statusChangeConfirm.newStatus === "cancelled" ? "destructive" : "default"}
         onConfirm={() => { updateStatus(statusChangeConfirm.orderId, statusChangeConfirm.newStatus); setStatusChangeConfirm({ open: false, orderId: "", newStatus: "" }); }}
       />
       <ConfirmDialog
