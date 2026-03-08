@@ -438,7 +438,7 @@ export default function AdminDashboard() {
         <div className="bg-card rounded-2xl p-4 md:p-6 shadow-soft">
           <h3 className="font-display font-semibold text-base md:text-lg mb-1">📦 Orders Volume</h3>
           <p className="text-xs text-muted-foreground mb-4">How many orders you're receiving each day</p>
-          <div className="h-56">
+          <div className="h-48 md:h-56 -mx-2">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
                 <XAxis dataKey={chartXKey} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
