@@ -334,9 +334,21 @@ export default function AdminSettings() {
                 <div className="flex flex-wrap gap-2 mb-4">
                   {items.map(item => (
                     <div key={item.id} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border transition-colors ${item.is_active ? "border-primary/30 bg-primary/5 text-foreground" : "border-border bg-secondary/50 text-muted-foreground line-through"}`}>
-                      <span>{item.value}</span>
-                      <button onClick={() => toggleConfig(item.id, item.is_active)} className={`w-4 h-4 rounded-full border-2 transition-colors ${item.is_active ? "border-primary bg-primary" : "border-muted-foreground"}`} />
-                      <button onClick={() => setDeleteConfirm({ open: true, type: "config", id: item.id, name: item.value })} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
+                      {editingConfigItem === item.id ? (
+                        <form onSubmit={(e) => { e.preventDefault(); renameConfigItem(item.id, editingConfigValue); }} className="flex items-center gap-1">
+                          <input autoFocus value={editingConfigValue} onChange={(e) => setEditingConfigValue(e.target.value)}
+                            className="w-24 px-1.5 py-0.5 rounded border border-primary text-xs bg-background focus:outline-none" />
+                          <button type="submit" className="text-primary hover:text-primary/80"><CheckCircle2 className="w-3 h-3" /></button>
+                          <button type="button" onClick={() => setEditingConfigItem(null)} className="text-muted-foreground hover:text-foreground"><X className="w-3 h-3" /></button>
+                        </form>
+                      ) : (
+                        <>
+                          <span>{item.value}</span>
+                          <button onClick={() => { setEditingConfigItem(item.id); setEditingConfigValue(item.value); }} className="text-muted-foreground hover:text-primary"><Pencil className="w-3 h-3" /></button>
+                          <button onClick={() => toggleConfig(item.id, item.is_active)} className={`w-4 h-4 rounded-full border-2 transition-colors ${item.is_active ? "border-primary bg-primary" : "border-muted-foreground"}`} />
+                          <button onClick={() => setDeleteConfirm({ open: true, type: "config", id: item.id, name: item.value })} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
+                        </>
+                      )}
                     </div>
                   ))}
                   {items.length === 0 && <p className="text-sm text-muted-foreground">No items yet.</p>}
