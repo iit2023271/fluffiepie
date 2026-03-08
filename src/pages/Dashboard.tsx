@@ -4,7 +4,9 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Package, User, LogOut, Clock, CheckCircle, Truck, ChefHat, Search, Shield } from "lucide-react";
+import { Package, User, LogOut, Clock, CheckCircle, Truck, ChefHat, Search, Shield, Star, MessageSquare } from "lucide-react";
+import ReviewForm from "@/components/ReviewForm";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
 
 interface Order {
