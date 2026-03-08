@@ -4,8 +4,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Star, ShoppingCart, Heart, Minus, Plus, ChevronLeft, Truck, Shield, Clock, X, ChevronRight, ZoomIn } from "lucide-react";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/context/CartContext";
+import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import ProductCard from "@/components/ProductCard";
 import ProductReviews from "@/components/ProductReviews";
+import RecentlyViewed from "@/components/RecentlyViewed";
+import ShareButtons from "@/components/ShareButtons";
 import { toast } from "sonner";
 
 export default function ProductDetail() {
@@ -13,12 +16,18 @@ export default function ProductDetail() {
   const { data: product, isLoading } = useProduct(slug);
   const { data: allProducts = [] } = useProducts();
   const { dispatch } = useCart();
+  const { addViewed } = useRecentlyViewed();
 
   const [selectedWeight, setSelectedWeight] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [message, setMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  // Track recently viewed
+  useEffect(() => {
+    if (product) addViewed(product.id);
+  }, [product?.id]);
 
   if (!product) {
     return (
@@ -188,7 +197,11 @@ export default function ProductDetail() {
             </button>
           </div>
 
-          {/* Trust badges */}
+          {/* Share + Trust badges */}
+          <div className="mb-6">
+            <ShareButtons title={product.name} />
+          </div>
+
           <div className="grid grid-cols-3 gap-3">
             {[
               { icon: Truck, text: "Free Delivery" },
@@ -221,6 +234,9 @@ export default function ProductDetail() {
           </div>
         </section>
       )}
+
+      {/* Recently Viewed */}
+      <RecentlyViewed excludeId={product.id} />
 
       {/* Lightbox */}
       <AnimatePresence>
