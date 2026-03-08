@@ -521,13 +521,6 @@ export default function Index() {
     }
   };
 
-  // Build nav items from config
-  const navItems = config.sectionNav.enabled
-    ? config.sectionNav.items
-        .filter(item => item.visible)
-        .filter(item => config.sections.some(s => s.id === item.sectionId && s.visible))
-    : [];
-
   const scrollToSection = (id: string) => {
     const el = document.getElementById(`section-${id}`);
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
