@@ -117,6 +117,8 @@ export default function Shop() {
     setSearchQuery("");
     setSelectedFilters({});
     setPriceRange([priceExtents.min, priceExtents.max]);
+    setSelectedTag("");
+    setDiscountFilter("");
     setCurrentPage(1);
   };
 
