@@ -41,11 +41,14 @@ interface Banner {
   ends_at: string | null;
 }
 
-const configSections = [
+const BUILTIN_CONFIG_SECTIONS = [
   { type: "category", label: "Categories", icon: Layers, description: "Product categories like Classic, Premium, etc." },
   { type: "flavour", label: "Flavours", icon: Palette, description: "Available cake flavours" },
   { type: "occasion", label: "Occasions", icon: Calendar, description: "Special occasions for cakes" },
 ];
+
+// Reserved config types that should not show as product filter sections
+const RESERVED_CONFIG_TYPES = ["homepage_config", "email_notification", "store_info", "filter_section"];
 
 const emptyCoupon = {
   code: "", discount_type: "percentage", discount_value: 10, min_order_amount: 0,
