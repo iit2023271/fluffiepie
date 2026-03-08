@@ -710,13 +710,11 @@ export default function AdminHomepage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                       <Label className="text-xs">🏷️ Show Products By</Label>
-                      <Select value={config.trending.filterBy || "bestseller"} onValueChange={v => updateTrending("filterBy", v)}>
+                      <Select value={config.trending.filterBy || "all"} onValueChange={v => updateTrending("filterBy", v)}>
                         <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="bestseller">Bestsellers</SelectItem>
-                          <SelectItem value="new">New Arrivals</SelectItem>
-                          <SelectItem value="tag">By Product Tag</SelectItem>
                           <SelectItem value="all">All Products (by reviews)</SelectItem>
+                          <SelectItem value="tag">By Product Tag</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
