@@ -46,6 +46,7 @@ export function useStoreConfig() {
   const categories = configItems.filter(d => d.config_type === "category").map(d => d.value);
   const flavours = configItems.filter(d => d.config_type === "flavour").map(d => d.value);
   const occasions = configItems.filter(d => d.config_type === "occasion").map(d => d.value);
+  const productTags = configItems.filter(d => d.config_type === "product_tag").map(d => d.value);
 
   // Custom filter section definitions (stored as filter_section type with JSON value)
   const customSectionDefs = configItems
