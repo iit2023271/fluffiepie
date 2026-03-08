@@ -519,11 +519,18 @@ export default function AdminOrders() {
                     <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border ${statusCfg.bgColor} ${statusCfg.color}`}>
                       {statusCfg.emoji} {statusCfg.label}
                     </span>
-                    {isFinal && <span className="text-[10px] text-muted-foreground ml-auto">🔒 Final</span>}
+                    {isFinal && <span className="text-[10px] text-muted-foreground">🔒 Final</span>}
                     <span className="text-[10px] text-muted-foreground ml-auto" title={format(orderDate, "dd MMM yyyy, hh:mm a")}>
-                      {getTimeAgo(orderDate)}
+                      🕐 {format(orderDate, "dd MMM, hh:mm a")}
                     </span>
                   </div>
+
+                  {/* Delivered/Cancelled timestamp */}
+                  {isFinal && order.updated_at !== order.created_at && (
+                    <p className={`text-[10px] mb-1.5 font-medium ${order.status === "delivered" ? "text-emerald-600" : "text-destructive"}`}>
+                      {order.status === "delivered" ? "✅" : "❌"} {order.status === "delivered" ? "Delivered" : "Cancelled"}: {getRelativeDate(new Date(order.updated_at))}
+                    </p>
+                  )}
 
                   {/* Progress bar — only for active orders */}
                   {!isFinal && order.status !== "cancelled" && (
