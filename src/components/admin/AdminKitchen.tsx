@@ -184,6 +184,9 @@ export default function AdminKitchen() {
           </p>
         </div>
         <div className="flex items-center gap-2 print:hidden">
+          <button onClick={loadOrders} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Refresh">
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+          </button>
           <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={() => {
             const rows = [["Item", "Weight", "Total Qty", "Orders"]];
             aggregated.forEach(item => {

@@ -327,9 +327,14 @@ export default function AdminOrders() {
           <h1 className="text-2xl font-display font-bold">Orders</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage and track all customer orders</p>
         </div>
-        <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={exportCSV}>
-          <Download className="w-3.5 h-3.5" /> Export
-        </Button>
+        <div className="flex items-center gap-2">
+          <button onClick={loadOrders} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Refresh">
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+          </button>
+          <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={exportCSV}>
+            <Download className="w-3.5 h-3.5" /> Export
+          </Button>
+        </div>
       </div>
 
       {/* Today's Quick Stats */}

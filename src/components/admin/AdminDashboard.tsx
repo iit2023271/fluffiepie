@@ -281,6 +281,9 @@ export default function AdminDashboard() {
           <p className="text-sm text-muted-foreground mt-1">Your store performance at a glance</p>
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <button onClick={loadData} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Refresh">
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+          </button>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={exportCSV}>
               <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Download</span> Report

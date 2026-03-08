@@ -442,7 +442,12 @@ export default function AdminSettings() {
 
   return (
     <div>
-      <h1 className="text-2xl font-display font-bold mb-6">Settings</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-display font-bold">Settings</h1>
+        <button onClick={loadAll} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Refresh">
+          <RefreshCw className={`w-4 h-4 ${configLoading ? "animate-spin" : ""}`} />
+        </button>
+      </div>
 
       <div className="flex gap-2 mb-6 flex-wrap">
         {[
