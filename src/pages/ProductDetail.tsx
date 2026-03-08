@@ -64,12 +64,18 @@ export default function ProductDetail() {
           animate={{ opacity: 1, x: 0 }}
           className="space-y-3"
         >
-          <div className="relative rounded-3xl overflow-hidden bg-cream aspect-square">
+          <div
+            className="relative rounded-3xl overflow-hidden bg-cream aspect-square cursor-zoom-in group"
+            onClick={() => setLightboxOpen(true)}
+          >
             <img
               src={allImages[selectedImage] || product.image}
               alt={product.name}
               className="w-full h-full object-cover transition-all duration-300"
             />
+            <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/5 transition-colors flex items-center justify-center">
+              <ZoomIn className="w-8 h-8 text-background opacity-0 group-hover:opacity-70 transition-opacity drop-shadow-lg" />
+            </div>
             {product.isBestseller && (
               <span className="absolute top-4 left-4 px-3 py-1 bg-primary text-primary-foreground text-xs font-semibold rounded-full">
                 Bestseller
