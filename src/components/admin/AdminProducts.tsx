@@ -193,6 +193,7 @@ export default function AdminProducts() {
             <Plus className="w-4 h-4" /> Add Product
           </button>
         </div>
+      </div>
 
       {/* Stock alerts */}
       {(lowStockCount > 0 || outOfStockCount > 0) && (
