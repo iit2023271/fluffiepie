@@ -130,7 +130,7 @@ const emptyProduct = {
 };
 
 export default function AdminProducts() {
-  const { categories: categoryOptions, flavours: flavourOptions, occasions: occasionOptions, filterSections, customSectionDefs } = useStoreConfig();
+  const { categories: categoryOptions, flavours: flavourOptions, occasions: occasionOptions, productTags: tagOptions, filterSections, customSectionDefs } = useStoreConfig();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
