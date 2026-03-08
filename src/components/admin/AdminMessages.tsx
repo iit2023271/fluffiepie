@@ -218,7 +218,7 @@ export default function AdminMessages() {
                     {selectedMsg.is_read ? <Mail className="w-4 h-4" /> : <MailOpen className="w-4 h-4" />}
                   </button>
                   <button
-                    onClick={() => deleteMsg(selectedMsg.id)}
+                    onClick={() => setDeleteConfirm({ open: true, id: selectedMsg.id })}
                     className="p-2 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
                     title="Delete"
                   >
