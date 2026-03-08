@@ -258,6 +258,7 @@ export type Database = {
           base_price: number
           category: string
           created_at: string
+          custom_attributes: Json
           description: string
           flavour: string
           id: string
@@ -280,6 +281,7 @@ export type Database = {
           base_price?: number
           category?: string
           created_at?: string
+          custom_attributes?: Json
           description?: string
           flavour?: string
           id?: string
@@ -302,6 +304,7 @@ export type Database = {
           base_price?: number
           category?: string
           created_at?: string
+          custom_attributes?: Json
           description?: string
           flavour?: string
           id?: string
