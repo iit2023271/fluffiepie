@@ -131,7 +131,7 @@ export default function AdminMessages() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {/* Message List */}
         <div className="lg:col-span-2 space-y-2 max-h-[600px] overflow-y-auto pr-1">
           {loading ? (

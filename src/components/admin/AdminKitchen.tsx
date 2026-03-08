@@ -174,16 +174,16 @@ export default function AdminKitchen() {
   return (
     <div className="print:p-0">
       {/* Header */}
-      <div className="flex items-start justify-between mb-6 print:mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-6 print:mb-4">
         <div>
           <h1 className="text-2xl font-display font-bold flex items-center gap-2">
-            <ChefHat className="w-6 h-6" /> Kitchen Prep Sheet
+            <ChefHat className="w-6 h-6" /> Kitchen Prep
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Items to prepare for <span className="font-semibold text-foreground">{dateLabel}'s deliveries</span>
           </p>
         </div>
-        <div className="flex items-center gap-2 print:hidden">
+        <div className="flex items-center gap-2 print:hidden flex-wrap">
           <button onClick={loadOrders} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Refresh">
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
@@ -199,14 +199,14 @@ export default function AdminKitchen() {
             URL.revokeObjectURL(url);
             toast.success("Prep sheet exported!");
           }}>
-            <Download className="w-3.5 h-3.5" /> Export
+            <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Export</span>
           </Button>
           <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={() => window.print()}>
-            <Printer className="w-3.5 h-3.5" /> Print Sheet
+            <Printer className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Print</span>
           </Button>
           {hasUnsavedChanges && (
             <Button size="sm" className="text-xs gap-1.5" onClick={saveCheckedItems}>
-              <Save className="w-3.5 h-3.5" /> Save Progress
+              <Save className="w-3.5 h-3.5" /> Save
             </Button>
           )}
         </div>

@@ -322,7 +322,7 @@ export default function AdminOrders() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-display font-bold">Orders</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage and track all customer orders</p>
@@ -332,7 +332,7 @@ export default function AdminOrders() {
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
           <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={exportCSV}>
-            <Download className="w-3.5 h-3.5" /> Export
+            <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Export</span>
           </Button>
         </div>
       </div>

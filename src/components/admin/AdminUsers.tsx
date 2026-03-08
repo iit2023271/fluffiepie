@@ -227,14 +227,14 @@ export default function AdminUsers() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
         <h1 className="text-2xl font-display font-bold">Customers</h1>
         <div className="flex items-center gap-2">
           <button onClick={loadUsers} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Refresh">
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
           <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={exportCSV}>
-            <Download className="w-3.5 h-3.5" /> Export CSV
+            <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Export</span>
           </Button>
         </div>
       </div>
