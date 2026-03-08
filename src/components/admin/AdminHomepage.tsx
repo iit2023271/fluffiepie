@@ -610,12 +610,25 @@ export default function AdminHomepage() {
 
           if (section.id === "reviews") return (
             <SectionEditor key="reviews" id="reviews" label="Customer Reviews" expanded={expandedSection === "reviews"} onToggle={() => toggleExpand("reviews")} visible={isSectionVisible("reviews")}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div><Label className="text-xs">Section Title</Label><Input value={config.reviews.title} onChange={e => updateReviews("title", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Section Subtitle</Label><Input value={config.reviews.subtitle} onChange={e => updateReviews("subtitle", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Reviews to Show</Label><Input type="number" min={1} max={9} value={config.reviews.count} onChange={e => updateReviews("count", parseInt(e.target.value) || 3)} className="mt-1" /></div>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div><Label className="text-xs">Section Title</Label><Input value={config.reviews.title} onChange={e => updateReviews("title", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Section Subtitle</Label><Input value={config.reviews.subtitle} onChange={e => updateReviews("subtitle", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Reviews to Show</Label><Input type="number" min={1} max={9} value={config.reviews.count} onChange={e => updateReviews("count", parseInt(e.target.value) || 3)} className="mt-1" /></div>
+                </div>
+                <div className="p-3 rounded-xl bg-muted/50 border">
+                  <Label className="text-xs">🔲 Grid Columns</Label>
+                  <Select value={String(config.reviews.columns || 3)} onValueChange={v => updateReviews("columns", parseInt(v))}>
+                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 Column</SelectItem>
+                      <SelectItem value="2">2 Columns</SelectItem>
+                      <SelectItem value="3">3 Columns (Default)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="text-xs text-muted-foreground">Reviews are automatically pulled from your database (4+ stars with comments).</p>
               </div>
-              <p className="text-xs text-muted-foreground mt-3">Reviews are automatically pulled from your database (4+ stars with comments).</p>
             </SectionEditor>
           );
 
