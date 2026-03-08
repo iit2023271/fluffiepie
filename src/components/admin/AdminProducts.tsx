@@ -33,12 +33,14 @@ export default function AdminProducts() {
   const [form, setForm] = useState(emptyProduct);
   const [saving, setSaving] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [additionalImageFiles, setAdditionalImageFiles] = useState<File[]>([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [showCropper, setShowCropper] = useState(false);
+  const [cropTarget, setCropTarget] = useState<"main" | number>("main");
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id: string; name: string }>({ open: false, id: "", name: "" });
 
   useEffect(() => { loadProducts(); }, []);
