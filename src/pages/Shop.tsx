@@ -400,6 +400,22 @@ export default function Shop() {
                 </button>
               ) : null
             )}
+            {selectedTag && (
+              <button
+                onClick={() => setSelectedTag("")}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium whitespace-nowrap flex-shrink-0"
+              >
+                {selectedTag} <X className="w-3 h-3" />
+              </button>
+            )}
+            {discountFilter && (
+              <button
+                onClick={() => setDiscountFilter("")}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium whitespace-nowrap flex-shrink-0"
+              >
+                {discountFilter}%+ off <X className="w-3 h-3" />
+              </button>
+            )}
           </div>
         )}
 
