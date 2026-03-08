@@ -80,13 +80,14 @@ export default function AdminDashboard() {
   const metrics = useMemo(() => {
     const now = new Date();
     const source = filteredOrders;
+    const nonCancelled = source.filter(o => o.status !== "cancelled");
     const delivered = source.filter(o => o.status === "delivered");
     const cancelled = source.filter(o => o.status === "cancelled");
-    const totalRevenue = source.reduce((s, o) => s + (o.total || 0), 0);
-    const deliveredRevenue = delivered.reduce((s, o) => s + (o.total || 0), 0);
+    const totalRevenue = delivered.reduce((s, o) => s + (o.total || 0), 0);
+    const deliveredRevenue = totalRevenue;
     const totalOrders = source.length;
-    const avgOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
-    const totalDiscount = source.reduce((s, o) => s + (o.discount || 0), 0);
+    const avgOrderValue = delivered.length > 0 ? Math.round(totalRevenue / delivered.length) : 0;
+    const totalDiscount = nonCancelled.reduce((s, o) => s + (o.discount || 0), 0);
     const totalRefunds = source.reduce((s, o) => s + (o.refund_amount || 0), 0);
     const conversionRate = totalOrders > 0 ? Math.round((delivered.length / totalOrders) * 100) : 0;
     const cancelRate = totalOrders > 0 ? Math.round((cancelled.length / totalOrders) * 100) : 0;
@@ -95,15 +96,21 @@ export default function AdminDashboard() {
     source.forEach(o => { customerOrders[o.user_id] = (customerOrders[o.user_id] || 0) + 1; });
     const repeatCustomers = Object.values(customerOrders).filter(c => c > 1).length;
 
-    // Week comparison
+    // Week comparison (delivered only)
+    const thisWeekDelivered = orders.filter(o => new Date(o.created_at) >= subDays(now, 7) && o.status === "delivered");
+    const lastWeekDelivered = orders.filter(o => {
+      const d = new Date(o.created_at);
+      return d >= subDays(now, 14) && d < subDays(now, 7) && o.status === "delivered";
+    });
+    const thisWeekRevenue = thisWeekDelivered.reduce((s, o) => s + (o.total || 0), 0);
+    const lastWeekRevenue = lastWeekDelivered.reduce((s, o) => s + (o.total || 0), 0);
+    const revenueChange = lastWeekRevenue > 0 ? Math.round(((thisWeekRevenue - lastWeekRevenue) / lastWeekRevenue) * 100) : thisWeekRevenue > 0 ? 100 : 0;
+
     const thisWeekOrders = orders.filter(o => new Date(o.created_at) >= subDays(now, 7));
     const lastWeekOrders = orders.filter(o => {
       const d = new Date(o.created_at);
       return d >= subDays(now, 14) && d < subDays(now, 7);
     });
-    const thisWeekRevenue = thisWeekOrders.reduce((s, o) => s + (o.total || 0), 0);
-    const lastWeekRevenue = lastWeekOrders.reduce((s, o) => s + (o.total || 0), 0);
-    const revenueChange = lastWeekRevenue > 0 ? Math.round(((thisWeekRevenue - lastWeekRevenue) / lastWeekRevenue) * 100) : thisWeekRevenue > 0 ? 100 : 0;
     const ordersChange = lastWeekOrders.length > 0 ? Math.round(((thisWeekOrders.length - lastWeekOrders.length) / lastWeekOrders.length) * 100) : thisWeekOrders.length > 0 ? 100 : 0;
     const couponOrders = source.filter(o => o.coupon_code);
 
