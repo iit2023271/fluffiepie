@@ -429,6 +429,14 @@ export default function Dashboard() {
                     <div className="flex items-center justify-between pt-3 border-t border-border">
                       <span className="font-semibold">Total: ₹{order.total.toLocaleString()}</span>
                       <div className="flex items-center gap-3">
+                        {canCancelOrder(order) && (
+                          <button
+                            onClick={() => setCancelConfirm({ open: true, orderId: order.id })}
+                            className="flex items-center gap-1.5 text-xs font-medium text-destructive hover:underline"
+                          >
+                            <XCircle className="w-3.5 h-3.5" /> Cancel Order
+                          </button>
+                        )}
                         {storeInfo.whatsappNumber && (
                           <button
                             onClick={() => sendToWhatsApp(order)}
