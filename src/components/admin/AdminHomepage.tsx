@@ -410,24 +410,107 @@ function TextBlockEditor({ data, onChange }: { data: CustomSectionData; onChange
 }
 
 function CtaBannerEditor({ data, onChange }: { data: CustomSectionData; onChange: (u: Partial<CustomSectionData>) => void }) {
+  const [uploading, setUploading] = useState(false);
+  const [cropState, setCropState] = useState<{ open: boolean; src: string }>({ open: false, src: "" });
+
+  const handleFileUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `cta/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("homepage-assets").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from("homepage-assets").getPublicUrl(path);
+      onChange({ ctaBgImage: urlData.publicUrl });
+      toast.success("Background image uploaded");
+    } catch (e: any) {
+      toast.error("Upload failed: " + (e.message || "Unknown error"));
+    }
+    setUploading(false);
+  };
+
+  const handleCropComplete = async (blob: Blob) => {
+    setCropState({ open: false, src: "" });
+    setUploading(true);
+    try {
+      const path = `cta/${Date.now()}_cropped.jpg`;
+      const { error } = await supabase.storage.from("homepage-assets").upload(path, blob, { contentType: "image/jpeg", upsert: true });
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from("homepage-assets").getPublicUrl(path);
+      onChange({ ctaBgImage: urlData.publicUrl });
+      toast.success("Cropped background saved");
+    } catch (e: any) {
+      toast.error("Upload failed: " + (e.message || "Unknown error"));
+    }
+    setUploading(false);
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div><Label className="text-xs">Title</Label><Input value={data.ctaTitle || ""} onChange={e => onChange({ ctaTitle: e.target.value })} className="mt-1" /></div>
-      <div><Label className="text-xs">Subtitle</Label><Input value={data.ctaSubtitle || ""} onChange={e => onChange({ ctaSubtitle: e.target.value })} className="mt-1" /></div>
-      <div><Label className="text-xs">Button Text</Label><Input value={data.ctaButtonText || ""} onChange={e => onChange({ ctaButtonText: e.target.value })} className="mt-1" /></div>
-      <div><Label className="text-xs">Button Link</Label><Input value={data.ctaButtonLink || ""} onChange={e => onChange({ ctaButtonLink: e.target.value })} className="mt-1" /></div>
-      <div>
-        <Label className="text-xs">Background Color</Label>
-        <Select value={data.ctaBg || "primary"} onValueChange={v => onChange({ ctaBg: v as any })}>
-          <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="primary">Primary (Pink)</SelectItem>
-            <SelectItem value="blush">Blush</SelectItem>
-            <SelectItem value="cream">Cream</SelectItem>
-            <SelectItem value="muted">Muted Gray</SelectItem>
-          </SelectContent>
-        </Select>
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div><Label className="text-xs">Title</Label><Input value={data.ctaTitle || ""} onChange={e => onChange({ ctaTitle: e.target.value })} className="mt-1" /></div>
+        <div><Label className="text-xs">Subtitle</Label><Input value={data.ctaSubtitle || ""} onChange={e => onChange({ ctaSubtitle: e.target.value })} className="mt-1" /></div>
+        <div><Label className="text-xs">Button Text</Label><Input value={data.ctaButtonText || ""} onChange={e => onChange({ ctaButtonText: e.target.value })} className="mt-1" /></div>
+        <div><Label className="text-xs">Button Link</Label><Input value={data.ctaButtonLink || ""} onChange={e => onChange({ ctaButtonLink: e.target.value })} className="mt-1" /></div>
+        <div>
+          <Label className="text-xs">Background Color</Label>
+          <Select value={data.ctaBg || "primary"} onValueChange={v => onChange({ ctaBg: v as any })}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="primary">Primary (Pink)</SelectItem>
+              <SelectItem value="blush">Blush</SelectItem>
+              <SelectItem value="cream">Cream</SelectItem>
+              <SelectItem value="muted">Muted Gray</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
+
+      {/* Background Image (optional) */}
+      <div className="space-y-2">
+        <Label className="text-xs font-semibold uppercase tracking-wider">Background Image (optional)</Label>
+        <p className="text-[10px] text-muted-foreground">Overrides the background color when set.</p>
+        {data.ctaBgImage && (
+          <div className="relative w-full h-32 rounded-xl overflow-hidden bg-muted">
+            <img src={data.ctaBgImage} alt="CTA background" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-foreground/40 flex items-center justify-center gap-2">
+              <button
+                onClick={() => setCropState({ open: true, src: data.ctaBgImage! })}
+                className="px-3 py-1.5 bg-background/90 rounded-lg text-xs font-medium flex items-center gap-1.5 hover:bg-background transition-colors"
+              >
+                <Crop className="w-3 h-3" /> Crop
+              </button>
+              <button
+                onClick={() => onChange({ ctaBgImage: undefined })}
+                className="px-3 py-1.5 bg-destructive/90 text-destructive-foreground rounded-lg text-xs font-medium flex items-center gap-1.5 hover:bg-destructive transition-colors"
+              >
+                <Trash2 className="w-3 h-3" /> Remove
+              </button>
+            </div>
+          </div>
+        )}
+        <div className="flex items-center gap-3">
+          <Input
+            value={data.ctaBgImage || ""}
+            onChange={e => onChange({ ctaBgImage: e.target.value || undefined })}
+            placeholder="https://... or upload"
+            className="flex-1"
+          />
+          <label className="inline-flex items-center gap-1.5 text-xs text-primary font-medium cursor-pointer hover:underline whitespace-nowrap">
+            <Upload className="w-3 h-3" />
+            {uploading ? "Uploading..." : "Upload"}
+            <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={e => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); e.target.value = ""; }} />
+          </label>
+        </div>
+      </div>
+
+      <ImageCropper
+        open={cropState.open}
+        imageSrc={cropState.src}
+        aspect={21 / 9}
+        onCropComplete={handleCropComplete}
+        onClose={() => setCropState({ open: false, src: "" })}
+      />
     </div>
   );
 }
