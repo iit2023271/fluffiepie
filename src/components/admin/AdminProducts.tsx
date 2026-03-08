@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, X, Upload, Search, AlertTriangle, Package, Crop, Download, GripVertical } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Upload, Search, AlertTriangle, Package, Crop, Download, GripVertical, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import Pagination from "@/components/Pagination";
 import { toast } from "sonner";
