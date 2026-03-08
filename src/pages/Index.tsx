@@ -279,45 +279,33 @@ export default function Index() {
         </section>
       );
     },
-    trending: () => (
-      <section key="trending" className="container mx-auto px-4 py-16 bg-cream rounded-3xl mx-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="flex items-center justify-between mb-10"
-        >
-          <div>
-            <h2 className="text-3xl font-display font-bold mb-2">{config.trending.title}</h2>
-            <p className="text-muted-foreground">{config.trending.subtitle}</p>
+    trending: () => {
+      const trendCols = config.trending.columns || 4;
+      return (
+        <section key="trending" className="container mx-auto px-4 py-16 bg-cream rounded-3xl mx-4">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex items-center justify-between mb-10">
+            <div>
+              <h2 className="text-3xl font-display font-bold mb-2">{config.trending.title}</h2>
+              <p className="text-muted-foreground">{config.trending.subtitle}</p>
+            </div>
+            <Link to="/shop" className="hidden md:inline-flex items-center gap-1 text-primary font-medium text-sm hover:underline group">
+              View All <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </motion.div>
+          <div className="grid gap-4 md:gap-6" style={{ gridTemplateColumns: `repeat(${Math.min(trendCols, 2)}, 1fr)` }} data-desktop-cols={`t${trendCols}`}>
+            <style>{`@media(min-width:768px){[data-desktop-cols="t${trendCols}"]{grid-template-columns:repeat(${trendCols},1fr)!important}}`}</style>
+            {featured.map((product, i) => (
+              <motion.div key={product.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, type: "spring", stiffness: 100 }}>
+                <ProductCard product={product} index={i} />
+              </motion.div>
+            ))}
           </div>
-          <Link
-            to="/shop"
-            className="hidden md:inline-flex items-center gap-1 text-primary font-medium text-sm hover:underline group"
-          >
-            View All <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </Link>
-        </motion.div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {featured.map((product, i) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1, type: "spring", stiffness: 100 }}
-            >
-              <ProductCard product={product} index={i} />
-            </motion.div>
-          ))}
-        </div>
-        <div className="mt-8 text-center md:hidden">
-          <Link to="/shop" className="inline-flex items-center gap-1 text-primary font-medium text-sm hover:underline">
-            View All <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-      </section>
-    ),
+          <div className="mt-8 text-center md:hidden">
+            <Link to="/shop" className="inline-flex items-center gap-1 text-primary font-medium text-sm hover:underline">View All <ArrowRight className="w-4 h-4" /></Link>
+          </div>
+        </section>
+      );
+    },
     howItWorks: () => (
       <section key="howItWorks" className="container mx-auto px-4 py-20">
         <motion.div
