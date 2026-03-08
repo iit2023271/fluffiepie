@@ -328,6 +328,14 @@ export default function AdminUsers() {
                           </Button>
                           <Button
                             size="sm"
+                            variant="outline"
+                            className="text-xs h-7 gap-1.5"
+                            onClick={() => openEmail(u.profile.email || "", u.profile.full_name || "")}
+                          >
+                            <Mail className="w-3 h-3" /> Email
+                          </Button>
+                          <Button
+                            size="sm"
                             variant={u.isAdmin ? "destructive" : "outline"}
                             className="text-xs h-7 gap-1.5"
                             onClick={() => setAdminConfirm({ open: true, userId: u.profile.user_id, isAdmin: u.isAdmin, name: u.profile.full_name || "this user" })}
