@@ -205,100 +205,52 @@ export default function Index() {
         <HeroBannerCarousel />
       </section>
     ),
-    hero: () => (
-      <section key="hero" className="relative overflow-hidden bg-cream">
-        <div className="container mx-auto px-4 py-16 md:py-24">
-          <div className="grid md:grid-cols-2 gap-10 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -40 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
-            >
-              <motion.span
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                className="inline-block px-4 py-1.5 bg-blush text-primary text-sm font-medium rounded-full mb-6"
-              >
-                {config.hero.badge}
-              </motion.span>
-              <h1 className="text-4xl md:text-6xl font-display font-bold text-foreground leading-tight mb-6">
-                <motion.span
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.6 }}
-                  className="block"
-                >
-                  {config.hero.titleLine1}
-                </motion.span>
-                <motion.span
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.45, duration: 0.6 }}
-                  className="block text-primary"
-                >
-                  {config.hero.titleLine2}
-                </motion.span>
-              </h1>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
-                className="text-lg text-muted-foreground mb-8 max-w-md"
-              >
-                {config.hero.subtitle}
-              </motion.p>
+    hero: () => {
+      const imgPos = config.hero.imagePosition || "right";
+      const heightCls = config.hero.heroHeight === "compact" ? "py-10 md:py-14" : config.hero.heroHeight === "tall" ? "py-20 md:py-32" : "py-16 md:py-24";
+      return (
+        <section key="hero" className="relative overflow-hidden bg-cream">
+          <div className={`container mx-auto px-4 ${heightCls}`}>
+            <div className={`grid md:grid-cols-2 gap-10 items-center ${imgPos === "left" ? "md:[direction:rtl] [&>*]:md:[direction:ltr]" : ""}`}>
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.75, duration: 0.5 }}
-                className="flex flex-wrap gap-4"
+                initial={{ opacity: 0, x: -40 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
               >
-                <Link
-                  to={config.hero.ctaPrimaryLink}
-                  className="group inline-flex items-center gap-2 px-8 py-3.5 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 transition-all shadow-card hover:shadow-elevated hover:scale-[1.02]"
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                  className="inline-block px-4 py-1.5 bg-blush text-primary text-sm font-medium rounded-full mb-6"
                 >
-                  {config.hero.ctaPrimaryText}
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                </Link>
-                {config.hero.ctaSecondaryText && (
-                  <Link
-                    to={config.hero.ctaSecondaryLink}
-                    className="inline-flex items-center gap-2 px-8 py-3.5 bg-background text-foreground rounded-xl font-medium border border-border hover:bg-secondary transition-all hover:scale-[1.02]"
-                  >
-                    {config.hero.ctaSecondaryText}
+                  {config.hero.badge}
+                </motion.span>
+                <h1 className="text-4xl md:text-6xl font-display font-bold text-foreground leading-tight mb-6">
+                  <motion.span initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.6 }} className="block">{config.hero.titleLine1}</motion.span>
+                  <motion.span initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.6 }} className="block text-primary">{config.hero.titleLine2}</motion.span>
+                </h1>
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6, duration: 0.5 }} className="text-lg text-muted-foreground mb-8 max-w-md">{config.hero.subtitle}</motion.p>
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.75, duration: 0.5 }} className="flex flex-wrap gap-4">
+                  <Link to={config.hero.ctaPrimaryLink} className="group inline-flex items-center gap-2 px-8 py-3.5 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 transition-all shadow-card hover:shadow-elevated hover:scale-[1.02]">
+                    {config.hero.ctaPrimaryText} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </Link>
-                )}
+                  {config.hero.ctaSecondaryText && (
+                    <Link to={config.hero.ctaSecondaryLink} className="inline-flex items-center gap-2 px-8 py-3.5 bg-background text-foreground rounded-xl font-medium border border-border hover:bg-secondary transition-all hover:scale-[1.02]">{config.hero.ctaSecondaryText}</Link>
+                  )}
+                </motion.div>
               </motion.div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.85, rotate: -3 }}
-              animate={{ opacity: 1, scale: 1, rotate: 0 }}
-              transition={{ duration: 0.8, delay: 0.2, ease: [0.32, 0.72, 0, 1] }}
-              className="relative"
-            >
-              <motion.div
-                animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="relative rounded-3xl overflow-hidden shadow-elevated"
-              >
-                <img src={config.hero.heroImage || heroCake} alt="Premium cake" className="w-full" loading="eager" decoding="async" />
+              <motion.div initial={{ opacity: 0, scale: 0.85, rotate: -3 }} animate={{ opacity: 1, scale: 1, rotate: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.32, 0.72, 0, 1] }} className="relative">
+                <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} className="relative rounded-3xl overflow-hidden shadow-elevated">
+                  <img src={config.hero.heroImage || heroCake} alt="Premium cake" className="w-full" loading="eager" decoding="async" />
+                </motion.div>
+                <motion.div animate={{ y: [0, -12, 0], x: [0, 5, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }} className="absolute -top-4 -right-4 w-20 h-20 bg-accent/20 rounded-full blur-xl" />
+                <motion.div animate={{ y: [0, 10, 0], x: [0, -8, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute -bottom-6 -left-6 w-28 h-28 bg-primary/15 rounded-full blur-xl" />
               </motion.div>
-              <motion.div
-                animate={{ y: [0, -12, 0], x: [0, 5, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                className="absolute -top-4 -right-4 w-20 h-20 bg-accent/20 rounded-full blur-xl"
-              />
-              <motion.div
-                animate={{ y: [0, 10, 0], x: [0, -8, 0] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                className="absolute -bottom-6 -left-6 w-28 h-28 bg-primary/15 rounded-full blur-xl"
-              />
-            </motion.div>
+            </div>
           </div>
-        </div>
-      </section>
-    ),
+        </section>
+      );
+    },
     categories: () => {
       const displayOccasions = occasions.length > 0 ? occasions.filter(o => categoryImages[o]) : Object.keys(categoryImages);
       return (
