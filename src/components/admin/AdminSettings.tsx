@@ -275,6 +275,7 @@ export default function AdminSettings() {
           { key: "config" as const, label: "Store Config", icon: Layers },
           { key: "coupons" as const, label: "Coupons", icon: Tag },
           { key: "banners" as const, label: "Banners", icon: Image },
+          { key: "notifications" as const, label: "Notifications", icon: Bell },
         ].map(tab => (
           <button key={tab.key} onClick={() => setActiveSection(tab.key)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 ${activeSection === tab.key ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-primary/10"}`}>
