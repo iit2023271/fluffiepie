@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Star, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useHomepageConfig, BUILTIN_SECTION_IDS } from "@/hooks/useHomepageConfig";
+import { useHomepageConfig, BUILTIN_SECTION_IDS, SECTION_LABELS, CUSTOM_TYPE_LABELS } from "@/hooks/useHomepageConfig";
 import type { HomepageSection, CustomSectionData } from "@/hooks/useHomepageConfig";
 
 import heroCake from "@/assets/hero-cake.jpg";
@@ -521,15 +521,52 @@ export default function Index() {
     }
   };
 
+  // Sections to show in nav (exclude banners, hero, spacers)
+  const navSections = config.sections.filter(
+    s => s.visible && s.id !== "banners" && s.id !== "hero" && !(s.customData?.type === "spacer")
+  );
+
+  const getSectionLabel = (s: HomepageSection) => {
+    if (BUILTIN_SECTION_IDS.includes(s.id)) return SECTION_LABELS[s.id] || s.id;
+    return s.label || CUSTOM_TYPE_LABELS[s.customType!]?.label || "Section";
+  };
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(`section-${id}`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <div>
       {config.sections
         .filter(s => s.visible)
-        .map(s => {
-          if (BUILTIN_SECTION_IDS.includes(s.id)) {
-            return sectionRenderers[s.id]?.();
+        .map((s, idx, arr) => {
+          // Insert section nav after banners (or at start if no banners)
+          const prevId = idx > 0 ? arr[idx - 1].id : null;
+          const showNav = (prevId === "banners" && s.id === "hero") ||
+            (idx === 0 && s.id !== "banners" && s.id === "hero") ||
+            (prevId === "banners" && s.id !== "hero");
+          const showNavAtStart = idx === 0 && s.id !== "banners";
+
+          const sectionNode = (
+            <div key={s.id} id={`section-${s.id}`}>
+              {BUILTIN_SECTION_IDS.includes(s.id)
+                ? sectionRenderers[s.id]?.()
+                : renderCustomSection(s)}
+            </div>
+          );
+
+          if (showNav || showNavAtStart) {
+            return (
+              <div key={`nav-${s.id}`}>
+                {showNavAtStart && <SectionNavBar sections={navSections} getLabel={getSectionLabel} onNavigate={scrollToSection} />}
+                {showNav && !showNavAtStart && <SectionNavBar sections={navSections} getLabel={getSectionLabel} onNavigate={scrollToSection} />}
+                {sectionNode}
+              </div>
+            );
           }
-          return renderCustomSection(s);
+
+          return sectionNode;
         })}
     </div>
   );
@@ -549,6 +586,83 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
           <p className="text-sm text-muted-foreground leading-relaxed">{answer}</p>
         </div>
       )}
+    </div>
+  );
+}
+
+// Section navigation bar
+function SectionNavBar({
+  sections,
+  getLabel,
+  onNavigate,
+}: {
+  sections: HomepageSection[];
+  getLabel: (s: HomepageSection) => string;
+  onNavigate: (id: string) => void;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 2);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    const el = scrollRef.current;
+    if (el) el.addEventListener("scroll", checkScroll, { passive: true });
+    window.addEventListener("resize", checkScroll);
+    return () => {
+      el?.removeEventListener("scroll", checkScroll);
+      window.removeEventListener("resize", checkScroll);
+    };
+  }, [checkScroll, sections]);
+
+  const scroll = (dir: number) => {
+    scrollRef.current?.scrollBy({ left: dir * 200, behavior: "smooth" });
+  };
+
+  if (sections.length === 0) return null;
+
+  return (
+    <div className="sticky top-16 z-30 bg-background/80 backdrop-blur-md border-b border-border/50">
+      <div className="container mx-auto px-4 relative">
+        {canScrollLeft && (
+          <button
+            onClick={() => scroll(-1)}
+            className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-background shadow-card flex items-center justify-center hover:bg-secondary transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+        )}
+        <div
+          ref={scrollRef}
+          className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-2.5 px-6"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {sections.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => onNavigate(s.id)}
+              className="shrink-0 px-4 py-2 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors whitespace-nowrap"
+            >
+              {getLabel(s)}
+            </button>
+          ))}
+        </div>
+        {canScrollRight && (
+          <button
+            onClick={() => scroll(1)}
+            className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-background shadow-card flex items-center justify-center hover:bg-secondary transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        )}
+      </div>
     </div>
   );
 }
