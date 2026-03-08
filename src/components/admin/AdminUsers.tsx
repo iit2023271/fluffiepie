@@ -129,7 +129,7 @@ export default function AdminUsers() {
         <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-20 bg-secondary rounded-xl animate-pulse" />)}</div>
       ) : (
         <div className="space-y-3">
-          {filtered.map((u) => {
+          {paginated.map((u) => {
             const isExpanded = expandedUser === u.profile.user_id;
             const totalSpent = u.orders.reduce((sum, o) => sum + (o.total || 0), 0);
 
