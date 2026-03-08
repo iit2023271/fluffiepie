@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -15,6 +15,14 @@ export default function ForgotPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  // Cooldown timer
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
 
   // When user clicks the reset link in email, Supabase redirects here with a recovery session
   useEffect(() => {
@@ -36,6 +44,7 @@ export default function ForgotPassword() {
       });
       if (error) throw error;
       toast.success("Password reset link sent to your email");
+      setCooldown(60);
       setStep("sent");
     } catch (error: any) {
       toast.error(error.message || "Failed to send reset link");
@@ -122,10 +131,11 @@ export default function ForgotPassword() {
                 </p>
                 <button
                   type="button"
-                  onClick={() => { setStep("email"); }}
-                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  disabled={cooldown > 0}
+                  onClick={() => { handleSendLink({ preventDefault: () => {} } as any); }}
+                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
                 >
-                  Didn't receive it? Try again
+                  {cooldown > 0 ? `Resend in ${cooldown}s` : "Didn't receive it? Resend"}
                 </button>
               </div>
             )}
