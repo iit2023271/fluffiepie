@@ -50,6 +50,7 @@ export interface HeroConfig {
   ctaPrimaryLink: string;
   ctaSecondaryText: string;
   ctaSecondaryLink: string;
+  heroImage?: string;
 }
 
 export interface CategoriesConfig {
