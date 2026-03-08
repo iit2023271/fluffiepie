@@ -3,8 +3,12 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, Tag, MapPin } from "lucide-react";
+import { ChevronLeft, Tag, MapPin, CalendarIcon, Clock } from "lucide-react";
 import { toast } from "sonner";
+import { format, addDays, isBefore, startOfDay } from "date-fns";
+import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import SavedAddresses from "@/components/SavedAddresses";
 
 export default function Checkout() {
