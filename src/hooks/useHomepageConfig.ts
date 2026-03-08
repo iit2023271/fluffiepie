@@ -92,6 +92,8 @@ export interface TrendingConfig {
   subtitle: string;
   count: number;
   columns?: number;
+  filterBy?: "bestseller" | "new" | "tag" | "all";
+  filterTag?: string;
 }
 
 export interface HowItWorksConfig {
