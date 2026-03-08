@@ -588,12 +588,10 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
 
 // Section navigation bar
 function SectionNavBar({
-  sections,
-  getLabel,
+  items,
   onNavigate,
 }: {
-  sections: HomepageSection[];
-  getLabel: (s: HomepageSection) => string;
+  items: SectionNavItem[];
   onNavigate: (id: string) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -616,13 +614,13 @@ function SectionNavBar({
       el?.removeEventListener("scroll", checkScroll);
       window.removeEventListener("resize", checkScroll);
     };
-  }, [checkScroll, sections]);
+  }, [checkScroll, items]);
 
   const scroll = (dir: number) => {
     scrollRef.current?.scrollBy({ left: dir * 200, behavior: "smooth" });
   };
 
-  if (sections.length === 0) return null;
+  if (items.length === 0) return null;
 
   return (
     <div className="sticky top-16 z-30 bg-background/80 backdrop-blur-md border-b border-border/50">
@@ -640,13 +638,13 @@ function SectionNavBar({
           className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-2.5 px-6"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {sections.map((s) => (
+          {items.map((item) => (
             <button
-              key={s.id}
-              onClick={() => onNavigate(s.id)}
+              key={item.sectionId}
+              onClick={() => onNavigate(item.sectionId)}
               className="shrink-0 px-4 py-2 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors whitespace-nowrap"
             >
-              {getLabel(s)}
+              {item.label}
             </button>
           ))}
         </div>
