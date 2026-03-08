@@ -60,6 +60,7 @@ export default function AdminOrders() {
   const [statusFilter, setStatusFilter] = useState("");
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
+  const [showAllOrders, setShowAllOrders] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
