@@ -36,6 +36,8 @@ export default function Shop() {
   const [sortBy, setSortBy] = useState("popularity");
   const [currentPage, setCurrentPage] = useState(1);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
+  const [selectedTag, setSelectedTag] = useState("");
+  const [discountFilter, setDiscountFilter] = useState("");
 
   // Compute min/max prices from products
   const priceExtents = useMemo(() => {
