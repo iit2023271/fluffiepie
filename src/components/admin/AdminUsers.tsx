@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { ChevronDown, ChevronUp, MapPin, ShoppingBag, User, Search, Tag, X, Download, Clock, Truck, CheckCircle2, Shield, ShieldOff, MessageCircle, Send, Mail } from "lucide-react";
+import { ChevronDown, ChevronUp, MapPin, ShoppingBag, User, Search, Tag, X, Download, Clock, Truck, CheckCircle2, Shield, ShieldOff, MessageCircle, Send, Mail, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/components/Pagination";
@@ -229,9 +229,14 @@ export default function AdminUsers() {
     <div>
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-2xl font-display font-bold">Customers</h1>
-        <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={exportCSV}>
-          <Download className="w-3.5 h-3.5" /> Export CSV
-        </Button>
+        <div className="flex items-center gap-2">
+          <button onClick={loadUsers} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Refresh">
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+          </button>
+          <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={exportCSV}>
+            <Download className="w-3.5 h-3.5" /> Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Segments */}

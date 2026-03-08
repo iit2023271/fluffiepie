@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, X, Upload, Search, AlertTriangle, Package, Crop, Download, GripVertical } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Upload, Search, AlertTriangle, Package, Crop, Download, GripVertical, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import Pagination from "@/components/Pagination";
 import { toast } from "sonner";
@@ -330,6 +330,9 @@ export default function AdminProducts() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-display font-bold">Products</h1>
         <div className="flex items-center gap-2">
+          <button onClick={loadProducts} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Refresh">
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+          </button>
           <button onClick={exportProductsCSV} className="flex items-center gap-2 px-3 py-2 border border-border rounded-xl text-xs font-medium hover:bg-secondary transition-colors">
             <Download className="w-3.5 h-3.5" /> Export CSV
           </button>

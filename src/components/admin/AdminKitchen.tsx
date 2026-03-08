@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parse, startOfDay, endOfDay, addDays, isToday, isTomorrow, isYesterday } from "date-fns";
-import { ChefHat, Calendar as CalendarIcon, Printer, CheckCircle2, Circle, Clock, Truck, Download, Save } from "lucide-react";
+import { ChefHat, Calendar as CalendarIcon, Printer, CheckCircle2, Circle, Clock, Truck, Download, Save, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -184,6 +184,9 @@ export default function AdminKitchen() {
           </p>
         </div>
         <div className="flex items-center gap-2 print:hidden">
+          <button onClick={loadOrders} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Refresh">
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+          </button>
           <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={() => {
             const rows = [["Item", "Weight", "Total Qty", "Orders"]];
             aggregated.forEach(item => {

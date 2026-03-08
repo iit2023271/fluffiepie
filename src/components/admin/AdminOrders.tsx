@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parse, startOfDay, endOfDay, isToday, isYesterday } from "date-fns";
-import { Search, Send, Download, ChevronDown, ChevronUp, Trash2, Calendar as CalendarIcon, X, Clock, Package, CheckCircle2, Timer, Copy, Undo2 } from "lucide-react";
+import { Search, Send, Download, ChevronDown, ChevronUp, Trash2, Calendar as CalendarIcon, X, Clock, Package, CheckCircle2, Timer, Copy, Undo2, RefreshCw } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -327,9 +327,14 @@ export default function AdminOrders() {
           <h1 className="text-2xl font-display font-bold">Orders</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage and track all customer orders</p>
         </div>
-        <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={exportCSV}>
-          <Download className="w-3.5 h-3.5" /> Export
-        </Button>
+        <div className="flex items-center gap-2">
+          <button onClick={loadOrders} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Refresh">
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+          </button>
+          <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={exportCSV}>
+            <Download className="w-3.5 h-3.5" /> Export
+          </Button>
+        </div>
       </div>
 
       {/* Today's Quick Stats */}

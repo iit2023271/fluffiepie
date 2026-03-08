@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Star, Trash2, Search, Calendar as CalendarIcon, X, SortAsc, SortDesc } from "lucide-react";
+import { Star, Trash2, Search, Calendar as CalendarIcon, X, SortAsc, SortDesc, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { format, isToday, isYesterday, startOfDay, endOfDay } from "date-fns";
 import { Input } from "@/components/ui/input";
@@ -150,9 +150,14 @@ export default function AdminReviews() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-display font-bold">Reviews</h1>
-        <p className="text-sm text-muted-foreground">Manage customer reviews</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-display font-bold">Reviews</h1>
+          <p className="text-sm text-muted-foreground">Manage customer reviews</p>
+        </div>
+        <button onClick={load} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Refresh">
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+        </button>
       </div>
 
       {/* Stats */}
