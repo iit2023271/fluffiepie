@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { SlidersHorizontal, X, Search, Sparkles, Check } from "lucide-react";
+import { SlidersHorizontal, X, Search, Sparkles, Check, IndianRupee } from "lucide-react";
 import { useStoreConfig } from "@/hooks/useStoreConfig";
 import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Slider } from "@/components/ui/slider";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -34,11 +35,29 @@ export default function Shop() {
   });
   const [sortBy, setSortBy] = useState("popularity");
   const [currentPage, setCurrentPage] = useState(1);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
+
+  // Compute min/max prices from products
+  const priceExtents = useMemo(() => {
+    if (products.length === 0) return { min: 0, max: 5000 };
+    const prices = products.map(p => p.basePrice);
+    return { min: Math.floor(Math.min(...prices)), max: Math.ceil(Math.max(...prices)) };
+  }, [products]);
+
+  // Initialize price range when products load
+  useEffect(() => {
+    setPriceRange([priceExtents.min, priceExtents.max]);
+  }, [priceExtents.min, priceExtents.max]);
+
+  const isPriceFiltered = priceRange[0] > priceExtents.min || priceRange[1] < priceExtents.max;
 
   const filtered = useMemo(() => {
     let result = [...products];
     if (searchQuery) result = result.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase()));
     
+    // Price range filter
+    result = result.filter(p => p.basePrice >= priceRange[0] && p.basePrice <= priceRange[1]);
+
     const normalize = (value: unknown) => String(value ?? "").trim().toLowerCase();
     for (const [filterType, filterValue] of Object.entries(selectedFilters)) {
       if (!filterValue) continue;
@@ -67,11 +86,11 @@ export default function Shop() {
       default: result.sort((a, b) => b.reviewCount - a.reviewCount);
     }
     return result;
-  }, [searchQuery, selectedFilters, sortBy, products]);
+  }, [searchQuery, selectedFilters, sortBy, products, priceRange]);
 
-  useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedFilters, sortBy]);
+  useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedFilters, sortBy, priceRange]);
 
-  const activeFilterCount = Object.values(selectedFilters).filter(v => v).length;
+  const activeFilterCount = Object.values(selectedFilters).filter(v => v).length + (isPriceFiltered ? 1 : 0);
   const hasFilters = activeFilterCount > 0 || searchQuery;
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
@@ -80,6 +99,7 @@ export default function Shop() {
   const clearFilters = () => {
     setSearchQuery("");
     setSelectedFilters({});
+    setPriceRange([priceExtents.min, priceExtents.max]);
     setCurrentPage(1);
   };
 
@@ -211,6 +231,41 @@ export default function Shop() {
             </div>
 
             <ScrollArea className="flex-1 px-4">
+              {/* Price Range Slider */}
+              <div className="py-4 border-b border-border/50">
+                <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-4 px-2 flex items-center gap-1.5">
+                  <span className="w-1 h-4 rounded-full bg-accent/60" />
+                  Price Range
+                </h4>
+                <div className="px-2">
+                  <Slider
+                    min={priceExtents.min}
+                    max={priceExtents.max}
+                    step={50}
+                    value={priceRange}
+                    onValueChange={(val) => setPriceRange([val[0], val[1]])}
+                    className="mb-3"
+                  />
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-0.5 font-semibold text-foreground bg-secondary px-2.5 py-1 rounded-lg">
+                      <IndianRupee className="w-3 h-3" />{priceRange[0]}
+                    </span>
+                    <span className="text-xs text-muted-foreground">to</span>
+                    <span className="flex items-center gap-0.5 font-semibold text-foreground bg-secondary px-2.5 py-1 rounded-lg">
+                      <IndianRupee className="w-3 h-3" />{priceRange[1]}
+                    </span>
+                  </div>
+                  {isPriceFiltered && (
+                    <button
+                      onClick={() => setPriceRange([priceExtents.min, priceExtents.max])}
+                      className="mt-2 text-xs text-primary hover:underline"
+                    >
+                      Reset price
+                    </button>
+                  )}
+                </div>
+              </div>
+
               <div className="divide-y divide-border/50">
                 {allFilters.map(f => (
                   <FilterSection
