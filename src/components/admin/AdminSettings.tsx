@@ -105,6 +105,11 @@ export default function AdminSettings() {
   const [newEmail, setNewEmail] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
   const [savingEmailAddr, setSavingEmailAddr] = useState(false);
+  
+  // Product tag form state
+  const [newTagName, setNewTagName] = useState("");
+  const [newTagBg, setNewTagBg] = useState("#c0392b");
+  const [newTagText, setNewTagText] = useState("#ffffff");
 
   // Confirm dialog state
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; type: "config" | "coupon" | "banner"; id: string; name: string }>({ open: false, type: "config", id: "", name: "" });
