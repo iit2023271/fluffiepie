@@ -503,7 +503,9 @@ export default function Index() {
       case "spacer":
         return <div key={section.id} style={{ height: data.spacerHeight || 60 }} />;
 
-      case "image_gallery":
+      case "image_gallery": {
+        const galCols = data.galleryColumns || 3;
+        const galAspect = data.galleryAspect === "portrait" ? "aspect-[3/4]" : data.galleryAspect === "landscape" ? "aspect-video" : "aspect-square";
         return (
           <section key={section.id} className="container mx-auto px-4 py-16">
             <div className="text-center mb-12">
@@ -511,16 +513,10 @@ export default function Index() {
               {data.gallerySubtitle && <p className="text-muted-foreground">{data.gallerySubtitle}</p>}
             </div>
             {(data.images || []).length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${Math.min(galCols, 2)}, 1fr)` }} data-desktop-cols={`gal${galCols}`}>
+                <style>{`@media(min-width:768px){[data-desktop-cols="gal${galCols}"]{grid-template-columns:repeat(${galCols},1fr)!important}}`}</style>
                 {(data.images || []).map((img, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.05 }}
-                    className="relative rounded-2xl overflow-hidden bg-muted aspect-square"
-                  >
+                  <motion.div key={i} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }} className={`relative rounded-2xl overflow-hidden bg-muted ${galAspect}`}>
                     {img.url && <img src={img.url} alt={img.caption || ""} className="w-full h-full object-cover" loading="lazy" decoding="async" />}
                     {img.caption && (
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-foreground/60 to-transparent p-3">
@@ -533,6 +529,7 @@ export default function Index() {
             )}
           </section>
         );
+      }
 
       default:
         return null;
