@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, X, Upload, Search, AlertTriangle, Package } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Upload, Search, AlertTriangle, Package, Crop } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 import { useStoreConfig } from "@/hooks/useStoreConfig";
 import { Badge } from "@/components/ui/badge";
+import ImageCropper from "@/components/admin/ImageCropper";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -32,6 +33,8 @@ export default function AdminProducts() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [showCropper, setShowCropper] = useState(false);
 
   useEffect(() => { loadProducts(); }, []);
 
@@ -242,9 +245,31 @@ export default function AdminProducts() {
                   {(form.image_url || imageFile) && <img src={imageFile ? URL.createObjectURL(imageFile) : form.image_url!} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />}
                   <label className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm cursor-pointer hover:bg-secondary">
                     <Upload className="w-4 h-4" /> Upload Image
-                    <input type="file" accept="image/*" className="hidden" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setCropSrc(URL.createObjectURL(file));
+                        setShowCropper(true);
+                      }
+                    }} />
                   </label>
+                  {imageFile && (
+                    <button onClick={() => { setCropSrc(URL.createObjectURL(imageFile)); setShowCropper(true); }} className="flex items-center gap-1 px-3 py-2 border border-border rounded-xl text-sm hover:bg-secondary">
+                      <Crop className="w-4 h-4" /> Crop
+                    </button>
+                  )}
                 </div>
+                <ImageCropper
+                  open={showCropper}
+                  imageSrc={cropSrc || ""}
+                  aspect={1}
+                  onClose={() => setShowCropper(false)}
+                  onCropComplete={(blob) => {
+                    const file = new File([blob], `product-${Date.now()}.jpg`, { type: "image/jpeg" });
+                    setImageFile(file);
+                    setShowCropper(false);
+                  }}
+                />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
