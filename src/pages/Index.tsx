@@ -229,21 +229,6 @@ export default function Index() {
               <div className="relative rounded-3xl overflow-hidden shadow-elevated">
                 <img src={heroCake} alt="Premium chocolate cake with berries and gold leaf" className="w-full" />
               </div>
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="absolute -bottom-4 -left-4 md:left-4 bg-background rounded-2xl p-4 shadow-card"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-1">
-                    {[1, 2, 3].map((i) => (
-                      <Star key={i} className="w-4 h-4 fill-accent text-accent" />
-                    ))}
-                  </div>
-                  <span className="text-sm font-semibold">4.9 Rating</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">10,000+ happy customers</p>
-              </motion.div>
             </motion.div>
           </div>
         </div>
