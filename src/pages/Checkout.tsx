@@ -70,7 +70,7 @@ export default function Checkout() {
     toast.success(`Coupon applied! You save ₹${disc}`);
   };
 
-  const deliveryFee = totalPrice >= 999 ? 0 : 49;
+  const deliveryFee = totalPrice >= deliveryConfig.free_delivery_threshold ? 0 : deliveryConfig.delivery_fee;
   const finalTotal = totalPrice - discount + deliveryFee;
 
   const handlePlaceOrder = async () => {
