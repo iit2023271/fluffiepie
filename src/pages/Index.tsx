@@ -389,15 +389,22 @@ export default function Index() {
     if (!data) return null;
 
     switch (data.type) {
-      case "text_block":
+      case "text_block": {
+        const textSizeMap: Record<string, string> = { sm: "text-xl md:text-2xl", md: "text-3xl md:text-4xl", lg: "text-4xl md:text-5xl" };
+        const bodySizeMap: Record<string, string> = { sm: "text-sm", md: "text-base", lg: "text-lg" };
+        const bgMap: Record<string, string> = { none: "", muted: "bg-muted", cream: "bg-cream", blush: "bg-blush" };
+        const bgCls = bgMap[data.textBg || "none"];
         return (
-          <section key={section.id} className="container mx-auto px-4 py-16">
-            <div className={`max-w-3xl ${data.alignment === "center" ? "mx-auto text-center" : data.alignment === "right" ? "ml-auto text-right" : ""}`}>
-              {data.heading && <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">{data.heading}</h2>}
-              {data.body && <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{data.body}</p>}
+          <section key={section.id} className={`${bgCls} ${bgCls ? "py-16" : ""}`}>
+            <div className="container mx-auto px-4 py-16">
+              <div className={`max-w-3xl ${data.alignment === "center" ? "mx-auto text-center" : data.alignment === "right" ? "ml-auto text-right" : ""}`}>
+                {data.heading && <h2 className={`${textSizeMap[data.textSize || "md"]} font-display font-bold mb-4`}>{data.heading}</h2>}
+                {data.body && <p className={`text-muted-foreground leading-relaxed whitespace-pre-line ${bodySizeMap[data.textSize || "md"]}`}>{data.body}</p>}
+              </div>
             </div>
           </section>
         );
+      }
 
       case "cta_banner": {
         const bgMap: Record<string, string> = {
