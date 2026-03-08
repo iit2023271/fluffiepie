@@ -24,6 +24,7 @@ export default function Shop() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const filtered = useMemo(() => {
+    setCurrentPage(1);
     let result = [...products];
     if (searchQuery) result = result.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase()));
     if (selectedCategory) result = result.filter((p) => p.category === selectedCategory);
