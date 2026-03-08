@@ -253,3 +253,5 @@ function ProductCard({ product, index = 0, isWishlisted = false, onToggleWishlis
     </motion.div>
   );
 }
+
+export default memo(ProductCard);
