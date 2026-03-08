@@ -52,3 +52,5 @@ function Footer() {
     </footer>
   );
 }
+
+export default memo(Footer);
