@@ -73,7 +73,7 @@ function ProductCard({ product, index = 0, isWishlisted = false, onToggleWishlis
     }
   }, [product.id, defaultWeight, cartQty, dispatch]);
 
-  const handleWishlist = (e: React.MouseEvent) => {
+  const handleWishlist = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (!user) {
@@ -82,7 +82,7 @@ function ProductCard({ product, index = 0, isWishlisted = false, onToggleWishlis
     }
     onToggleWishlist?.(product.id);
     toast.success(isWishlisted ? "Removed from favorites" : "Added to favorites! ❤️");
-  };
+  }, [user, product.id, isWishlisted, onToggleWishlist]);
 
   return (
     <motion.div
