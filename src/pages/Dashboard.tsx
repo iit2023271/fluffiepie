@@ -9,6 +9,7 @@ import SavedAddresses from "@/components/SavedAddresses";
 import ReviewForm from "@/components/ReviewForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
+import { useStoreInfo } from "@/hooks/useStoreInfo";
 
 interface OrderNote {
   id: string;
@@ -43,6 +44,7 @@ const statusConfig: Record<string, { label: string; icon: any; color: string }> 
 export default function Dashboard() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { storeInfo } = useStoreInfo();
   const [tab, setTab] = useState<"orders" | "profile" | "addresses">("orders");
   const [orders, setOrders] = useState<Order[]>([]);
   const [profile, setProfile] = useState<Profile>({ full_name: "", phone: "" });
@@ -118,6 +120,22 @@ export default function Dashboard() {
     await signOut();
     navigate("/");
     toast.success("Signed out");
+  };
+
+  const sendToWhatsApp = (order: Order) => {
+    const whatsappNum = storeInfo.whatsappNumber;
+    if (!whatsappNum) {
+      toast.error("WhatsApp number not configured by the store");
+      return;
+    }
+    const items = (order.items as any[])
+      .map((item: any) => `• ${item.name} (${item.weight}) × ${item.quantity} — ₹${(item.price * item.quantity).toLocaleString()}`)
+      .join("\n");
+    const deliverySlot = order.delivery_slot || "Not specified";
+    const orderId = order.id.slice(0, 8).toUpperCase();
+    const message = `🎂 *Order Receipt*\n\n📋 *Order #${orderId}*\n📅 ${format(new Date(order.created_at), "dd MMM yyyy, hh:mm a")}\n\n*Items:*\n${items}\n\n💰 *Total: ₹${order.total.toLocaleString()}*\n🚚 *Delivery: ${deliverySlot}*\n\nPlease confirm my order. Thank you! 🙏`;
+    const url = `https://wa.me/${whatsappNum}?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
   };
 
   if (loading) {
@@ -342,6 +360,14 @@ export default function Dashboard() {
                     <div className="flex items-center justify-between pt-3 border-t border-border">
                       <span className="font-semibold">Total: ₹{order.total.toLocaleString()}</span>
                       <div className="flex items-center gap-3">
+                        {storeInfo.whatsappNumber && (
+                          <button
+                            onClick={() => sendToWhatsApp(order)}
+                            className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 hover:underline"
+                          >
+                            💬 Send to WhatsApp
+                          </button>
+                        )}
                         {order.status === "delivered" && (
                           <button
                             onClick={() => setReviewingOrder(order)}

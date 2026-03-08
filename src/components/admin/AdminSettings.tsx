@@ -894,6 +894,12 @@ export default function AdminSettings() {
                 className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" placeholder="https://www.google.com/maps/embed?..." />
               <p className="text-xs text-muted-foreground mt-1">Paste the embed URL from Google Maps (Share → Embed a map → Copy src)</p>
             </div>
+            <div className="md:col-span-2">
+              <label className="text-xs font-medium mb-1 block">📱 WhatsApp Order Number</label>
+              <input value={storeInfoForm.whatsappNumber || ""} onChange={e => setStoreInfoForm(p => ({ ...p, whatsappNumber: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" placeholder="919876543210 (country code + number, no +)" />
+              <p className="text-xs text-muted-foreground mt-1">Customers will send their order receipt to this WhatsApp number. Enter without + sign (e.g. 919876543210)</p>
+            </div>
           </div>
 
           {/* Social Media Links */}
