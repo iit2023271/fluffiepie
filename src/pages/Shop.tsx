@@ -24,7 +24,7 @@ export default function Shop() {
   const [searchParams] = useSearchParams();
   const initialOccasion = searchParams.get("occasion") || "";
   const { data: products = [] } = useProducts();
-  const { filterSections: allFilters } = useStoreConfig();
+  const { filterSections: allFilters, productTags } = useStoreConfig();
   const { isWishlisted, toggle: toggleWishlist } = useWishlist();
 
   const [searchQuery, setSearchQuery] = useState("");
