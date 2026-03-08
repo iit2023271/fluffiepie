@@ -455,7 +455,7 @@ export default function AdminDashboard() {
           {statusData.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-10">No orders to show.</p>
           ) : (
-            <div className="h-56 flex items-center">
+            <div className="h-48 md:h-56 flex items-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={statusData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value" nameKey="name">
