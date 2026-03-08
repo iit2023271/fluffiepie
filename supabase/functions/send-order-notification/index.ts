@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -30,15 +31,32 @@ serve(async (req) => {
 
   try {
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-    if (!RESEND_API_KEY) {
-      throw new Error('RESEND_API_KEY is not configured');
+    if (!RESEND_API_KEY) throw new Error('RESEND_API_KEY is not configured');
+
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error('Supabase config missing');
+
+    const { orderId, newStatus, customerEmail, customerName, orderTotal, items, userId } = await req.json();
+
+    if (!orderId || !newStatus) {
+      return new Response(
+        JSON.stringify({ error: "Missing required fields" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    const { orderId, newStatus, customerEmail, customerName, orderTotal, items } = await req.json();
+    // Resolve customer email if not provided
+    let email = customerEmail;
+    if (!email && userId) {
+      const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      const { data: userData } = await supabaseAdmin.auth.admin.getUserById(userId);
+      email = userData?.user?.email;
+    }
 
-    if (!orderId || !newStatus || !customerEmail) {
+    if (!email) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields: orderId, newStatus, customerEmail" }),
+        JSON.stringify({ error: "Could not resolve customer email" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -79,11 +97,11 @@ serve(async (req) => {
           <p style="margin:0 0 16px;font-size:15px;color:#333;">Hi <strong>${name}</strong>,</p>
           <p style="margin:0;font-size:14px;color:#555;line-height:1.6;">
             ${newStatus === 'placed' ? 'Thank you for your order! We\'ve received it and will start preparing it soon.' :
-              newStatus === 'confirmed' ? 'Great news! Your order has been confirmed and our team is getting ready to work on it.' :
-              newStatus === 'baking' ? 'Your cake is being freshly prepared by our expert bakers. It\'ll be ready soon!' :
-              newStatus === 'out_for_delivery' ? 'Your order is on its way! Our delivery partner is bringing your delicious cake to you.' :
-              newStatus === 'delivered' ? 'Your order has been delivered! We hope you enjoy every bite. Thank you for choosing SweetCrumbs!' :
-              newStatus === 'cancelled' ? 'Your order has been cancelled. If you have any questions, please reach out to our support team.' :
+              newStatus === 'confirmed' ? 'Great news! Your order has been confirmed and our team is getting ready.' :
+              newStatus === 'baking' ? 'Your cake is being freshly prepared by our expert bakers!' :
+              newStatus === 'out_for_delivery' ? 'Your order is on its way! Our delivery partner is bringing your cake to you.' :
+              newStatus === 'delivered' ? 'Your order has been delivered! We hope you enjoy every bite. 🎂' :
+              newStatus === 'cancelled' ? 'Your order has been cancelled. If you have questions, please contact us.' :
               `Your order status has been updated to: ${statusLabel}.`}
           </p>
         </div>
@@ -106,7 +124,7 @@ serve(async (req) => {
 
         <div style="text-align:center;padding-top:24px;border-top:1px solid #eee;">
           <p style="margin:0;font-size:12px;color:#999;">SweetCrumbs • Fresh cakes, delivered with love</p>
-          <p style="margin:4px 0 0;font-size:12px;color:#bbb;">This is an automated notification for order #${shortId}</p>
+          <p style="margin:4px 0 0;font-size:12px;color:#bbb;">Automated notification for order #${shortId}</p>
         </div>
       </div>
     </body>
@@ -120,7 +138,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         from: 'SweetCrumbs <onboarding@resend.dev>',
-        to: [customerEmail],
+        to: [email],
         subject: `${statusEmoji} Order #${shortId} — ${statusLabel}`,
         html: emailHtml,
       }),
