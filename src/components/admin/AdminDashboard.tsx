@@ -80,13 +80,14 @@ export default function AdminDashboard() {
   const metrics = useMemo(() => {
     const now = new Date();
     const source = filteredOrders;
+    const nonCancelled = source.filter(o => o.status !== "cancelled");
     const delivered = source.filter(o => o.status === "delivered");
     const cancelled = source.filter(o => o.status === "cancelled");
-    const totalRevenue = source.reduce((s, o) => s + (o.total || 0), 0);
-    const deliveredRevenue = delivered.reduce((s, o) => s + (o.total || 0), 0);
+    const totalRevenue = delivered.reduce((s, o) => s + (o.total || 0), 0);
+    const deliveredRevenue = totalRevenue;
     const totalOrders = source.length;
-    const avgOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
-    const totalDiscount = source.reduce((s, o) => s + (o.discount || 0), 0);
+    const avgOrderValue = delivered.length > 0 ? Math.round(totalRevenue / delivered.length) : 0;
+    const totalDiscount = nonCancelled.reduce((s, o) => s + (o.discount || 0), 0);
     const totalRefunds = source.reduce((s, o) => s + (o.refund_amount || 0), 0);
     const conversionRate = totalOrders > 0 ? Math.round((delivered.length / totalOrders) * 100) : 0;
     const cancelRate = totalOrders > 0 ? Math.round((cancelled.length / totalOrders) * 100) : 0;
@@ -95,15 +96,21 @@ export default function AdminDashboard() {
     source.forEach(o => { customerOrders[o.user_id] = (customerOrders[o.user_id] || 0) + 1; });
     const repeatCustomers = Object.values(customerOrders).filter(c => c > 1).length;
 
-    // Week comparison
+    // Week comparison (delivered only)
+    const thisWeekDelivered = orders.filter(o => new Date(o.created_at) >= subDays(now, 7) && o.status === "delivered");
+    const lastWeekDelivered = orders.filter(o => {
+      const d = new Date(o.created_at);
+      return d >= subDays(now, 14) && d < subDays(now, 7) && o.status === "delivered";
+    });
+    const thisWeekRevenue = thisWeekDelivered.reduce((s, o) => s + (o.total || 0), 0);
+    const lastWeekRevenue = lastWeekDelivered.reduce((s, o) => s + (o.total || 0), 0);
+    const revenueChange = lastWeekRevenue > 0 ? Math.round(((thisWeekRevenue - lastWeekRevenue) / lastWeekRevenue) * 100) : thisWeekRevenue > 0 ? 100 : 0;
+
     const thisWeekOrders = orders.filter(o => new Date(o.created_at) >= subDays(now, 7));
     const lastWeekOrders = orders.filter(o => {
       const d = new Date(o.created_at);
       return d >= subDays(now, 14) && d < subDays(now, 7);
     });
-    const thisWeekRevenue = thisWeekOrders.reduce((s, o) => s + (o.total || 0), 0);
-    const lastWeekRevenue = lastWeekOrders.reduce((s, o) => s + (o.total || 0), 0);
-    const revenueChange = lastWeekRevenue > 0 ? Math.round(((thisWeekRevenue - lastWeekRevenue) / lastWeekRevenue) * 100) : thisWeekRevenue > 0 ? 100 : 0;
     const ordersChange = lastWeekOrders.length > 0 ? Math.round(((thisWeekOrders.length - lastWeekOrders.length) / lastWeekOrders.length) * 100) : thisWeekOrders.length > 0 ? 100 : 0;
     const couponOrders = source.filter(o => o.coupon_code);
 
@@ -138,9 +145,10 @@ export default function AdminDashboard() {
       const interval = eachDayOfInterval({ start: from, end: to > now ? now : to });
       return interval.map(day => {
         const dayOrders = filteredOrders.filter(o => isSameDay(new Date(o.created_at), day));
+        const dayDelivered = dayOrders.filter(o => o.status === "delivered");
         return {
           date: format(day, interval.length <= 7 ? "EEE" : "dd MMM"),
-          revenue: dayOrders.reduce((s, o) => s + (o.total || 0), 0),
+          revenue: dayDelivered.reduce((s, o) => s + (o.total || 0), 0),
           orders: dayOrders.length,
         };
       });
@@ -149,9 +157,10 @@ export default function AdminDashboard() {
     const interval = eachDayOfInterval({ start: subDays(now, days - 1), end: now });
     return interval.map(day => {
       const dayOrders = filteredOrders.filter(o => isSameDay(new Date(o.created_at), day));
+      const dayDelivered = dayOrders.filter(o => o.status === "delivered");
       return {
         date: format(day, days <= 7 ? "EEE" : "dd MMM"),
-        revenue: dayOrders.reduce((s, o) => s + (o.total || 0), 0),
+        revenue: dayDelivered.reduce((s, o) => s + (o.total || 0), 0),
         orders: dayOrders.length,
       };
     });
@@ -162,9 +171,10 @@ export default function AdminDashboard() {
     const months = eachMonthOfInterval({ start: subMonths(startOfMonth(now), 11), end: now });
     return months.map(month => {
       const monthOrders = orders.filter(o => isSameMonth(new Date(o.created_at), month));
+      const monthDelivered = monthOrders.filter(o => o.status === "delivered");
       return {
         month: format(month, "MMM yy"),
-        revenue: monthOrders.reduce((s, o) => s + (o.total || 0), 0),
+        revenue: monthDelivered.reduce((s, o) => s + (o.total || 0), 0),
         orders: monthOrders.length,
       };
     });
@@ -353,9 +363,9 @@ export default function AdminDashboard() {
       {/* KPI Cards Row 1 - Main metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
         {[
-          { label: "💰 Total Revenue", value: `₹${metrics.totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-primary", change: timeRange !== "custom" ? metrics.revenueChange : null, sub: "All orders (excl. cancelled)", tooltip: "Total money from all orders" },
+          { label: "💰 Revenue", value: `₹${metrics.totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-primary", change: timeRange !== "custom" ? metrics.revenueChange : null, sub: `From ${metrics.deliveredCount} delivered orders`, tooltip: "Revenue from delivered orders only" },
           { label: "📦 Total Orders", value: metrics.totalOrders, icon: ShoppingCart, color: "text-accent", change: timeRange !== "custom" ? metrics.ordersChange : null, sub: `${metrics.deliveredCount} delivered · ${metrics.cancelledCount} cancelled`, tooltip: "Number of orders placed" },
-          { label: "🧾 Avg. Order Value", value: `₹${metrics.avgOrderValue.toLocaleString()}`, icon: BarChart3, color: "text-primary", change: null, sub: "Average amount per order", tooltip: "How much each customer spends on average" },
+          { label: "🧾 Avg. Order Value", value: `₹${metrics.avgOrderValue.toLocaleString()}`, icon: BarChart3, color: "text-primary", change: null, sub: "Average per delivered order", tooltip: "Average amount per delivered order" },
           { label: "👥 Customers", value: metrics.uniqueCustomers, icon: Users, color: "text-accent", change: null, sub: `${metrics.repeatCustomers} ordered again`, tooltip: "Unique customers who placed orders" },
         ].map((stat) => (
           <div key={stat.label} className="bg-card rounded-2xl p-5 shadow-soft">
