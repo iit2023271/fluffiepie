@@ -119,7 +119,7 @@ export default function AdminUsers() {
       default: result.sort((a, b) => new Date(b.profile.created_at).getTime() - new Date(a.profile.created_at).getTime());
     }
     return result;
-  }, [users, search, roleFilter, tagFilter, sortBy]);
+  }, [users, search, tagFilter, sortBy]);
 
   useEffect(() => { setCurrentPage(1); }, [search, tagFilter, sortBy]);
 
