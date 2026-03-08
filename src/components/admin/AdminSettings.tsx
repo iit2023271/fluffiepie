@@ -47,6 +47,7 @@ const BUILTIN_CONFIG_SECTIONS = [
   { type: "category", label: "Categories", icon: Layers, description: "Product categories like Classic, Premium, etc." },
   { type: "flavour", label: "Flavours", icon: Palette, description: "Available cake flavours" },
   { type: "occasion", label: "Occasions", icon: Calendar, description: "Special occasions for cakes" },
+  { type: "product_tag", label: "Product Tags", icon: Tag, description: "Tags like Bestseller, New, Trending, Limited Edition" },
 ];
 
 // Reserved config types that should not show as product filter sections
