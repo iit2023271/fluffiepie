@@ -186,7 +186,8 @@ export default function AdminUsers() {
       const q = search.toLowerCase();
       result = result.filter((u) =>
         (u.profile.full_name || "").toLowerCase().includes(q) ||
-        (u.profile.phone || "").includes(q)
+        (u.profile.phone || "").includes(q) ||
+        (u.profile.email || "").toLowerCase().includes(q)
       );
     }
     
