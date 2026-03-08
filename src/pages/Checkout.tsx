@@ -283,7 +283,7 @@ export default function Checkout() {
               <div>
                 <label className="text-sm font-medium mb-2 block">Select Time</label>
                 <div className="grid grid-cols-3 gap-2">
-                  {["9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"].map((time) => (
+                  {deliveryConfig.time_slots.map((time) => (
                     <button
                       key={time}
                       onClick={() => setDeliveryTime(time)}
