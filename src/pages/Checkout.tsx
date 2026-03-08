@@ -93,8 +93,10 @@ export default function Checkout() {
         return;
       }
     } else {
-      if (!form.firstName || !form.phone || !form.address || !form.city || !form.pincode) {
-        toast.error("Please fill in all address fields");
+      const result = addressSchema.safeParse(form);
+      if (!result.success) {
+        const firstError = result.error.errors[0]?.message || "Invalid address fields";
+        toast.error(firstError);
         return;
       }
     }

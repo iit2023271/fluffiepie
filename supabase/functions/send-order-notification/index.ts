@@ -39,11 +39,26 @@ serve(async (req) => {
 
     const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const { orderId, newStatus, customerEmail, customerName, orderTotal, items, userId, isTest } = await req.json();
+    const body = await req.json();
+    const { orderId, newStatus, customerEmail, customerName, orderTotal, items, userId, isTest } = body;
 
-    if (!orderId || !newStatus) {
+    // Validate inputs
+    const validStatuses = ['placed', 'confirmed', 'baking', 'out_for_delivery', 'delivered', 'cancelled'];
+    if (!orderId || typeof orderId !== 'string' || orderId.length > 100) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
+        JSON.stringify({ error: "Invalid order ID" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (!newStatus || !validStatuses.includes(newStatus)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid status" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (customerName && (typeof customerName !== 'string' || customerName.length > 100)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid customer name" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

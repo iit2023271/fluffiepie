@@ -129,6 +129,23 @@ export default function Login() {
             </button>
           </div>
 
+          {isSignup && password.length > 0 && (
+            <div className="space-y-1 text-xs">
+              {[
+                { key: "length" as const, label: "At least 8 characters" },
+                { key: "uppercase" as const, label: "One uppercase letter" },
+                { key: "lowercase" as const, label: "One lowercase letter" },
+                { key: "number" as const, label: "One number" },
+                { key: "special" as const, label: "One special character" },
+              ].map(({ key, label }) => (
+                <div key={key} className={`flex items-center gap-1.5 ${passwordChecks[key] ? "text-green-600" : "text-muted-foreground"}`}>
+                  {passwordChecks[key] ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                  {label}
+                </div>
+              ))}
+            </div>
+          )}
+
           {!isSignup && (
             <div className="text-right">
               <Link to="/forgot-password" className="text-xs text-primary hover:underline">
