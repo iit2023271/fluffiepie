@@ -153,8 +153,8 @@ export default function AdminHomepage() {
   };
 
   // Built-in section updaters
-  const updateHero = (field: string, value: string) => setConfig(prev => ({ ...prev, hero: { ...prev.hero, [field]: value } }));
-  const updateCategories = (field: string, value: string) => setConfig(prev => ({ ...prev, categories: { ...prev.categories, [field]: value } }));
+  const updateHero = (field: string, value: any) => setConfig(prev => ({ ...prev, hero: { ...prev.hero, [field]: value } }));
+  const updateCategories = (field: string, value: any) => setConfig(prev => ({ ...prev, categories: { ...prev.categories, [field]: value } }));
   const updateTrending = (field: string, value: string | number) => setConfig(prev => ({ ...prev, trending: { ...prev.trending, [field]: value } }));
   const updateHowItWorks = (field: string, value: string) => setConfig(prev => ({ ...prev, howItWorks: { ...prev.howItWorks, [field]: value } }));
   const updateStep = (idx: number, field: string, value: string) => {
