@@ -87,10 +87,10 @@ export default function AdminOrders() {
   const addNote = async (orderId: string) => {
     if (!newNote.trim() || !user) return;
     const { error } = await supabase.from("order_notes").insert({
-      order_id: orderId, admin_user_id: user.id, note: newNote.trim(), note_type: "general",
+      order_id: orderId, admin_user_id: user.id, note: newNote.trim(), note_type: newNoteType,
     });
     if (error) toast.error("Failed to add note");
-    else { toast.success("Note added"); setNewNote(""); loadNotes(orderId); }
+    else { toast.success(newNoteType === "customer" ? "Customer note added" : "Internal note added"); setNewNote(""); setNewNoteType("internal"); loadNotes(orderId); }
   };
 
   const deleteNote = async (noteId: string, orderId: string) => {
