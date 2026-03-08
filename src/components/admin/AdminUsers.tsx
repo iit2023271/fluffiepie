@@ -20,6 +20,7 @@ interface UserDetail {
 }
 
 export default function AdminUsers() {
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<UserDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
@@ -31,22 +32,25 @@ export default function AdminUsers() {
   const [newTag, setNewTag] = useState("");
   const [allTags, setAllTags] = useState<string[]>([]);
   const [removeTagConfirm, setRemoveTagConfirm] = useState<{ open: boolean; userId: string; tag: string }>({ open: false, userId: "", tag: "" });
+  const [adminConfirm, setAdminConfirm] = useState<{ open: boolean; userId: string; isAdmin: boolean; name: string }>({ open: false, userId: "", isAdmin: false, name: "" });
 
   useEffect(() => { loadUsers(); }, []);
 
   const loadUsers = async () => {
     setLoading(true);
-    const [profilesRes, addressesRes, ordersRes, tagsRes] = await Promise.all([
+    const [profilesRes, addressesRes, ordersRes, tagsRes, rolesRes] = await Promise.all([
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("addresses").select("*"),
       supabase.from("orders").select("*").order("created_at", { ascending: false }),
       supabase.from("customer_tags").select("*"),
+      supabase.from("user_roles").select("*"),
     ]);
 
     const profiles = profilesRes.data || [];
     const addresses = addressesRes.data || [];
     const orders = ordersRes.data || [];
     const tags = tagsRes.data || [];
+    const roles = rolesRes.data || [];
 
     const uniqueTags = [...new Set(tags.map((t: any) => t.tag))];
     setAllTags(uniqueTags);
@@ -56,10 +60,29 @@ export default function AdminUsers() {
       addresses: addresses.filter((a) => a.user_id === p.user_id),
       orders: orders.filter((o) => o.user_id === p.user_id),
       tags: tags.filter((t: any) => t.user_id === p.user_id).map((t: any) => t.tag),
+      isAdmin: roles.some((r: any) => r.user_id === p.user_id && r.role === "admin"),
     }));
 
     setUsers(combined);
     setLoading(false);
+  };
+
+  const toggleAdmin = async (userId: string, currentlyAdmin: boolean) => {
+    if (userId === currentUser?.id) {
+      toast.error("You cannot remove your own admin access");
+      return;
+    }
+    if (currentlyAdmin) {
+      const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", "admin");
+      if (error) toast.error("Failed to remove admin role");
+      else { toast.success("Admin role removed"); loadUsers(); }
+    } else {
+      const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: "admin" });
+      if (error) {
+        if (error.code === "23505") toast.error("User is already an admin");
+        else toast.error("Failed to assign admin role");
+      } else { toast.success("Admin role assigned"); loadUsers(); }
+    }
   };
 
   const addTag = async (userId: string, tag: string) => {
