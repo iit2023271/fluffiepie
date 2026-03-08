@@ -4,7 +4,7 @@ import { Plus, Pencil, Trash2, X, Upload, Search, AlertTriangle, Package, Crop }
 import Pagination from "@/components/Pagination";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
-import { useStoreConfig } from "@/hooks/useStoreConfig";
+import { useStoreConfig, BUILTIN_FILTER_TYPES } from "@/hooks/useStoreConfig";
 import { Badge } from "@/components/ui/badge";
 import ImageCropper from "@/components/admin/ImageCropper";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
