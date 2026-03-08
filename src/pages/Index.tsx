@@ -30,7 +30,8 @@ const testimonials = [
 ];
 
 export default function Index() {
-  const featured = products.filter((p) => p.isBestseller || p.isNew).slice(0, 4);
+  const { data: allProducts = [] } = useProducts();
+  const featured = allProducts.filter((p) => p.isBestseller || p.isNew).slice(0, 4);
 
   return (
     <div>
