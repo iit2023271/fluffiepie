@@ -435,8 +435,8 @@ export default function AdminDashboard() {
 
       {/* Orders Chart + Status Pie */}
       <div className="grid md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-card rounded-2xl p-6 shadow-soft">
-          <h3 className="font-display font-semibold text-lg mb-1">📦 Orders Volume</h3>
+        <div className="bg-card rounded-2xl p-4 md:p-6 shadow-soft">
+          <h3 className="font-display font-semibold text-base md:text-lg mb-1">📦 Orders Volume</h3>
           <p className="text-xs text-muted-foreground mb-4">How many orders you're receiving each day</p>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
