@@ -80,14 +80,13 @@ export default function AdminUsers() {
   };
 
   const exportCSV = () => {
-    const rows = [["Name", "Phone", "Joined", "Total Orders", "Total Spent", "Roles", "Tags"]];
+    const rows = [["Name", "Phone", "Joined", "Total Orders", "Total Spent", "Tags"]];
     filtered.forEach(u => {
       const totalSpent = u.orders.reduce((s, o) => s + (o.total || 0), 0);
       rows.push([
         u.profile.full_name || "", u.profile.phone || "",
         format(new Date(u.profile.created_at), "yyyy-MM-dd"),
         String(u.orders.length), String(totalSpent),
-        u.roles.map((r: any) => r.role).join(", "),
         u.tags.join(", "),
       ]);
     });
