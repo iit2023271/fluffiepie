@@ -1,13 +1,16 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { ChevronDown, ChevronUp, MapPin, ShoppingBag, User, Search, Tag, X, Download, Clock, Truck, CheckCircle2, Shield, ShieldOff } from "lucide-react";
+import { ChevronDown, ChevronUp, MapPin, ShoppingBag, User, Search, Tag, X, Download, Clock, Truck, CheckCircle2, Shield, ShieldOff, MessageCircle, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/components/Pagination";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { useAuth } from "@/context/AuthContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { useStoreInfo } from "@/hooks/useStoreInfo";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -33,6 +36,32 @@ export default function AdminUsers() {
   const [allTags, setAllTags] = useState<string[]>([]);
   const [removeTagConfirm, setRemoveTagConfirm] = useState<{ open: boolean; userId: string; tag: string }>({ open: false, userId: "", tag: "" });
   const [adminConfirm, setAdminConfirm] = useState<{ open: boolean; userId: string; isAdmin: boolean; name: string }>({ open: false, userId: "", isAdmin: false, name: "" });
+  const [waDialog, setWaDialog] = useState<{ open: boolean; phone: string; name: string }>({ open: false, phone: "", name: "" });
+  const [waMessage, setWaMessage] = useState("");
+  const { storeInfo } = useStoreInfo();
+
+  const waTemplates = [
+    { label: "🎁 Coupon Offer", text: `Hi {name}! 🎉 Here's an exclusive coupon just for you! Use code *SPECIAL10* to get 10% off on your next order at ${storeInfo.storeName}. Order now! 🍰` },
+    { label: "🆕 New Arrival", text: `Hey {name}! 👋 We've added some delicious new cakes to our menu at ${storeInfo.storeName}! Check them out and treat yourself 🎂` },
+    { label: "💝 Thank You", text: `Hi {name}! Thank you so much for your order from ${storeInfo.storeName}! We hope you loved it. Come back soon for more treats! ❤️🍰` },
+    { label: "🎂 Festival Offer", text: `Hi {name}! 🎊 Celebrate this festive season with ${storeInfo.storeName}! Get *20% off* on all cakes. Limited time offer! 🎉` },
+    { label: "⭐ Feedback", text: `Hi {name}! We'd love to hear your feedback on your recent order from ${storeInfo.storeName}. Your opinion matters to us! 🙏` },
+  ];
+
+  const openWhatsApp = (phone: string, name: string) => {
+    setWaDialog({ open: true, phone, name });
+    setWaMessage(waTemplates[0].text.replace(/{name}/g, name || "there"));
+  };
+
+  const sendWhatsApp = () => {
+    const phone = waDialog.phone.replace(/\D/g, "");
+    if (!phone) { toast.error("No phone number available for this customer"); return; }
+    const fullPhone = phone.startsWith("91") ? phone : `91${phone}`;
+    const url = `https://wa.me/${fullPhone}?text=${encodeURIComponent(waMessage)}`;
+    window.open(url, "_blank");
+    setWaDialog({ open: false, phone: "", name: "" });
+    toast.success("WhatsApp opened!");
+  };
 
   useEffect(() => { loadUsers(); }, []);
 
@@ -261,14 +290,24 @@ export default function AdminUsers() {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> Profile</h3>
-                        <Button
-                          size="sm"
-                          variant={u.isAdmin ? "destructive" : "outline"}
-                          className="text-xs h-7 gap-1.5"
-                          onClick={() => setAdminConfirm({ open: true, userId: u.profile.user_id, isAdmin: u.isAdmin, name: u.profile.full_name || "this user" })}
-                        >
-                          {u.isAdmin ? <><ShieldOff className="w-3 h-3" /> Remove Admin</> : <><Shield className="w-3 h-3" /> Make Admin</>}
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-7 gap-1.5"
+                            onClick={() => openWhatsApp(u.profile.phone || "", u.profile.full_name || "")}
+                          >
+                            <MessageCircle className="w-3 h-3" /> WhatsApp
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={u.isAdmin ? "destructive" : "outline"}
+                            className="text-xs h-7 gap-1.5"
+                            onClick={() => setAdminConfirm({ open: true, userId: u.profile.user_id, isAdmin: u.isAdmin, name: u.profile.full_name || "this user" })}
+                          >
+                            {u.isAdmin ? <><ShieldOff className="w-3 h-3" /> Remove Admin</> : <><Shield className="w-3 h-3" /> Make Admin</>}
+                          </Button>
+                        </div>
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <div className="bg-card rounded-lg p-3 border border-border">
@@ -472,6 +511,47 @@ export default function AdminUsers() {
         variant={adminConfirm.isAdmin ? "destructive" : "default"}
         onConfirm={() => { toggleAdmin(adminConfirm.userId, adminConfirm.isAdmin); setAdminConfirm({ open: false, userId: "", isAdmin: false, name: "" }); }}
       />
+
+      {/* WhatsApp Message Dialog */}
+      <Dialog open={waDialog.open} onOpenChange={(open) => setWaDialog(prev => ({ ...prev, open }))}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><MessageCircle className="w-5 h-5 text-green-600" /> Send WhatsApp to {waDialog.name || "Customer"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2">Quick Templates</p>
+              <div className="flex flex-wrap gap-1.5">
+                {waTemplates.map((t) => (
+                  <button
+                    key={t.label}
+                    onClick={() => setWaMessage(t.text.replace(/{name}/g, waDialog.name || "there"))}
+                    className="px-2.5 py-1.5 rounded-lg text-xs border border-border hover:bg-accent/50 hover:border-primary/30 transition-colors"
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-1.5">Message</p>
+              <Textarea
+                value={waMessage}
+                onChange={(e) => setWaMessage(e.target.value)}
+                rows={5}
+                placeholder="Type your message..."
+                className="text-sm"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] text-muted-foreground">📱 {waDialog.phone || "No phone"}</p>
+              <Button onClick={sendWhatsApp} className="gap-1.5" disabled={!waMessage.trim()}>
+                <Send className="w-4 h-4" /> Send on WhatsApp
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
