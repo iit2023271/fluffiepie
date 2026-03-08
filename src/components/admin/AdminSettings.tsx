@@ -93,7 +93,16 @@ export default function AdminSettings() {
       supabase.from("banners").select("*").order("sort_order", { ascending: true }),
       supabase.from("orders").select("coupon_code, discount, total").not("coupon_code", "is", null),
     ]);
-    if (configRes.data) setConfigItems(configRes.data as ConfigItem[]);
+    if (configRes.data) {
+      setConfigItems(configRes.data as ConfigItem[]);
+      // Load email notification settings
+      const emailConfigs = (configRes.data as ConfigItem[]).filter(c => c.config_type === "email_notification");
+      if (emailConfigs.length > 0) {
+        const settings: Record<string, boolean> = {};
+        emailConfigs.forEach(c => { settings[c.value] = c.is_active; });
+        setEmailSettings(prev => ({ ...prev, ...settings }));
+      }
+    }
     if (couponRes.data) setCoupons(couponRes.data as Coupon[]);
     if (bannerRes.data) setBanners(bannerRes.data as Banner[]);
     if (ordersRes.data) setOrders(ordersRes.data);
