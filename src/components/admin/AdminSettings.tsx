@@ -992,12 +992,11 @@ export default function AdminSettings() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => sendTestEmail(status)}
-                        disabled={testingEmail === status}
-                        className="px-3 py-1.5 rounded-lg text-xs border border-border hover:bg-secondary transition-colors disabled:opacity-50 flex items-center gap-1.5"
-                        title="Send test email to your admin email"
+                        className="px-3 py-1.5 rounded-lg text-xs border border-border hover:bg-secondary transition-colors flex items-center gap-1.5"
+                        title="Open Gmail compose with test email"
                       >
                         <Send className="w-3 h-3" />
-                        {testingEmail === status ? "Sending..." : "Test"}
+                        Test via Gmail
                       </button>
                       <button
                         onClick={() => toggleEmailStatus(status)}
