@@ -645,6 +645,89 @@ export default function AdminSettings() {
         </div>
       )}
 
+      {/* Store Info */}
+      {activeSection === "storeinfo" && (
+        <div className="bg-card rounded-2xl p-6 shadow-soft space-y-4">
+          <div className="flex items-center gap-3 mb-2">
+            <MapPin className="w-5 h-5 text-primary" />
+            <div>
+              <h3 className="font-display font-semibold text-lg">Store Information</h3>
+              <p className="text-xs text-muted-foreground">Location details and contact numbers shown on the Location page</p>
+            </div>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-medium mb-1 block">Store Name</label>
+              <input value={storeInfoForm.storeName} onChange={e => setStoreInfoForm(p => ({ ...p, storeName: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block">Email</label>
+              <input value={storeInfoForm.email} onChange={e => setStoreInfoForm(p => ({ ...p, email: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" placeholder="hello@store.com" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block">Phone Number</label>
+              <input value={storeInfoForm.phone} onChange={e => setStoreInfoForm(p => ({ ...p, phone: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" placeholder="+91 98765 43210" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block">Alternate Phone</label>
+              <input value={storeInfoForm.phone2} onChange={e => setStoreInfoForm(p => ({ ...p, phone2: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" placeholder="+91 12345 67890" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="text-xs font-medium mb-1 block">Address</label>
+              <input value={storeInfoForm.address} onChange={e => setStoreInfoForm(p => ({ ...p, address: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" placeholder="123 Baker Street" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block">City</label>
+              <input value={storeInfoForm.city} onChange={e => setStoreInfoForm(p => ({ ...p, city: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block">State</label>
+              <input value={storeInfoForm.state} onChange={e => setStoreInfoForm(p => ({ ...p, state: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block">Pincode</label>
+              <input value={storeInfoForm.pincode} onChange={e => setStoreInfoForm(p => ({ ...p, pincode: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block">Opening Hours</label>
+              <input value={storeInfoForm.openingHours} onChange={e => setStoreInfoForm(p => ({ ...p, openingHours: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" placeholder="Mon-Sat: 9AM - 9PM" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="text-xs font-medium mb-1 block">Google Maps Embed URL</label>
+              <input value={storeInfoForm.mapUrl} onChange={e => setStoreInfoForm(p => ({ ...p, mapUrl: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" placeholder="https://www.google.com/maps/embed?..." />
+              <p className="text-xs text-muted-foreground mt-1">Paste the embed URL from Google Maps (Share → Embed a map → Copy src)</p>
+            </div>
+          </div>
+          <div className="pt-2">
+            <Button disabled={savingStoreInfo} onClick={async () => {
+              setSavingStoreInfo(true);
+              const payload = { config_type: "store_info", value: JSON.stringify(storeInfoForm), is_active: true, sort_order: 0 };
+              if (storeInfoId) {
+                const { error } = await supabase.from("store_config").update(payload).eq("id", storeInfoId);
+                error ? toast.error("Failed to save") : toast.success("Store info updated!");
+              } else {
+                const { error, data } = await supabase.from("store_config").insert(payload).select().single();
+                if (error) toast.error("Failed to save");
+                else { toast.success("Store info saved!"); if (data) setStoreInfoId(data.id); }
+              }
+              setSavingStoreInfo(false);
+            }}>
+              {savingStoreInfo ? "Saving..." : "Save Store Info"}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Shared Delete Confirmation Dialog */}
       <ConfirmDialog
         open={deleteConfirm.open}
