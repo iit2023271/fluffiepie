@@ -32,10 +32,6 @@ function getRelativeDate(date: Date): string {
   return format(date, "dd MMM yyyy, hh:mm a");
 }
 
-function getTimeAgo(date: Date): string {
-  return formatDistanceToNow(date, { addSuffix: true });
-}
-
 function parseDeliveryInfo(slot: string | null): { label: string; isUrgent: boolean } {
   if (!slot) return { label: "Not specified", isUrgent: false };
   // Check if delivery is today
