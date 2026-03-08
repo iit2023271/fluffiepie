@@ -168,14 +168,31 @@ export default function AdminProducts() {
   const lowStockCount = products.filter(p => (p as any).stock_quantity < (p as any).low_stock_threshold).length;
   const outOfStockCount = products.filter(p => (p as any).stock_quantity === 0).length;
 
+  const exportProductsCSV = () => {
+    const rows = [["Name", "SKU", "Category", "Flavour", "Base Price", "Stock", "Status", "Bestseller", "New", "Rating", "Reviews"]];
+    filtered.forEach(p => {
+      rows.push([p.name, (p as any).sku || "", p.category, p.flavour, String(p.base_price), String((p as any).stock_quantity), p.is_active ? "Active" : "Inactive", p.is_bestseller ? "Yes" : "No", p.is_new ? "Yes" : "No", String(p.rating), String(p.review_count)]);
+    });
+    const csv = rows.map(r => r.map(c => `"${c}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = `products-${format(new Date(), "yyyy-MM-dd")}.csv`; a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Products exported!");
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-display font-bold">Products</h1>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90">
-          <Plus className="w-4 h-4" /> Add Product
-        </button>
-      </div>
+        <div className="flex items-center gap-2">
+          <button onClick={exportProductsCSV} className="flex items-center gap-2 px-3 py-2 border border-border rounded-xl text-xs font-medium hover:bg-secondary transition-colors">
+            <Download className="w-3.5 h-3.5" /> Export CSV
+          </button>
+          <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90">
+            <Plus className="w-4 h-4" /> Add Product
+          </button>
+        </div>
 
       {/* Stock alerts */}
       {(lowStockCount > 0 || outOfStockCount > 0) && (
