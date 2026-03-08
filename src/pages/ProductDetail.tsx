@@ -289,6 +289,39 @@ export default function ProductDetail() {
           <Lightbox images={allImages} initialIndex={selectedImage} onClose={() => setLightboxOpen(false)} />
         )}
       </AnimatePresence>
+      {/* Mobile sticky Add to Cart bar */}
+      {isMobile && (
+        <motion.div
+          initial={{ y: 100 }}
+          animate={{ y: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.3 }}
+          className="fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t border-border px-4 py-3 flex items-center gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]"
+        >
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold truncate">{product.name}</p>
+            <p className="text-primary font-bold">₹{totalPrice}</p>
+          </div>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={handleAddToCart}
+            disabled={isSoldOut}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm disabled:opacity-50 shadow-md"
+          >
+            <ShoppingCart className="w-4 h-4" />
+            {isSoldOut ? "Sold Out" : "Add to Cart"}
+          </motion.button>
+        </motion.div>
+      )}
+
+      {/* Bottom padding for sticky bar on mobile */}
+      {isMobile && <div className="h-20" />}
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {lightboxOpen && (
+          <Lightbox images={allImages} initialIndex={selectedImage} onClose={() => setLightboxOpen(false)} />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
