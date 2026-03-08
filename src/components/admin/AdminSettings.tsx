@@ -172,34 +172,82 @@ export default function AdminSettings() {
     loadAll();
   };
 
+  const hexToHslLocal = (hex: string) => {
+    let r = 0, g = 0, b = 0;
+    if (hex.length === 7) {
+      r = parseInt(hex.substring(1, 3), 16); g = parseInt(hex.substring(3, 5), 16); b = parseInt(hex.substring(5, 7), 16);
+    }
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0;
+    const l = (max + min) / 2;
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+        case g: h = ((b - r) / d + 2) / 6; break;
+        case b: h = ((r - g) / d + 4) / 6; break;
+      }
+    }
+    return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+  };
+
+  const hslToHex = (hsl: string) => {
+    const parts = hsl.match(/[\d.]+/g);
+    if (!parts || parts.length < 3) return "#c0392b";
+    let h = parseFloat(parts[0]) / 360, s = parseFloat(parts[1]) / 100, l = parseFloat(parts[2]) / 100;
+    const hue2rgb = (p: number, q: number, t: number) => { if (t < 0) t += 1; if (t > 1) t -= 1; if (t < 1/6) return p + (q - p) * 6 * t; if (t < 1/2) return q; if (t < 2/3) return p + (q - p) * (2/3 - t) * 6; return p; };
+    let r, g, b;
+    if (s === 0) { r = g = b = l; } else {
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1/3); g = hue2rgb(p, q, h); b = hue2rgb(p, q, h - 1/3);
+    }
+    const toHex = (x: number) => Math.round(x * 255).toString(16).padStart(2, "0");
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  };
+
   const addProductTag = async () => {
     if (!newTagName.trim()) { toast.error("Enter a tag name"); return; }
-    const hexToHslLocal = (hex: string) => {
-      let r = 0, g = 0, b = 0;
-      if (hex.length === 7) {
-        r = parseInt(hex.substring(1, 3), 16); g = parseInt(hex.substring(3, 5), 16); b = parseInt(hex.substring(5, 7), 16);
-      }
-      r /= 255; g /= 255; b /= 255;
-      const max = Math.max(r, g, b), min = Math.min(r, g, b);
-      let h = 0, s = 0;
-      const l = (max + min) / 2;
-      if (max !== min) {
-        const d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        switch (max) {
-          case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-          case g: h = ((b - r) / d + 2) / 6; break;
-          case b: h = ((r - g) / d + 4) / 6; break;
-        }
-      }
-      return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
-    };
     const tagValue = JSON.stringify({ name: newTagName.trim(), bgColor: hexToHslLocal(newTagBg), textColor: hexToHslLocal(newTagText) });
     const maxOrder = configItems.filter(c => c.config_type === "product_tag").reduce((m, c) => Math.max(m, c.sort_order), 0);
     const { error } = await supabase.from("store_config").insert({ config_type: "product_tag", value: tagValue, sort_order: maxOrder + 1 });
     if (error) { toast.error("Failed to add tag"); return; }
     toast.success(`Tag "${newTagName.trim()}" added!`);
     setNewTagName(""); setNewTagBg("#c0392b"); setNewTagText("#ffffff");
+    loadAll();
+  };
+
+  const startEditTag = (item: ConfigItem) => {
+    let tag: { name: string; bgColor: string; textColor: string };
+    try { tag = JSON.parse(item.value); } catch { tag = { name: item.value, bgColor: "350 45% 55%", textColor: "0 0% 100%" }; }
+    setEditingTagId(item.id);
+    setEditTagName(tag.name);
+    setEditTagBg(hslToHex(tag.bgColor));
+    setEditTagText(hslToHex(tag.textColor));
+  };
+
+  const saveEditTag = async () => {
+    if (!editingTagId || !editTagName.trim()) { toast.error("Enter a tag name"); return; }
+    // Find old tag name to update products if name changed
+    const oldItem = configItems.find(c => c.id === editingTagId);
+    let oldName = "";
+    if (oldItem) { try { oldName = JSON.parse(oldItem.value).name; } catch { oldName = oldItem.value; } }
+    const tagValue = JSON.stringify({ name: editTagName.trim(), bgColor: hexToHslLocal(editTagBg), textColor: hexToHslLocal(editTagText) });
+    const { error } = await supabase.from("store_config").update({ value: tagValue }).eq("id", editingTagId);
+    if (error) { toast.error("Failed to update tag"); return; }
+    // If name changed, update all products that had the old tag name
+    if (oldName && oldName !== editTagName.trim()) {
+      const { data: products } = await supabase.from("products").select("id, tags").contains("tags", [oldName]);
+      if (products) {
+        for (const p of products) {
+          const newTags = (p.tags as string[]).map(t => t === oldName ? editTagName.trim() : t);
+          await supabase.from("products").update({ tags: newTags }).eq("id", p.id);
+        }
+      }
+    }
+    toast.success(`Tag "${editTagName.trim()}" updated!`);
+    setEditingTagId(null);
     loadAll();
   };
 
