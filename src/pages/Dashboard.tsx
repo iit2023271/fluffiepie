@@ -122,6 +122,22 @@ export default function Dashboard() {
     toast.success("Signed out");
   };
 
+  const sendToWhatsApp = (order: Order) => {
+    const whatsappNum = storeInfo.whatsappNumber;
+    if (!whatsappNum) {
+      toast.error("WhatsApp number not configured by the store");
+      return;
+    }
+    const items = (order.items as any[])
+      .map((item: any) => `• ${item.name} (${item.weight}) × ${item.quantity} — ₹${(item.price * item.quantity).toLocaleString()}`)
+      .join("\n");
+    const deliverySlot = order.delivery_slot || "Not specified";
+    const orderId = order.id.slice(0, 8).toUpperCase();
+    const message = `🎂 *Order Receipt*\n\n📋 *Order #${orderId}*\n📅 ${format(new Date(order.created_at), "dd MMM yyyy, hh:mm a")}\n\n*Items:*\n${items}\n\n💰 *Total: ₹${order.total.toLocaleString()}*\n🚚 *Delivery: ${deliverySlot}*\n\nPlease confirm my order. Thank you! 🙏`;
+    const url = `https://wa.me/${whatsappNum}?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
