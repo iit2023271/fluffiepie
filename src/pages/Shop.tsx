@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { SlidersHorizontal, X, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { flavours, categoryTypes, occasions } from "@/data/products";
+import { useStoreConfig } from "@/hooks/useStoreConfig";
 import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
 import Pagination from "@/components/Pagination";
