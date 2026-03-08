@@ -391,7 +391,7 @@ export default function AdminProducts() {
               <button onClick={() => setShowForm(false)} className="p-2 hover:bg-secondary rounded-full"><X className="w-5 h-5" /></button>
             </div>
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-medium mb-1 block">Product Name *</label>
                   <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value, slug: editing ? form.slug : generateSlug(e.target.value) })}
