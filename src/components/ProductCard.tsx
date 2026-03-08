@@ -28,8 +28,7 @@ function ProductCard({ product, index = 0, isWishlisted = false, onToggleWishlis
   const cartQty = cartItem?.quantity ?? 0;
   
   const activeTag = product.tags?.[0];
-  const tagDef = activeTag ? productTags.find(t => t.name === activeTag) : null;
-  const displayTag = tagDef || (product.isBestseller ? { name: "Bestseller", bgColor: "", textColor: "" } : product.isNew ? { name: "New", bgColor: "", textColor: "" } : null);
+  const displayTag = activeTag ? productTags.find(t => t.name === activeTag) || null : null;
 
   const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
