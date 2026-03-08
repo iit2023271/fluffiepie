@@ -22,6 +22,7 @@ export default function ProductDetail() {
   const { data: allProducts = [] } = useProducts();
   const { dispatch } = useCart();
   const { addViewed } = useRecentlyViewed();
+  const isMobile = useIsMobile();
 
   const [selectedWeight, setSelectedWeight] = useState(0);
   const [quantity, setQuantity] = useState(1);
