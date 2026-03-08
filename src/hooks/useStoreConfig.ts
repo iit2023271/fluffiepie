@@ -81,5 +81,5 @@ export function useStoreConfig() {
     }
   }
 
-  return { categories, flavours, occasions, filterSections, customSectionDefs, loading, reload: load };
+  return { categories, flavours, occasions, productTags, filterSections, customSectionDefs, loading, reload: load };
 }
