@@ -66,11 +66,24 @@ export interface HeroConfig {
   heroHeight?: "compact" | "default" | "tall";
 }
 
+export interface CategoryItem {
+  name: string;
+  image?: string;
+  link?: string;
+}
+
 export interface CategoriesConfig {
   title: string;
   subtitle: string;
   columns?: number;
   cardAspect?: "portrait" | "square" | "landscape";
+  filterType?: "occasion" | "category" | "flavour" | "custom";
+  items?: CategoryItem[];
+  showViewAll?: boolean;
+  viewAllLink?: string;
+  cardRadius?: "sm" | "md" | "lg" | "full";
+  showOverlay?: boolean;
+  overlayStyle?: "gradient" | "solid" | "none";
 }
 
 export interface TrendingConfig {
