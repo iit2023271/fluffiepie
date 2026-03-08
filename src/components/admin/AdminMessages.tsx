@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, MailOpen, Trash2, Search, RefreshCw } from "lucide-react";
+import { Mail, MailOpen, Trash2, Search, RefreshCw, X } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -116,7 +116,14 @@ export default function AdminMessages() {
             filtered.map(msg => (
               <button
                 key={msg.id}
-                onClick={() => { setSelected(msg.id); if (!msg.is_read) toggleRead(msg); }}
+                onClick={() => {
+                  if (selected === msg.id) {
+                    setSelected(null);
+                  } else {
+                    setSelected(msg.id);
+                    if (!msg.is_read) toggleRead(msg);
+                  }
+                }}
                 className={`w-full text-left p-4 rounded-xl border transition-all ${
                   selected === msg.id
                     ? "border-primary bg-primary/5 shadow-sm"
@@ -158,6 +165,13 @@ export default function AdminMessages() {
                   </p>
                 </div>
                 <div className="flex gap-1">
+                  <button
+                    onClick={() => setSelected(null)}
+                    className="p-2 rounded-lg hover:bg-secondary transition-colors"
+                    title="Close"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                   <button
                     onClick={() => toggleRead(selectedMsg)}
                     className="p-2 rounded-lg hover:bg-secondary transition-colors"
