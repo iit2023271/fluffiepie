@@ -286,6 +286,8 @@ export default function AdminOrders() {
     }
     if (newStatus === "cancelled" && order?.status !== "cancelled") {
       setStatusChangeConfirm({ open: true, orderId, newStatus });
+    } else if (newStatus === "delivered" && order?.status !== "delivered") {
+      setStatusChangeConfirm({ open: true, orderId, newStatus });
     } else {
       updateStatus(orderId, newStatus);
     }
