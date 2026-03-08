@@ -68,7 +68,10 @@ export default function AdminSettings() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [newValues, setNewValues] = useState<Record<string, string>>({ category: "", flavour: "", occasion: "" });
-  const [activeSection, setActiveSection] = useState<"config" | "coupons" | "banners" | "notifications">("config");
+  const [activeSection, setActiveSection] = useState<"config" | "coupons" | "banners" | "notifications" | "storeinfo">("config");
+  const [storeInfoForm, setStoreInfoForm] = useState<StoreInfo>(DEFAULT_STORE_INFO);
+  const [storeInfoId, setStoreInfoId] = useState<string | null>(null);
+  const [savingStoreInfo, setSavingStoreInfo] = useState(false);
   const [showCouponForm, setShowCouponForm] = useState(false);
   const [couponForm, setCouponForm] = useState(emptyCoupon);
   const [editingCoupon, setEditingCoupon] = useState<string | null>(null);
