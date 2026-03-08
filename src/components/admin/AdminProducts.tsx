@@ -122,7 +122,7 @@ function DraggableImageList({ images, pendingFiles, onReorder, onRemoveImage, on
 
 const emptyProduct = {
   name: "", slug: "", description: "", category: "", occasion: [] as string[],
-  flavour: "", base_price: 0, weights: [{ label: "500g", price: 0 }] as { label: string; price: number }[],
+  flavour: "", base_price: 0, original_price: null as number | null, weights: [{ label: "500g", price: 0 }] as { label: string; price: number }[],
   is_new: false, is_bestseller: false, is_active: true, image_url: null as string | null,
   images: [] as string[], tags: [] as string[],
   stock_quantity: 100, low_stock_threshold: 10, sku: "",
