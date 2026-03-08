@@ -144,7 +144,6 @@ export default function AdminProducts() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const filtered = useMemo(() => {
-    setCurrentPage(1);
     return products.filter((p) => {
       const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
       const matchCategory = !categoryFilter || p.category === categoryFilter;
@@ -156,6 +155,8 @@ export default function AdminProducts() {
       return matchSearch && matchCategory && matchStatus;
     });
   }, [products, search, categoryFilter, statusFilter]);
+
+  useEffect(() => { setCurrentPage(1); }, [search, categoryFilter, statusFilter]);
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);

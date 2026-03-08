@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { SlidersHorizontal, X, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -24,7 +24,6 @@ export default function Shop() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const filtered = useMemo(() => {
-    setCurrentPage(1);
     let result = [...products];
     if (searchQuery) result = result.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase()));
     if (selectedCategory) result = result.filter((p) => p.category === selectedCategory);
@@ -39,6 +38,8 @@ export default function Shop() {
     }
     return result;
   }, [searchQuery, selectedCategory, selectedOccasion, selectedFlavour, sortBy, products]);
+
+  useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedCategory, selectedOccasion, selectedFlavour, sortBy]);
 
   const hasFilters = selectedCategory || selectedOccasion || selectedFlavour || searchQuery;
 
