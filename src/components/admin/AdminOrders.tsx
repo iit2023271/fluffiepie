@@ -37,10 +37,50 @@ export default function AdminOrders() {
     setLoading(false);
   };
 
+  const sendNotification = async (order: any, newStatus: string) => {
+    try {
+      // Get user email from profiles or delivery address
+      const deliveryAddr = order.delivery_address as any;
+      const customerName = deliveryAddr?.name || "Customer";
+
+      // Fetch user email from auth via a profile lookup
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("user_id", order.user_id)
+        .single();
+
+      if (!profile) return;
+
+      // We need the email - get it from the Supabase auth admin via edge function
+      const { error } = await supabase.functions.invoke("send-order-notification", {
+        body: {
+          orderId: order.id,
+          newStatus,
+          customerEmail: deliveryAddr?.phone ? null : null, // Will be resolved server-side
+          customerName,
+          orderTotal: order.total,
+          items: order.items,
+          userId: order.user_id,
+        },
+      });
+
+      if (error) console.error("Notification error:", error);
+    } catch (e) {
+      console.error("Failed to send notification:", e);
+    }
+  };
+
   const updateStatus = async (orderId: string, newStatus: string) => {
+    const order = orders.find(o => o.id === orderId);
     const { error } = await supabase.from("orders").update({ status: newStatus }).eq("id", orderId);
-    if (error) toast.error("Failed to update status");
-    else { toast.success(`Order updated to ${newStatus}`); loadOrders(); }
+    if (error) {
+      toast.error("Failed to update status");
+    } else {
+      toast.success(`Order updated to ${newStatus}`);
+      if (order) sendNotification(order, newStatus);
+      loadOrders();
+    }
   };
 
   const filtered = useMemo(() => {
