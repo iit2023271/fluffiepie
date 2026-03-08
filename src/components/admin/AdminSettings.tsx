@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, X, Trash2, Tag, Layers, Palette, Calendar, Pencil, Upload, Image, Eye, EyeOff, BarChart3, Crop } from "lucide-react";
+import { Plus, X, Trash2, Tag, Layers, Palette, Calendar, Pencil, Upload, Image, Eye, EyeOff, BarChart3, Crop, Mail, Bell, BellOff, Send, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
@@ -61,7 +61,7 @@ export default function AdminSettings() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [newValues, setNewValues] = useState<Record<string, string>>({ category: "", flavour: "", occasion: "" });
-  const [activeSection, setActiveSection] = useState<"config" | "coupons" | "banners">("config");
+  const [activeSection, setActiveSection] = useState<"config" | "coupons" | "banners" | "notifications">("config");
   const [showCouponForm, setShowCouponForm] = useState(false);
   const [couponForm, setCouponForm] = useState(emptyCoupon);
   const [editingCoupon, setEditingCoupon] = useState<string | null>(null);
@@ -77,6 +77,12 @@ export default function AdminSettings() {
   // Coupon analytics
   const [orders, setOrders] = useState<any[]>([]);
 
+  // Notification settings
+  const [emailSettings, setEmailSettings] = useState<Record<string, boolean>>({
+    placed: true, confirmed: true, baking: true, out_for_delivery: true, delivered: true, cancelled: true,
+  });
+  const [savingEmail, setSavingEmail] = useState(false);
+  const [testingEmail, setTestingEmail] = useState<string | null>(null);
   useEffect(() => { loadAll(); }, []);
 
   const loadAll = async () => {
@@ -87,7 +93,16 @@ export default function AdminSettings() {
       supabase.from("banners").select("*").order("sort_order", { ascending: true }),
       supabase.from("orders").select("coupon_code, discount, total").not("coupon_code", "is", null),
     ]);
-    if (configRes.data) setConfigItems(configRes.data as ConfigItem[]);
+    if (configRes.data) {
+      setConfigItems(configRes.data as ConfigItem[]);
+      // Load email notification settings
+      const emailConfigs = (configRes.data as ConfigItem[]).filter(c => c.config_type === "email_notification");
+      if (emailConfigs.length > 0) {
+        const settings: Record<string, boolean> = {};
+        emailConfigs.forEach(c => { settings[c.value] = c.is_active; });
+        setEmailSettings(prev => ({ ...prev, ...settings }));
+      }
+    }
     if (couponRes.data) setCoupons(couponRes.data as Coupon[]);
     if (bannerRes.data) setBanners(bannerRes.data as Banner[]);
     if (ordersRes.data) setOrders(ordersRes.data);
@@ -189,6 +204,51 @@ export default function AdminSettings() {
     loadAll();
   };
 
+  // Email notification settings
+  const EMAIL_STATUS_CONFIG: Record<string, { label: string; emoji: string; description: string }> = {
+    placed: { label: "Order Placed", emoji: "📦", description: "When a customer places a new order" },
+    confirmed: { label: "Order Confirmed", emoji: "✅", description: "When you confirm an order" },
+    baking: { label: "Being Prepared", emoji: "🧁", description: "When the order starts preparation" },
+    out_for_delivery: { label: "Out for Delivery", emoji: "🚚", description: "When the order is dispatched" },
+    delivered: { label: "Delivered", emoji: "✔️", description: "When the order is delivered" },
+    cancelled: { label: "Cancelled", emoji: "❌", description: "When an order is cancelled" },
+  };
+
+  const toggleEmailStatus = async (status: string) => {
+    const newValue = !emailSettings[status];
+    setEmailSettings(prev => ({ ...prev, [status]: newValue }));
+    const existing = configItems.find(c => c.config_type === "email_notification" && c.value === status);
+    if (existing) {
+      await supabase.from("store_config").update({ is_active: newValue }).eq("id", existing.id);
+    } else {
+      await supabase.from("store_config").insert({ config_type: "email_notification", value: status, is_active: newValue, sort_order: 0 });
+    }
+    toast.success(`${EMAIL_STATUS_CONFIG[status]?.label} email ${newValue ? "enabled" : "disabled"}`);
+    loadAll();
+  };
+
+  const sendTestEmail = async (status: string) => {
+    setTestingEmail(status);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-order-notification", {
+        body: {
+          orderId: "test-00000000",
+          newStatus: status,
+          customerName: "Test Customer",
+          orderTotal: 999,
+          items: [{ name: "Test Cake", weight: "1kg", quantity: 1, price: 999 }],
+          isTest: true,
+        },
+      });
+      if (error) throw error;
+      if (data?.success) toast.success("Test email sent! Check your inbox.");
+      else toast.error(data?.error || "Failed to send test email");
+    } catch (e: any) {
+      toast.error("Failed to send test email");
+    }
+    setTestingEmail(null);
+  };
+
   // Coupon analytics
   const couponStats = coupons.map(c => {
     const couponOrders = orders.filter(o => o.coupon_code === c.code);
@@ -215,6 +275,7 @@ export default function AdminSettings() {
           { key: "config" as const, label: "Store Config", icon: Layers },
           { key: "coupons" as const, label: "Coupons", icon: Tag },
           { key: "banners" as const, label: "Banners", icon: Image },
+          { key: "notifications" as const, label: "Notifications", icon: Bell },
         ].map(tab => (
           <button key={tab.key} onClick={() => setActiveSection(tab.key)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 ${activeSection === tab.key ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-primary/10"}`}>
@@ -502,6 +563,99 @@ export default function AdminSettings() {
               </div>
             ))}
             {banners.length === 0 && <p className="text-center py-8 text-sm text-muted-foreground">No banners yet. Create one to promote offers!</p>}
+          </div>
+        </div>
+      )}
+
+      {/* Notifications */}
+      {activeSection === "notifications" && (
+        <div className="space-y-6">
+          {/* Email Overview */}
+          <div className="bg-card rounded-2xl p-6 shadow-soft">
+            <div className="flex items-center gap-3 mb-1">
+              <Mail className="w-5 h-5 text-primary" />
+              <h3 className="font-display font-semibold text-lg">📧 Email Notifications</h3>
+            </div>
+            <p className="text-xs text-muted-foreground mb-4">
+              Control which order status updates trigger an email to the customer. When enabled, customers receive a beautifully formatted email whenever the order status changes.
+            </p>
+
+            <div className="bg-muted/30 rounded-xl p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium">How it works</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    When you change an order's status (e.g., from "Placed" to "Baking"), if that status is enabled below, the customer gets an email with the update, order details, and items summary.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {Object.entries(EMAIL_STATUS_CONFIG).map(([status, cfg]) => {
+                const isEnabled = emailSettings[status] !== false;
+                return (
+                  <div key={status} className={`flex items-center justify-between p-4 rounded-xl border transition-all ${isEnabled ? "border-primary/20 bg-primary/5" : "border-border bg-card"}`}>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">{cfg.emoji}</span>
+                      <div>
+                        <p className="text-sm font-semibold">{cfg.label}</p>
+                        <p className="text-xs text-muted-foreground">{cfg.description}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => sendTestEmail(status)}
+                        disabled={testingEmail === status}
+                        className="px-3 py-1.5 rounded-lg text-xs border border-border hover:bg-secondary transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                        title="Send test email to your admin email"
+                      >
+                        <Send className="w-3 h-3" />
+                        {testingEmail === status ? "Sending..." : "Test"}
+                      </button>
+                      <button
+                        onClick={() => toggleEmailStatus(status)}
+                        className={`relative w-11 h-6 rounded-full transition-colors ${isEnabled ? "bg-primary" : "bg-muted-foreground/30"}`}
+                      >
+                        <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${isEnabled ? "translate-x-5" : "translate-x-0.5"}`} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Email Stats Summary */}
+          <div className="bg-card rounded-2xl p-6 shadow-soft">
+            <div className="flex items-center gap-3 mb-4">
+              <BarChart3 className="w-5 h-5 text-primary" />
+              <h3 className="font-display font-semibold text-lg">📊 Quick Summary</h3>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="bg-muted/30 rounded-xl p-4">
+                <p className="text-xs text-muted-foreground mb-1">Enabled Statuses</p>
+                <p className="text-2xl font-bold text-primary">
+                  {Object.values(emailSettings).filter(Boolean).length}
+                </p>
+                <p className="text-[10px] text-muted-foreground">of {Object.keys(EMAIL_STATUS_CONFIG).length} statuses</p>
+              </div>
+              <div className="bg-muted/30 rounded-xl p-4">
+                <p className="text-xs text-muted-foreground mb-1">Disabled Statuses</p>
+                <p className="text-2xl font-bold">
+                  {Object.values(emailSettings).filter(v => !v).length}
+                </p>
+                <p className="text-[10px] text-muted-foreground">no emails sent</p>
+              </div>
+              <div className="bg-muted/30 rounded-xl p-4">
+                <p className="text-xs text-muted-foreground mb-1">Email Provider</p>
+                <p className="text-sm font-semibold flex items-center gap-1.5 mt-1">
+                  <CheckCircle2 className="w-4 h-4 text-primary" /> Connected
+                </p>
+                <p className="text-[10px] text-muted-foreground">via Resend</p>
+              </div>
+            </div>
           </div>
         </div>
       )}
