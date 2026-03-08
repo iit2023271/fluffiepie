@@ -32,6 +32,7 @@ const CUSTOM_TYPE_ICONS: Record<CustomSectionType, typeof Type> = {
 };
 
 export default function AdminHomepage() {
+  const { productTags } = useStoreConfig();
   const [config, setConfig] = useState<HomepageConfig>(DEFAULT_HOMEPAGE_CONFIG);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
