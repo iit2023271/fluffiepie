@@ -284,8 +284,20 @@ export default function AdminSettings() {
     return { ...c, orderCount: couponOrders.length, totalRevenue, totalDiscount };
   });
 
+  const deleteSection = async (configType: string) => {
+    const { error } = await supabase.from("store_config").delete().eq("config_type", configType);
+    if (error) toast.error("Failed to delete section");
+    else { toast.success("Section removed"); loadAll(); }
+  };
+
   const handleDeleteConfirm = () => {
-    if (deleteConfirm.type === "config") deleteConfig(deleteConfirm.id);
+    if (deleteConfirm.type === "config") {
+      if (deleteConfirm.id.startsWith("section:")) {
+        deleteSection(deleteConfirm.id.replace("section:", ""));
+      } else {
+        deleteConfig(deleteConfirm.id);
+      }
+    }
     else if (deleteConfirm.type === "coupon") deleteCoupon(deleteConfirm.id);
     else if (deleteConfirm.type === "banner") deleteBanner(deleteConfirm.id);
     setDeleteConfirm({ open: false, type: "config", id: "", name: "" });
