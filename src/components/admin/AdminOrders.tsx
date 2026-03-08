@@ -198,6 +198,15 @@ export default function AdminOrders() {
     return STATUS_STEP_ORDER[idx + 1];
   };
 
+  // Get previous status for undo
+  const getPrevStatus = (currentStatus: string): string | null => {
+    const idx = STATUS_STEP_ORDER.indexOf(currentStatus);
+    if (idx <= 0) return null;
+    return STATUS_STEP_ORDER[idx - 1];
+  };
+
+  const [undoConfirm, setUndoConfirm] = useState<{ open: boolean; orderId: string; prevStatus: string }>({ open: false, orderId: "", prevStatus: "" });
+
   // Today's stats
   const todayStats = useMemo(() => {
     const today = orders.filter(o => isToday(new Date(o.created_at)));
