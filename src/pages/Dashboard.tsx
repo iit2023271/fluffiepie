@@ -229,19 +229,29 @@ export default function Dashboard() {
 
                     <div className="flex items-center justify-between pt-3 border-t border-border">
                       <span className="font-semibold">Total: ₹{order.total.toLocaleString()}</span>
-                      {/* Status timeline */}
-                      <div className="flex items-center gap-1">
-                        {["placed", "confirmed", "baking", "out_for_delivery", "delivered"].map((s, i) => {
-                          const steps = ["placed", "confirmed", "baking", "out_for_delivery", "delivered"];
-                          const currentIndex = steps.indexOf(order.status);
-                          const isComplete = i <= currentIndex;
-                          return (
-                            <div key={s} className="flex items-center">
-                              <div className={`w-2 h-2 rounded-full ${isComplete ? "bg-primary" : "bg-border"}`} />
-                              {i < 4 && <div className={`w-4 h-0.5 ${isComplete ? "bg-primary" : "bg-border"}`} />}
-                            </div>
-                          );
-                        })}
+                      <div className="flex items-center gap-3">
+                        {order.status === "delivered" && (
+                          <button
+                            onClick={() => setReviewingOrder(order)}
+                            className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                          >
+                            <Star className="w-3.5 h-3.5" /> Write Review
+                          </button>
+                        )}
+                        {/* Status timeline */}
+                        <div className="flex items-center gap-1">
+                          {["placed", "confirmed", "baking", "out_for_delivery", "delivered"].map((s, i) => {
+                            const steps = ["placed", "confirmed", "baking", "out_for_delivery", "delivered"];
+                            const currentIndex = steps.indexOf(order.status);
+                            const isComplete = i <= currentIndex;
+                            return (
+                              <div key={s} className="flex items-center">
+                                <div className={`w-2 h-2 rounded-full ${isComplete ? "bg-primary" : "bg-border"}`} />
+                                {i < 4 && <div className={`w-4 h-0.5 ${isComplete ? "bg-primary" : "bg-border"}`} />}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   </div>
