@@ -68,6 +68,7 @@ export default function AdminThemes() {
   const [previewingId, setPreviewingId] = useState<string | null>(null);
   const [customPresets, setCustomPresets] = useState<(ThemeConfig & { dbId?: string })[]>([]);
   const [showNewPreset, setShowNewPreset] = useState(false);
+  const [deletePresetConfirm, setDeletePresetConfirm] = useState<{ open: boolean; preset: (ThemeConfig & { dbId?: string }) | null }>({ open: false, preset: null });
   const [newPreset, setNewPreset] = useState({
     name: "", emoji: "🎉", description: "", bannerText: "",
     colors: { ...DEFAULT_COLORS },
