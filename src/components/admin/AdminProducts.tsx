@@ -135,7 +135,19 @@ export default function AdminProducts() {
   const addWeight = () => setForm((f) => ({ ...f, weights: [...f.weights, { label: "", price: 0 }] }));
   const removeWeight = (i: number) => setForm((f) => ({ ...f, weights: f.weights.filter((_, idx) => idx !== i) }));
 
-  const filtered = products.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+
+  const filtered = products.filter((p) => {
+    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
+    const matchCategory = !categoryFilter || p.category === categoryFilter;
+    const matchStatus = !statusFilter || 
+      (statusFilter === "active" && p.is_active) || 
+      (statusFilter === "inactive" && !p.is_active) ||
+      (statusFilter === "bestseller" && p.is_bestseller) ||
+      (statusFilter === "new" && p.is_new);
+    return matchSearch && matchCategory && matchStatus;
+  });
 
   return (
     <div>
