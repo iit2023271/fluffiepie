@@ -37,10 +37,15 @@ export default function ReviewForm({ productId, productName, orderId, userId, on
     });
     setSubmitting(false);
     if (error) {
+      console.error("Review submit error:", error.code, error.message, error.details, error.hint);
       if (error.code === "23505") {
         toast.error("You've already reviewed this product for this order");
+      } else if (error.code === "42501") {
+        toast.error("Permission denied. Please log in again.");
+      } else if (error.code === "23503") {
+        toast.error("Invalid product or order reference");
       } else {
-        toast.error("Failed to submit review");
+        toast.error("Failed to submit review: " + error.message);
       }
       return;
     }
