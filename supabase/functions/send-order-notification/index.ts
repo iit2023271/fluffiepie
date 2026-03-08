@@ -156,7 +156,7 @@ serve(async (req) => {
         </div>` : ''}
 
         <div style="text-align:center;padding-top:24px;border-top:1px solid #eee;">
-          <p style="margin:0;font-size:12px;color:#999;">SweetCrumbs • Fresh cakes, delivered with love</p>
+          <p style="margin:0;font-size:12px;color:#999;">FluffiePie • Fresh cakes, delivered with love</p>
           <p style="margin:4px 0 0;font-size:12px;color:#bbb;">${isTest ? 'Test notification' : `Automated notification for order #${shortId}`}</p>
         </div>
       </div>
