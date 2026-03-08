@@ -60,7 +60,7 @@ export default function AdminOrders() {
   const [statusFilter, setStatusFilter] = useState("");
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
-  const [showAllOrders, setShowAllOrders] = useState(false);
+  const [showAllOrders, setShowAllOrders] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
@@ -174,6 +174,11 @@ export default function AdminOrders() {
 
   const updateStatus = async (orderId: string, newStatus: string) => {
     const order = orders.find(o => o.id === orderId);
+    // Guard: don't allow changes on finalized orders
+    if (order && (order.status === "delivered" || order.status === "cancelled")) {
+      toast.error(`Cannot change status — order is already ${order.status}`);
+      return;
+    }
     const shouldNotify = notificationSettings[newStatus] ?? true;
     const composeWindow = order && shouldNotify ? window.open("about:blank", "_blank") : null;
 
@@ -192,8 +197,17 @@ export default function AdminOrders() {
   const bulkUpdateStatus = async (newStatus: string) => {
     if (selectedOrders.size === 0) return;
     const ids = Array.from(selectedOrders);
-    for (const id of ids) await supabase.from("orders").update({ status: newStatus }).eq("id", id);
-    toast.success(`${ids.length} order${ids.length > 1 ? "s" : ""} updated to "${STATUS_CONFIG[newStatus]?.label || newStatus}"`);
+    // Filter out finalized orders
+    const actionableIds = ids.filter(id => {
+      const order = orders.find(o => o.id === id);
+      return order && order.status !== "delivered" && order.status !== "cancelled";
+    });
+    if (actionableIds.length === 0) {
+      toast.error("No actionable orders selected");
+      return;
+    }
+    for (const id of actionableIds) await supabase.from("orders").update({ status: newStatus }).eq("id", id);
+    toast.success(`${actionableIds.length} order${actionableIds.length > 1 ? "s" : ""} updated to "${STATUS_CONFIG[newStatus]?.label || newStatus}"`);
     setSelectedOrders(new Set());
     loadOrders();
   };
@@ -266,6 +280,11 @@ export default function AdminOrders() {
 
   const handleStatusChange = (orderId: string, newStatus: string) => {
     const order = orders.find(o => o.id === orderId);
+    // Block changes on finalized orders
+    if (order && (order.status === "delivered" || order.status === "cancelled")) {
+      toast.error(`Cannot change status — order is already ${order.status}`);
+      return;
+    }
     if (newStatus === "cancelled" && order?.status !== "cancelled") {
       setStatusChangeConfirm({ open: true, orderId, newStatus });
     } else {
@@ -289,13 +308,14 @@ export default function AdminOrders() {
 
   const [undoConfirm, setUndoConfirm] = useState<{ open: boolean; orderId: string; prevStatus: string }>({ open: false, orderId: "", prevStatus: "" });
 
-  // Today's stats
-  const todayStats = useMemo(() => {
+  // Stats from ALL orders (not filtered)
+  const orderStats = useMemo(() => {
     const today = orders.filter(o => isToday(new Date(o.created_at)));
-    const todayRevenue = today.reduce((s, o) => s + (o.total || 0), 0);
+    const todayRevenue = today.filter(o => o.status !== "cancelled").reduce((s, o) => s + (o.total || 0), 0);
     const pending = orders.filter(o => ["placed", "confirmed"].includes(o.status));
     const inProgress = orders.filter(o => ["baking", "out_for_delivery"].includes(o.status));
-    return { todayCount: today.length, todayRevenue, pendingCount: pending.length, inProgressCount: inProgress.length };
+    const delivered = orders.filter(o => o.status === "delivered");
+    return { todayCount: today.length, todayRevenue, pendingCount: pending.length, inProgressCount: inProgress.length, deliveredCount: delivered.length };
   }, [orders]);
 
   return (
@@ -318,28 +338,28 @@ export default function AdminOrders() {
             <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center"><Package className="w-4 h-4 text-primary" /></div>
             <span className="text-xs text-muted-foreground">Today's Orders</span>
           </div>
-          <p className="text-2xl font-bold">{todayStats.todayCount}</p>
+          <p className="text-2xl font-bold">{orderStats.todayCount}</p>
         </div>
         <div className="bg-card rounded-2xl p-4 border border-border">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-sm">💰</div>
             <span className="text-xs text-muted-foreground">Today's Revenue</span>
           </div>
-          <p className="text-2xl font-bold">₹{todayStats.todayRevenue.toLocaleString()}</p>
+          <p className="text-2xl font-bold">₹{orderStats.todayRevenue.toLocaleString()}</p>
         </div>
         <div className="bg-card rounded-2xl p-4 border border-border">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center"><Timer className="w-4 h-4 text-amber-600" /></div>
             <span className="text-xs text-muted-foreground">Needs Action</span>
           </div>
-          <p className="text-2xl font-bold text-amber-600">{todayStats.pendingCount}</p>
+          <p className="text-2xl font-bold text-amber-600">{orderStats.pendingCount}</p>
         </div>
         <div className="bg-card rounded-2xl p-4 border border-border">
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 rounded-xl bg-orange-100 flex items-center justify-center text-sm">🔥</div>
-            <span className="text-xs text-muted-foreground">In Progress</span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-sm">✅</div>
+            <span className="text-xs text-muted-foreground">Delivered</span>
           </div>
-          <p className="text-2xl font-bold text-orange-600">{todayStats.inProgressCount}</p>
+          <p className="text-2xl font-bold text-emerald-600">{orderStats.deliveredCount}</p>
         </div>
       </div>
 
