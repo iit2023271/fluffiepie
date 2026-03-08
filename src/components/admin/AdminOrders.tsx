@@ -463,10 +463,10 @@ export default function AdminOrders() {
         <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-32 bg-secondary rounded-2xl animate-pulse" />)}</div>
       ) : (
         <div className="space-y-3">
-          {paginated.length > 0 && (
+          {selectableOnPage.length > 0 && (
             <div className="flex items-center gap-2 px-2">
-              <input type="checkbox" checked={selectedOrders.size === paginated.length && paginated.length > 0} onChange={toggleSelectAll} className="rounded" />
-              <span className="text-xs text-muted-foreground">Select all on page</span>
+              <input type="checkbox" checked={selectedOrders.size === selectableOnPage.length && selectableOnPage.length > 0} onChange={toggleSelectAll} className="rounded" />
+              <span className="text-xs text-muted-foreground">Select all actionable ({selectableOnPage.length})</span>
             </div>
           )}
 
