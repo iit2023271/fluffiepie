@@ -93,6 +93,10 @@ export default function AdminSettings() {
   const [testingEmail, setTestingEmail] = useState<string | null>(null);
   const [editingConfigItem, setEditingConfigItem] = useState<string | null>(null);
   const [editingConfigValue, setEditingConfigValue] = useState("");
+  const [deliveryForm, setDeliveryForm] = useState<DeliveryConfig>(DEFAULT_DELIVERY_CONFIG);
+  const [deliveryConfigId, setDeliveryConfigId] = useState<string | null>(null);
+  const [savingDelivery, setSavingDelivery] = useState(false);
+  const [newTimeSlot, setNewTimeSlot] = useState("");
 
   // Confirm dialog state
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; type: "config" | "coupon" | "banner"; id: string; name: string }>({ open: false, type: "config", id: "", name: "" });
