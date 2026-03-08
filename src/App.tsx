@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from "react-router-dom";
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { lazy, Suspense, useEffect } from "react";
@@ -29,10 +29,26 @@ const Install = lazy(() => import("./pages/Install"));
 const queryClient = new QueryClient();
 
 function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
+  const navType = useNavigationType();
+
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    // Don't scroll on browser back/forward
+    if (navType === "POP") return;
+
+    // If there's a hash, scroll to that element
+    if (hash) {
+      const el = document.querySelector(hash);
+      if (el) {
+        setTimeout(() => el.scrollIntoView({ behavior: "smooth" }), 100);
+        return;
+      }
+    }
+
+    // Otherwise scroll to top
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [pathname, hash, navType]);
+
   return null;
 }
 
