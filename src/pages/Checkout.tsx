@@ -86,7 +86,7 @@ export default function Checkout() {
       image: item.product.image,
     }));
 
-    const { error } = await supabase.from("orders").insert({
+    const { data: orderData, error } = await supabase.from("orders").insert({
       user_id: user.id,
       items: orderItems,
       delivery_address: {
@@ -104,12 +104,26 @@ export default function Checkout() {
       coupon_code: coupon || null,
       status: "placed",
       payment_status: "paid",
-    });
+    }).select("id").single();
 
     setPlacing(false);
     if (error) {
       toast.error("Failed to place order. Please try again.");
       return;
+    }
+
+    // Send order confirmation email
+    if (orderData) {
+      supabase.functions.invoke("send-order-notification", {
+        body: {
+          orderId: orderData.id,
+          newStatus: "placed",
+          customerName: `${form.firstName} ${form.lastName}`.trim(),
+          orderTotal: finalTotal,
+          items: orderItems,
+          userId: user.id,
+        },
+      }).catch(console.error);
     }
 
     toast.success("Order placed successfully! 🎉");
