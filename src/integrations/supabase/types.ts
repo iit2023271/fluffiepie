@@ -185,6 +185,71 @@ export type Database = {
         }
         Relationships: []
       }
+      loyalty_points: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          lifetime_earned: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          lifetime_earned?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          lifetime_earned?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      loyalty_transactions: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          order_id: string | null
+          points: number
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          order_id?: string | null
+          points: number
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          order_id?: string | null
+          points?: number
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_notes: {
         Row: {
           admin_user_id: string
@@ -393,6 +458,33 @@ export type Database = {
           id?: string
           phone?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
           user_id?: string
         }
         Relationships: []
