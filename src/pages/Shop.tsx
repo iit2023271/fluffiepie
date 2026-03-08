@@ -101,7 +101,7 @@ export default function Shop() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-display font-bold mb-2">
-          {selectedOccasion ? `${selectedOccasion} Cakes` : "All Cakes"}
+          {selectedFilters["occasion"] ? `${selectedFilters["occasion"]} Cakes` : "All Cakes"}
         </h1>
         <p className="text-muted-foreground">{filtered.length} products found</p>
       </div>
