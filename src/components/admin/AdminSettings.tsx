@@ -566,6 +566,99 @@ export default function AdminSettings() {
           </div>
         </div>
       )}
+
+      {/* Notifications */}
+      {activeSection === "notifications" && (
+        <div className="space-y-6">
+          {/* Email Overview */}
+          <div className="bg-card rounded-2xl p-6 shadow-soft">
+            <div className="flex items-center gap-3 mb-1">
+              <Mail className="w-5 h-5 text-primary" />
+              <h3 className="font-display font-semibold text-lg">📧 Email Notifications</h3>
+            </div>
+            <p className="text-xs text-muted-foreground mb-4">
+              Control which order status updates trigger an email to the customer. When enabled, customers receive a beautifully formatted email whenever the order status changes.
+            </p>
+
+            <div className="bg-muted/30 rounded-xl p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium">How it works</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    When you change an order's status (e.g., from "Placed" to "Baking"), if that status is enabled below, the customer gets an email with the update, order details, and items summary.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {Object.entries(EMAIL_STATUS_CONFIG).map(([status, cfg]) => {
+                const isEnabled = emailSettings[status] !== false;
+                return (
+                  <div key={status} className={`flex items-center justify-between p-4 rounded-xl border transition-all ${isEnabled ? "border-primary/20 bg-primary/5" : "border-border bg-card"}`}>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">{cfg.emoji}</span>
+                      <div>
+                        <p className="text-sm font-semibold">{cfg.label}</p>
+                        <p className="text-xs text-muted-foreground">{cfg.description}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => sendTestEmail(status)}
+                        disabled={testingEmail === status}
+                        className="px-3 py-1.5 rounded-lg text-xs border border-border hover:bg-secondary transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                        title="Send test email to your admin email"
+                      >
+                        <Send className="w-3 h-3" />
+                        {testingEmail === status ? "Sending..." : "Test"}
+                      </button>
+                      <button
+                        onClick={() => toggleEmailStatus(status)}
+                        className={`relative w-11 h-6 rounded-full transition-colors ${isEnabled ? "bg-primary" : "bg-muted-foreground/30"}`}
+                      >
+                        <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${isEnabled ? "translate-x-5" : "translate-x-0.5"}`} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Email Stats Summary */}
+          <div className="bg-card rounded-2xl p-6 shadow-soft">
+            <div className="flex items-center gap-3 mb-4">
+              <BarChart3 className="w-5 h-5 text-primary" />
+              <h3 className="font-display font-semibold text-lg">📊 Quick Summary</h3>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="bg-muted/30 rounded-xl p-4">
+                <p className="text-xs text-muted-foreground mb-1">Enabled Statuses</p>
+                <p className="text-2xl font-bold text-primary">
+                  {Object.values(emailSettings).filter(Boolean).length}
+                </p>
+                <p className="text-[10px] text-muted-foreground">of {Object.keys(EMAIL_STATUS_CONFIG).length} statuses</p>
+              </div>
+              <div className="bg-muted/30 rounded-xl p-4">
+                <p className="text-xs text-muted-foreground mb-1">Disabled Statuses</p>
+                <p className="text-2xl font-bold">
+                  {Object.values(emailSettings).filter(v => !v).length}
+                </p>
+                <p className="text-[10px] text-muted-foreground">no emails sent</p>
+              </div>
+              <div className="bg-muted/30 rounded-xl p-4">
+                <p className="text-xs text-muted-foreground mb-1">Email Provider</p>
+                <p className="text-sm font-semibold flex items-center gap-1.5 mt-1">
+                  <CheckCircle2 className="w-4 h-4 text-primary" /> Connected
+                </p>
+                <p className="text-[10px] text-muted-foreground">via Resend</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
