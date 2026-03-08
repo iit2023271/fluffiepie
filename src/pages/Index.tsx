@@ -287,7 +287,7 @@ export default function Index() {
           </motion.div>
           <div className="grid gap-4 md:gap-6" style={{ gridTemplateColumns: `repeat(${Math.min(cols, 2)}, 1fr)` }} data-desktop-cols={cols}>
             <style>{`@media(min-width:768px){[data-desktop-cols="${cols}"]{grid-template-columns:repeat(${cols},1fr)!important}}`}</style>
-            {displayItems.slice(0, filterType === "custom" ? undefined : cols).map((item, i) => (
+            {displayItems.map((item, i) => (
               <motion.div key={item.name + i} initial={{ opacity: 0, y: 40, scale: 0.9 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.12, type: "spring", stiffness: 100 }}>
                 <Link to={item.link} className={`group block relative overflow-hidden ${radiusCls} ${aspectCls}`}>
                   <img src={item.image} alt={item.name} className="w-full h-full object-cover transition-transform duration-700 will-change-transform group-hover:scale-110" loading="lazy" decoding="async" />
