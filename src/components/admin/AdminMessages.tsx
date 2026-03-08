@@ -116,7 +116,14 @@ export default function AdminMessages() {
             filtered.map(msg => (
               <button
                 key={msg.id}
-                onClick={() => { setSelected(msg.id); if (!msg.is_read) toggleRead(msg); }}
+                onClick={() => {
+                  if (selected === msg.id) {
+                    setSelected(null);
+                  } else {
+                    setSelected(msg.id);
+                    if (!msg.is_read) toggleRead(msg);
+                  }
+                }}
                 className={`w-full text-left p-4 rounded-xl border transition-all ${
                   selected === msg.id
                     ? "border-primary bg-primary/5 shadow-sm"
