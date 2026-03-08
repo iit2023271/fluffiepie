@@ -1,6 +1,6 @@
 import { useState, useEffect, memo } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart, Search, User, Menu, X, LogOut, Shield } from "lucide-react";
+import { ShoppingCart, Search, User, Menu, X, LogOut, Shield, Sun, Moon } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +22,29 @@ function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"));
+
+  const toggleDarkMode = () => {
+    const next = !isDark;
+    setIsDark(next);
+    document.documentElement.classList.toggle("dark", next);
+    localStorage.setItem("theme", next ? "dark" : "light");
+  };
+
+  // Initialize theme from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark") {
+      document.documentElement.classList.add("dark");
+      setIsDark(true);
+    } else if (saved === "light") {
+      document.documentElement.classList.remove("dark");
+      setIsDark(false);
+    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      document.documentElement.classList.add("dark");
+      setIsDark(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
@@ -66,7 +89,25 @@ function Navbar() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          <motion.button
+            whileTap={{ scale: 0.85 }}
+            onClick={toggleDarkMode}
+            className="p-2.5 rounded-full hover:bg-secondary transition-colors"
+            aria-label="Toggle dark mode"
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              {isDark ? (
+                <motion.div key="sun" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                  <Sun className="w-5 h-5 text-accent" />
+                </motion.div>
+              ) : (
+                <motion.div key="moon" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                  <Moon className="w-5 h-5 text-muted-foreground" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.button>
           <motion.button
             whileTap={{ scale: 0.85 }}
             onClick={() => setSearchOpen(true)}
