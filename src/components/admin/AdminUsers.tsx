@@ -256,25 +256,63 @@ export default function AdminUsers() {
       <p className="text-sm text-muted-foreground mb-4">{filtered.length} of {users.length} customers</p>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-4">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
+      <div className="space-y-3 mb-4">
+        <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input placeholder="Search by name, phone, or order ID..." value={search} onChange={(e) => setSearch(e.target.value)}
+          <input placeholder="Search by name, phone, email, or order ID..." value={search} onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
         </div>
-        
+
+        {/* Tag filter chips */}
         {allTags.length > 0 && (
-          <select value={tagFilter} onChange={(e) => setTagFilter(e.target.value)} className="px-3 py-2 rounded-xl border border-border text-sm bg-background">
-            <option value="">All Tags</option>
-            {allTags.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Filter by Tag</p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setTagFilter("")}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  !tagFilter ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-primary/10"
+                }`}
+              >
+                All
+              </button>
+              {allTags.map(t => (
+                <button
+                  key={t}
+                  onClick={() => setTagFilter(tagFilter === t ? "" : t)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    tagFilter === t ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-primary/10"
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="px-3 py-2 rounded-xl border border-border text-sm bg-background">
-          <option value="newest">Newest First</option>
-          <option value="oldest">Oldest First</option>
-          <option value="most_orders">Most Orders</option>
-          <option value="highest_spent">Highest Spent</option>
-        </select>
+
+        {/* Sort chips */}
+        <div>
+          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Sort by</p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: "newest", label: "Newest" },
+              { value: "oldest", label: "Oldest" },
+              { value: "most_orders", label: "Most Orders" },
+              { value: "highest_spent", label: "Highest Spent" },
+            ].map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setSortBy(opt.value)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  sortBy === opt.value ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-primary/10"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {loading ? (
