@@ -364,25 +364,25 @@ export default function AdminDashboard() {
       )}
 
       {/* KPI Cards Row 1 - Main metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4">
         {[
-          { label: "💰 Revenue", value: `₹${metrics.totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-primary", change: timeRange !== "custom" ? metrics.revenueChange : null, sub: `From ${metrics.deliveredCount} delivered orders`, tooltip: "Revenue from delivered orders only" },
-          { label: "📦 Total Orders", value: metrics.totalOrders, icon: ShoppingCart, color: "text-accent", change: timeRange !== "custom" ? metrics.ordersChange : null, sub: `${metrics.deliveredCount} delivered · ${metrics.cancelledCount} cancelled`, tooltip: "Number of orders placed" },
-          { label: "🧾 Avg. Order Value", value: `₹${metrics.avgOrderValue.toLocaleString()}`, icon: BarChart3, color: "text-primary", change: null, sub: "Average per delivered order", tooltip: "Average amount per delivered order" },
-          { label: "👥 Customers", value: metrics.uniqueCustomers, icon: Users, color: "text-accent", change: null, sub: `${metrics.repeatCustomers} ordered again`, tooltip: "Unique customers who placed orders" },
+          { label: "💰 Revenue", value: `₹${metrics.totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-primary", change: timeRange !== "custom" ? metrics.revenueChange : null, sub: `${metrics.deliveredCount} delivered`, tooltip: "Revenue from delivered orders only" },
+          { label: "📦 Orders", value: metrics.totalOrders, icon: ShoppingCart, color: "text-accent", change: timeRange !== "custom" ? metrics.ordersChange : null, sub: `${metrics.deliveredCount} ✔ · ${metrics.cancelledCount} ✗`, tooltip: "Number of orders placed" },
+          { label: "🧾 Avg. Value", value: `₹${metrics.avgOrderValue.toLocaleString()}`, icon: BarChart3, color: "text-primary", change: null, sub: "Per delivered order", tooltip: "Average amount per delivered order" },
+          { label: "👥 Customers", value: metrics.uniqueCustomers, icon: Users, color: "text-accent", change: null, sub: `${metrics.repeatCustomers} repeat`, tooltip: "Unique customers who placed orders" },
         ].map((stat) => (
-          <div key={stat.label} className="bg-card rounded-2xl p-5 shadow-soft">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-medium text-muted-foreground">{stat.label}</p>
+          <div key={stat.label} className="bg-card rounded-2xl p-3 md:p-5 shadow-soft overflow-hidden">
+            <div className="flex items-start justify-between mb-2 md:mb-3 gap-1">
+              <p className="text-[10px] md:text-xs font-medium text-muted-foreground leading-tight">{stat.label}</p>
               {stat.change !== null && (
-                <span className={`flex items-center gap-0.5 text-xs font-medium ${stat.change >= 0 ? "text-primary" : "text-destructive"}`}>
-                  {stat.change >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                  {Math.abs(stat.change)}% vs last week
+                <span className={`flex items-center gap-0.5 text-[10px] font-medium whitespace-nowrap ${stat.change >= 0 ? "text-primary" : "text-destructive"}`}>
+                  {stat.change >= 0 ? <ArrowUpRight className="w-3 h-3 shrink-0" /> : <ArrowDownRight className="w-3 h-3 shrink-0" />}
+                  {Math.abs(stat.change)}%
                 </span>
               )}
             </div>
-            <p className="text-2xl font-bold">{stat.value}</p>
-            <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
+            <p className="text-xl md:text-2xl font-bold truncate">{stat.value}</p>
+            <p className="text-[10px] md:text-xs text-muted-foreground mt-1 truncate">{stat.sub}</p>
           </div>
         ))}
       </div>
