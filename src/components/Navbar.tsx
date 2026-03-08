@@ -211,3 +211,5 @@ function Navbar() {
     </header>
   );
 }
+
+export default memo(Navbar);
