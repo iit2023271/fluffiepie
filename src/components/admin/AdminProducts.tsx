@@ -58,6 +58,7 @@ export default function AdminProducts() {
     setEditing(null);
     setForm(emptyProduct);
     setImageFile(null);
+    setPendingAdditionalFiles([]);
     setShowForm(true);
   };
 
