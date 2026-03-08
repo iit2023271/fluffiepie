@@ -69,13 +69,45 @@ export default function AdminOrders() {
   const [deleteNoteConfirm, setDeleteNoteConfirm] = useState<{ open: boolean; noteId: string; orderId: string }>({ open: false, noteId: "", orderId: "" });
   const [bulkConfirm, setBulkConfirm] = useState<{ open: boolean; status: string }>({ open: false, status: "" });
   const [statusChangeConfirm, setStatusChangeConfirm] = useState<{ open: boolean; orderId: string; newStatus: string }>({ open: false, orderId: "", newStatus: "" });
+  const [notificationSettings, setNotificationSettings] = useState<Record<string, boolean>>({
+    placed: true,
+    confirmed: true,
+    baking: true,
+    out_for_delivery: true,
+    delivered: true,
+    cancelled: true,
+  });
 
   useEffect(() => { loadOrders(); }, []);
 
   const loadOrders = async () => {
     setLoading(true);
-    const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
-    if (data) setOrders(data);
+    const [ordersRes, notificationsRes] = await Promise.all([
+      supabase.from("orders").select("*").order("created_at", { ascending: false }),
+      supabase.from("store_config").select("value, is_active").eq("config_type", "email_notification"),
+    ]);
+
+    if (ordersRes.data) setOrders(ordersRes.data);
+
+    if (notificationsRes.data) {
+      const nextSettings: Record<string, boolean> = {
+        placed: true,
+        confirmed: true,
+        baking: true,
+        out_for_delivery: true,
+        delivered: true,
+        cancelled: true,
+      };
+
+      notificationsRes.data.forEach((item) => {
+        if (item.value in nextSettings) {
+          nextSettings[item.value] = item.is_active;
+        }
+      });
+
+      setNotificationSettings(nextSettings);
+    }
+
     setLoading(false);
   };
 
@@ -141,7 +173,9 @@ export default function AdminOrders() {
 
   const updateStatus = async (orderId: string, newStatus: string) => {
     const order = orders.find(o => o.id === orderId);
-    const composeWindow = order ? window.open("about:blank", "_blank") : null;
+    const shouldNotify = notificationSettings[newStatus] ?? true;
+    const composeWindow = order && shouldNotify ? window.open("about:blank", "_blank") : null;
+
     const { error } = await supabase.from("orders").update({ status: newStatus }).eq("id", orderId);
     if (error) {
       if (composeWindow && !composeWindow.closed) composeWindow.close();
@@ -149,7 +183,7 @@ export default function AdminOrders() {
     }
     else {
       toast.success(`Order updated to "${STATUS_CONFIG[newStatus]?.label || newStatus}"`);
-      if (order) sendNotification(order, newStatus, composeWindow);
+      if (order && shouldNotify) sendNotification(order, newStatus, composeWindow);
       loadOrders();
     }
   };
