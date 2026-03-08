@@ -5,8 +5,8 @@ import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useHomepageConfig, BUILTIN_SECTION_IDS, SECTION_LABELS, CUSTOM_TYPE_LABELS } from "@/hooks/useHomepageConfig";
-import type { HomepageSection, CustomSectionData } from "@/hooks/useHomepageConfig";
+import { useHomepageConfig, BUILTIN_SECTION_IDS } from "@/hooks/useHomepageConfig";
+import type { HomepageSection, SectionNavItem } from "@/hooks/useHomepageConfig";
 
 import heroCake from "@/assets/hero-cake.jpg";
 import catBirthday from "@/assets/category-birthday.jpg";
@@ -521,15 +521,12 @@ export default function Index() {
     }
   };
 
-  // Sections to show in nav (exclude banners, hero, spacers)
-  const navSections = config.sections.filter(
-    s => s.visible && s.id !== "banners" && s.id !== "hero" && !(s.customData?.type === "spacer")
-  );
-
-  const getSectionLabel = (s: HomepageSection) => {
-    if (BUILTIN_SECTION_IDS.includes(s.id)) return SECTION_LABELS[s.id] || s.id;
-    return s.label || CUSTOM_TYPE_LABELS[s.customType!]?.label || "Section";
-  };
+  // Build nav items from config
+  const navItems = config.sectionNav.enabled
+    ? config.sectionNav.items
+        .filter(item => item.visible)
+        .filter(item => config.sections.some(s => s.id === item.sectionId && s.visible))
+    : [];
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(`section-${id}`);
@@ -556,11 +553,10 @@ export default function Index() {
             </div>
           );
 
-          if (showNav || showNavAtStart) {
+          if ((showNav || showNavAtStart) && navItems.length > 0) {
             return (
               <div key={`nav-${s.id}`}>
-                {showNavAtStart && <SectionNavBar sections={navSections} getLabel={getSectionLabel} onNavigate={scrollToSection} />}
-                {showNav && !showNavAtStart && <SectionNavBar sections={navSections} getLabel={getSectionLabel} onNavigate={scrollToSection} />}
+                <SectionNavBar items={navItems} onNavigate={scrollToSection} />
                 {sectionNode}
               </div>
             );
@@ -592,12 +588,10 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
 
 // Section navigation bar
 function SectionNavBar({
-  sections,
-  getLabel,
+  items,
   onNavigate,
 }: {
-  sections: HomepageSection[];
-  getLabel: (s: HomepageSection) => string;
+  items: SectionNavItem[];
   onNavigate: (id: string) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -620,13 +614,13 @@ function SectionNavBar({
       el?.removeEventListener("scroll", checkScroll);
       window.removeEventListener("resize", checkScroll);
     };
-  }, [checkScroll, sections]);
+  }, [checkScroll, items]);
 
   const scroll = (dir: number) => {
     scrollRef.current?.scrollBy({ left: dir * 200, behavior: "smooth" });
   };
 
-  if (sections.length === 0) return null;
+  if (items.length === 0) return null;
 
   return (
     <div className="sticky top-16 z-30 bg-background/80 backdrop-blur-md border-b border-border/50">
@@ -644,13 +638,13 @@ function SectionNavBar({
           className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-2.5 px-6"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {sections.map((s) => (
+          {items.map((item) => (
             <button
-              key={s.id}
-              onClick={() => onNavigate(s.id)}
+              key={item.sectionId}
+              onClick={() => onNavigate(item.sectionId)}
               className="shrink-0 px-4 py-2 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors whitespace-nowrap"
             >
-              {getLabel(s)}
+              {item.label}
             </button>
           ))}
         </div>

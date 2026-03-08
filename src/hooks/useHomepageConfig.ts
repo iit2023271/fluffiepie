@@ -75,6 +75,17 @@ export interface ReviewsConfig {
   count: number;
 }
 
+export interface SectionNavItem {
+  sectionId: string;
+  label: string;
+  visible: boolean;
+}
+
+export interface SectionNavConfig {
+  enabled: boolean;
+  items: SectionNavItem[];
+}
+
 export interface HomepageConfig {
   sections: HomepageSection[];
   hero: HeroConfig;
@@ -82,6 +93,7 @@ export interface HomepageConfig {
   trending: TrendingConfig;
   howItWorks: HowItWorksConfig;
   reviews: ReviewsConfig;
+  sectionNav: SectionNavConfig;
 }
 
 export const BUILTIN_SECTION_IDS = ["banners", "hero", "categories", "trending", "howItWorks", "reviews"];
@@ -127,6 +139,15 @@ export const DEFAULT_HOMEPAGE_CONFIG: HomepageConfig = {
     title: "What Our Customers Say",
     subtitle: "Real reviews from real cake lovers",
     count: 3,
+  },
+  sectionNav: {
+    enabled: true,
+    items: [
+      { sectionId: "categories", label: "Occasions", visible: true },
+      { sectionId: "trending", label: "Trending", visible: true },
+      { sectionId: "howItWorks", label: "How It Works", visible: true },
+      { sectionId: "reviews", label: "Reviews", visible: true },
+    ],
   },
 };
 
@@ -196,6 +217,7 @@ export function useHomepageConfig() {
             trending: { ...DEFAULT_HOMEPAGE_CONFIG.trending, ...(parsed.trending || {}) },
             howItWorks: { ...DEFAULT_HOMEPAGE_CONFIG.howItWorks, ...(parsed.howItWorks || {}) },
             reviews: { ...DEFAULT_HOMEPAGE_CONFIG.reviews, ...(parsed.reviews || {}) },
+            sectionNav: { ...DEFAULT_HOMEPAGE_CONFIG.sectionNav, ...(parsed.sectionNav || {}), items: parsed.sectionNav?.items || DEFAULT_HOMEPAGE_CONFIG.sectionNav.items },
             sections: parsed.sections || DEFAULT_HOMEPAGE_CONFIG.sections,
           });
         } catch { /* use defaults */ }
