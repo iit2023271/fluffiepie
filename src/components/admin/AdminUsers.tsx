@@ -174,13 +174,7 @@ export default function AdminUsers() {
           <input placeholder="Search by name or phone..." value={search} onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
         </div>
-        <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="px-3 py-2 rounded-xl border border-border text-sm bg-background">
-          <option value="">All Roles</option>
-          <option value="admin">Admin</option>
-          <option value="moderator">Moderator</option>
-          <option value="user">User</option>
-          <option value="no_role">No Role</option>
-        </select>
+        
         {allTags.length > 0 && (
           <select value={tagFilter} onChange={(e) => setTagFilter(e.target.value)} className="px-3 py-2 rounded-xl border border-border text-sm bg-background">
             <option value="">All Tags</option>
