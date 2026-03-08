@@ -512,19 +512,76 @@ export default function AdminHomepage() {
 
           if (section.id === "categories") return (
             <SectionEditor key="categories" id="categories" label="Shop by Occasion" expanded={expandedSection === "categories"} onToggle={() => toggleExpand("categories")} visible={isSectionVisible("categories")}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><Label className="text-xs">Section Title</Label><Input value={config.categories.title} onChange={e => updateCategories("title", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Section Subtitle</Label><Input value={config.categories.subtitle} onChange={e => updateCategories("subtitle", e.target.value)} className="mt-1" /></div>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div><Label className="text-xs">Section Title</Label><Input value={config.categories.title} onChange={e => updateCategories("title", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Section Subtitle</Label><Input value={config.categories.subtitle} onChange={e => updateCategories("subtitle", e.target.value)} className="mt-1" /></div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 rounded-xl bg-muted/50 border">
+                  <div>
+                    <Label className="text-xs">🔲 Grid Columns</Label>
+                    <Select value={String(config.categories.columns || 4)} onValueChange={v => updateCategories("columns", parseInt(v))}>
+                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="2">2 Columns</SelectItem>
+                        <SelectItem value="3">3 Columns</SelectItem>
+                        <SelectItem value="4">4 Columns (Default)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs">📐 Card Shape</Label>
+                    <Select value={config.categories.cardAspect || "portrait"} onValueChange={v => updateCategories("cardAspect", v)}>
+                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="portrait">Portrait (Tall)</SelectItem>
+                        <SelectItem value="square">Square</SelectItem>
+                        <SelectItem value="landscape">Landscape (Wide)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                {/* Preview */}
+                <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview</p>
+                  <div className={`grid gap-1.5`} style={{ gridTemplateColumns: `repeat(${config.categories.columns || 4}, 1fr)` }}>
+                    {Array.from({ length: config.categories.columns || 4 }).map((_, i) => (
+                      <div key={i} className={`rounded bg-muted ${config.categories.cardAspect === "square" ? "aspect-square" : config.categories.cardAspect === "landscape" ? "aspect-video" : "aspect-[3/4]"}`} />
+                    ))}
+                  </div>
+                </div>
               </div>
             </SectionEditor>
           );
 
           if (section.id === "trending") return (
             <SectionEditor key="trending" id="trending" label="Trending Products" expanded={expandedSection === "trending"} onToggle={() => toggleExpand("trending")} visible={isSectionVisible("trending")}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div><Label className="text-xs">Section Title</Label><Input value={config.trending.title} onChange={e => updateTrending("title", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Section Subtitle</Label><Input value={config.trending.subtitle} onChange={e => updateTrending("subtitle", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Products to Show</Label><Input type="number" min={2} max={12} value={config.trending.count} onChange={e => updateTrending("count", parseInt(e.target.value) || 4)} className="mt-1" /></div>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div><Label className="text-xs">Section Title</Label><Input value={config.trending.title} onChange={e => updateTrending("title", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Section Subtitle</Label><Input value={config.trending.subtitle} onChange={e => updateTrending("subtitle", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Products to Show</Label><Input type="number" min={2} max={12} value={config.trending.count} onChange={e => updateTrending("count", parseInt(e.target.value) || 4)} className="mt-1" /></div>
+                </div>
+                <div className="p-3 rounded-xl bg-muted/50 border">
+                  <Label className="text-xs">🔲 Grid Columns</Label>
+                  <Select value={String(config.trending.columns || 4)} onValueChange={v => updateTrending("columns", parseInt(v))}>
+                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="2">2 Columns</SelectItem>
+                      <SelectItem value="3">3 Columns</SelectItem>
+                      <SelectItem value="4">4 Columns (Default)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {/* Preview */}
+                <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview ({config.trending.count} products in {config.trending.columns || 4} cols)</p>
+                  <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${config.trending.columns || 4}, 1fr)` }}>
+                    {Array.from({ length: Math.min(config.trending.count, 8) }).map((_, i) => (
+                      <div key={i} className="aspect-square rounded bg-muted" />
+                    ))}
+                  </div>
+                </div>
               </div>
             </SectionEditor>
           );
