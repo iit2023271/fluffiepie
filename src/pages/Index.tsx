@@ -589,3 +589,80 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
     </div>
   );
 }
+
+// Section navigation bar
+function SectionNavBar({
+  sections,
+  getLabel,
+  onNavigate,
+}: {
+  sections: HomepageSection[];
+  getLabel: (s: HomepageSection) => string;
+  onNavigate: (id: string) => void;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 2);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    const el = scrollRef.current;
+    if (el) el.addEventListener("scroll", checkScroll, { passive: true });
+    window.addEventListener("resize", checkScroll);
+    return () => {
+      el?.removeEventListener("scroll", checkScroll);
+      window.removeEventListener("resize", checkScroll);
+    };
+  }, [checkScroll, sections]);
+
+  const scroll = (dir: number) => {
+    scrollRef.current?.scrollBy({ left: dir * 200, behavior: "smooth" });
+  };
+
+  if (sections.length === 0) return null;
+
+  return (
+    <div className="sticky top-16 z-30 bg-background/80 backdrop-blur-md border-b border-border/50">
+      <div className="container mx-auto px-4 relative">
+        {canScrollLeft && (
+          <button
+            onClick={() => scroll(-1)}
+            className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-background shadow-card flex items-center justify-center hover:bg-secondary transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+        )}
+        <div
+          ref={scrollRef}
+          className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-2.5 px-6"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {sections.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => onNavigate(s.id)}
+              className="shrink-0 px-4 py-2 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors whitespace-nowrap"
+            >
+              {getLabel(s)}
+            </button>
+          ))}
+        </div>
+        {canScrollRight && (
+          <button
+            onClick={() => scroll(1)}
+            className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-background shadow-card flex items-center justify-center hover:bg-secondary transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
