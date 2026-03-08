@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import ImageCropper from "@/components/admin/ImageCropper";
+import ConfirmDialog from "@/components/admin/ConfirmDialog";
 
 interface ConfigItem {
   id: string;
@@ -73,16 +74,16 @@ export default function AdminSettings() {
   const [bannerImage, setBannerImage] = useState<File | null>(null);
   const [bannerCropSrc, setBannerCropSrc] = useState<string | null>(null);
   const [showBannerCropper, setShowBannerCropper] = useState(false);
-
-  // Coupon analytics
   const [orders, setOrders] = useState<any[]>([]);
-
-  // Notification settings
   const [emailSettings, setEmailSettings] = useState<Record<string, boolean>>({
     placed: true, confirmed: true, baking: true, out_for_delivery: true, delivered: true, cancelled: true,
   });
   const [savingEmail, setSavingEmail] = useState(false);
   const [testingEmail, setTestingEmail] = useState<string | null>(null);
+
+  // Confirm dialog state
+  const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; type: "config" | "coupon" | "banner"; id: string; name: string }>({ open: false, type: "config", id: "", name: "" });
+
   useEffect(() => { loadAll(); }, []);
 
   const loadAll = async () => {
@@ -95,7 +96,6 @@ export default function AdminSettings() {
     ]);
     if (configRes.data) {
       setConfigItems(configRes.data as ConfigItem[]);
-      // Load email notification settings
       const emailConfigs = (configRes.data as ConfigItem[]).filter(c => c.config_type === "email_notification");
       if (emailConfigs.length > 0) {
         const settings: Record<string, boolean> = {};
@@ -126,8 +126,7 @@ export default function AdminSettings() {
     else loadAll();
   };
 
-  const deleteConfig = async (id: string, value: string) => {
-    if (!confirm(`Delete "${value}"?`)) return;
+  const deleteConfig = async (id: string) => {
     const { error } = await supabase.from("store_config").delete().eq("id", id);
     if (error) toast.error("Failed to delete");
     else { toast.success("Deleted"); loadAll(); }
@@ -156,7 +155,6 @@ export default function AdminSettings() {
   };
 
   const deleteCoupon = async (id: string) => {
-    if (!confirm("Delete this coupon?")) return;
     await supabase.from("coupons").delete().eq("id", id);
     toast.success("Deleted"); loadAll();
   };
@@ -194,7 +192,6 @@ export default function AdminSettings() {
   };
 
   const deleteBanner = async (id: string) => {
-    if (!confirm("Delete this banner?")) return;
     await supabase.from("banners").delete().eq("id", id);
     toast.success("Deleted"); loadAll();
   };
@@ -257,6 +254,13 @@ export default function AdminSettings() {
     return { ...c, orderCount: couponOrders.length, totalRevenue, totalDiscount };
   });
 
+  const handleDeleteConfirm = () => {
+    if (deleteConfirm.type === "config") deleteConfig(deleteConfirm.id);
+    else if (deleteConfirm.type === "coupon") deleteCoupon(deleteConfirm.id);
+    else if (deleteConfirm.type === "banner") deleteBanner(deleteConfirm.id);
+    setDeleteConfirm({ open: false, type: "config", id: "", name: "" });
+  };
+
   if (loading) {
     return (
       <div>
@@ -301,7 +305,7 @@ export default function AdminSettings() {
                     <div key={item.id} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border transition-colors ${item.is_active ? "border-primary/30 bg-primary/5 text-foreground" : "border-border bg-secondary/50 text-muted-foreground line-through"}`}>
                       <span>{item.value}</span>
                       <button onClick={() => toggleConfig(item.id, item.is_active)} className={`w-4 h-4 rounded-full border-2 transition-colors ${item.is_active ? "border-primary bg-primary" : "border-muted-foreground"}`} />
-                      <button onClick={() => deleteConfig(item.id, item.value)} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
+                      <button onClick={() => setDeleteConfirm({ open: true, type: "config", id: item.id, name: item.value })} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
                     </div>
                   ))}
                   {items.length === 0 && <p className="text-sm text-muted-foreground">No items yet.</p>}
@@ -421,7 +425,7 @@ export default function AdminSettings() {
                   </div>
                   <div className="flex gap-1">
                     <button onClick={() => openCouponEdit(c)} className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-foreground"><Pencil className="w-4 h-4" /></button>
-                    <button onClick={() => deleteCoupon(c.id)} className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => setDeleteConfirm({ open: true, type: "coupon", id: c.id, name: c.code })} className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </div>
               </div>
@@ -557,7 +561,7 @@ export default function AdminSettings() {
                       {b.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                     <button onClick={() => openBannerEdit(b)} className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-foreground"><Pencil className="w-4 h-4" /></button>
-                    <button onClick={() => deleteBanner(b.id)} className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => setDeleteConfirm({ open: true, type: "banner", id: b.id, name: b.title })} className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </div>
               </div>
@@ -570,7 +574,6 @@ export default function AdminSettings() {
       {/* Notifications */}
       {activeSection === "notifications" && (
         <div className="space-y-6">
-          {/* Email Overview */}
           <div className="bg-card rounded-2xl p-6 shadow-soft">
             <div className="flex items-center gap-3 mb-1">
               <Mail className="w-5 h-5 text-primary" />
@@ -626,39 +629,18 @@ export default function AdminSettings() {
               })}
             </div>
           </div>
-
-          {/* Email Stats Summary */}
-          <div className="bg-card rounded-2xl p-6 shadow-soft">
-            <div className="flex items-center gap-3 mb-4">
-              <BarChart3 className="w-5 h-5 text-primary" />
-              <h3 className="font-display font-semibold text-lg">📊 Quick Summary</h3>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="bg-muted/30 rounded-xl p-4">
-                <p className="text-xs text-muted-foreground mb-1">Enabled Statuses</p>
-                <p className="text-2xl font-bold text-primary">
-                  {Object.values(emailSettings).filter(Boolean).length}
-                </p>
-                <p className="text-[10px] text-muted-foreground">of {Object.keys(EMAIL_STATUS_CONFIG).length} statuses</p>
-              </div>
-              <div className="bg-muted/30 rounded-xl p-4">
-                <p className="text-xs text-muted-foreground mb-1">Disabled Statuses</p>
-                <p className="text-2xl font-bold">
-                  {Object.values(emailSettings).filter(v => !v).length}
-                </p>
-                <p className="text-[10px] text-muted-foreground">no emails sent</p>
-              </div>
-              <div className="bg-muted/30 rounded-xl p-4">
-                <p className="text-xs text-muted-foreground mb-1">Email Provider</p>
-                <p className="text-sm font-semibold flex items-center gap-1.5 mt-1">
-                  <CheckCircle2 className="w-4 h-4 text-primary" /> Connected
-                </p>
-                <p className="text-[10px] text-muted-foreground">via Resend</p>
-              </div>
-            </div>
-          </div>
         </div>
       )}
+
+      {/* Shared Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={(open) => setDeleteConfirm(prev => ({ ...prev, open }))}
+        title={`Delete ${deleteConfirm.type === "config" ? "Config Item" : deleteConfirm.type === "coupon" ? "Coupon" : "Banner"}`}
+        description={`Are you sure you want to delete "${deleteConfirm.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 }

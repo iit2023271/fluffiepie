@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import ConfirmDialog from "@/components/admin/ConfirmDialog";
 
 const ITEMS_PER_PAGE = 10;
 const statusOptions = ["placed", "confirmed", "baking", "out_for_delivery", "delivered", "cancelled"];
@@ -36,6 +37,9 @@ export default function AdminOrders() {
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [orderNotes, setOrderNotes] = useState<Record<string, any[]>>({});
   const [newNote, setNewNote] = useState("");
+  const [deleteNoteConfirm, setDeleteNoteConfirm] = useState<{ open: boolean; noteId: string; orderId: string }>({ open: false, noteId: "", orderId: "" });
+  const [bulkConfirm, setBulkConfirm] = useState<{ open: boolean; status: string }>({ open: false, status: "" });
+  const [statusChangeConfirm, setStatusChangeConfirm] = useState<{ open: boolean; orderId: string; newStatus: string }>({ open: false, orderId: "", newStatus: "" });
 
   useEffect(() => { loadOrders(); }, []);
 
@@ -61,7 +65,6 @@ export default function AdminOrders() {
   };
 
   const deleteNote = async (noteId: string, orderId: string) => {
-    if (!confirm("Delete this note?")) return;
     const { error } = await supabase.from("order_notes").delete().eq("id", noteId);
     if (error) toast.error("Failed to delete note");
     else { toast.success("Note deleted"); loadNotes(orderId); }
@@ -153,6 +156,15 @@ export default function AdminOrders() {
 
   const hasDateFilter = dateFrom || dateTo;
   const clearDateFilter = () => { setDateFrom(undefined); setDateTo(undefined); };
+
+  const handleStatusChange = (orderId: string, newStatus: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (newStatus === "cancelled" && order?.status !== "cancelled") {
+      setStatusChangeConfirm({ open: true, orderId, newStatus });
+    } else {
+      updateStatus(orderId, newStatus);
+    }
+  };
 
   return (
     <div>
@@ -249,7 +261,7 @@ export default function AdminOrders() {
           <p className="text-sm font-medium mb-2">✏️ {selectedOrders.size} order{selectedOrders.size > 1 ? "s" : ""} selected — Change status to:</p>
           <div className="flex flex-wrap gap-2">
             {statusOptions.map(s => (
-              <button key={s} onClick={() => bulkUpdateStatus(s)} className="px-3 py-1.5 rounded-lg text-xs bg-secondary hover:bg-primary/10 font-medium">
+              <button key={s} onClick={() => setBulkConfirm({ open: true, status: s })} className="px-3 py-1.5 rounded-lg text-xs bg-secondary hover:bg-primary/10 font-medium">
                 {STATUS_CONFIG[s].emoji} {STATUS_CONFIG[s].label}
               </button>
             ))}
@@ -297,7 +309,7 @@ export default function AdminOrders() {
                       </div>
                       <div className="flex items-center gap-2">
                         <label className="text-[10px] text-muted-foreground mr-1">Status:</label>
-                        <select value={order.status} onChange={(e) => updateStatus(order.id, e.target.value)}
+                        <select value={order.status} onChange={(e) => handleStatusChange(order.id, e.target.value)}
                           className={`px-3 py-1.5 rounded-xl text-xs font-medium border-0 cursor-pointer ${statusCfg.color}`}>
                           {statusOptions.map(s => <option key={s} value={s}>{STATUS_CONFIG[s].emoji} {STATUS_CONFIG[s].label}</option>)}
                         </select>
@@ -350,7 +362,7 @@ export default function AdminOrders() {
                                 <p className="text-sm">{n.note}</p>
                                 <p className="text-[10px] text-muted-foreground mt-1">📅 {format(new Date(n.created_at), "dd MMM yyyy, hh:mm a")}</p>
                               </div>
-                              <button onClick={() => deleteNote(n.id, order.id)} className="shrink-0 p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors" title="Delete note">
+                              <button onClick={() => setDeleteNoteConfirm({ open: true, noteId: n.id, orderId: order.id })} className="shrink-0 p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors" title="Delete note">
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
@@ -375,6 +387,37 @@ export default function AdminOrders() {
           <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filtered.length} itemsPerPage={ITEMS_PER_PAGE} />
         </div>
       )}
+
+      {/* Delete Note Confirm */}
+      <ConfirmDialog
+        open={deleteNoteConfirm.open}
+        onOpenChange={(open) => setDeleteNoteConfirm(prev => ({ ...prev, open }))}
+        title="Delete Note"
+        description="Are you sure you want to delete this note? This action cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={() => { deleteNote(deleteNoteConfirm.noteId, deleteNoteConfirm.orderId); setDeleteNoteConfirm({ open: false, noteId: "", orderId: "" }); }}
+      />
+
+      {/* Bulk Status Change Confirm */}
+      <ConfirmDialog
+        open={bulkConfirm.open}
+        onOpenChange={(open) => setBulkConfirm(prev => ({ ...prev, open }))}
+        title="Bulk Status Update"
+        description={`Change ${selectedOrders.size} order${selectedOrders.size > 1 ? "s" : ""} to "${STATUS_CONFIG[bulkConfirm.status]?.label || bulkConfirm.status}"? ${bulkConfirm.status === "cancelled" ? "This will cancel all selected orders." : ""}`}
+        confirmLabel={`Update ${selectedOrders.size} order${selectedOrders.size > 1 ? "s" : ""}`}
+        variant={bulkConfirm.status === "cancelled" ? "destructive" : "default"}
+        onConfirm={() => { bulkUpdateStatus(bulkConfirm.status); setBulkConfirm({ open: false, status: "" }); }}
+      />
+
+      {/* Cancel Order Confirm */}
+      <ConfirmDialog
+        open={statusChangeConfirm.open}
+        onOpenChange={(open) => setStatusChangeConfirm(prev => ({ ...prev, open }))}
+        title="Cancel Order"
+        description="Are you sure you want to cancel this order? The customer will be notified if email notifications are enabled."
+        confirmLabel="Cancel Order"
+        onConfirm={() => { updateStatus(statusChangeConfirm.orderId, statusChangeConfirm.newStatus); setStatusChangeConfirm({ open: false, orderId: "", newStatus: "" }); }}
+      />
     </div>
   );
 }

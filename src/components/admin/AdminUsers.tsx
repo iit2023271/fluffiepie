@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/components/Pagination";
 import { toast } from "sonner";
+import ConfirmDialog from "@/components/admin/ConfirmDialog";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -28,6 +29,7 @@ export default function AdminUsers() {
   const [currentPage, setCurrentPage] = useState(1);
   const [newTag, setNewTag] = useState("");
   const [allTags, setAllTags] = useState<string[]>([]);
+  const [removeTagConfirm, setRemoveTagConfirm] = useState<{ open: boolean; userId: string; tag: string }>({ open: false, userId: "", tag: "" });
 
   useEffect(() => { loadUsers(); }, []);
 
@@ -47,7 +49,6 @@ export default function AdminUsers() {
     const roles = rolesRes.data || [];
     const tags = tagsRes.data || [];
 
-    // Collect unique tags
     const uniqueTags = [...new Set(tags.map((t: any) => t.tag))];
     setAllTags(uniqueTags);
 
@@ -141,7 +142,6 @@ export default function AdminUsers() {
     }
   };
 
-  // Segment stats
   const segmentStats = useMemo(() => {
     const highValue = users.filter(u => u.orders.reduce((s, o) => s + (o.total || 0), 0) > 5000);
     const newCustomers = users.filter(u => u.orders.length <= 1);
@@ -272,7 +272,7 @@ export default function AdminUsers() {
                         {u.tags.map(t => (
                           <span key={t} className="flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-accent/10 text-accent font-medium">
                             {t}
-                            <button onClick={() => removeTag(u.profile.user_id, t)} className="hover:text-destructive"><X className="w-3 h-3" /></button>
+                            <button onClick={() => setRemoveTagConfirm({ open: true, userId: u.profile.user_id, tag: t })} className="hover:text-destructive"><X className="w-3 h-3" /></button>
                           </span>
                         ))}
                       </div>
@@ -329,11 +329,11 @@ export default function AdminUsers() {
                                   <div className="mt-1 space-y-0.5">
                                     {items.slice(0, 3).map((item: any, idx: number) => (
                                       <div key={idx} className="flex justify-between text-xs text-muted-foreground">
-                                        <span>{item.name} × {item.quantity || 1}</span>
-                                        <span>₹{item.price || 0}</span>
+                                        <span>{item.name} ({item.weight}) × {item.quantity}</span>
+                                        <span>₹{item.price * item.quantity}</span>
                                       </div>
                                     ))}
-                                    {items.length > 3 && <p className="text-[10px] text-muted-foreground">+{items.length - 3} more</p>}
+                                    {items.length > 3 && <p className="text-[10px] text-muted-foreground">+{items.length - 3} more items</p>}
                                   </div>
                                 )}
                               </div>
@@ -347,10 +347,19 @@ export default function AdminUsers() {
               </div>
             );
           })}
-          {filtered.length === 0 && <div className="py-10 text-center text-sm text-muted-foreground">No customers found.</div>}
+          {filtered.length === 0 && <p className="text-center py-8 text-muted-foreground">No customers found</p>}
           <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filtered.length} itemsPerPage={ITEMS_PER_PAGE} />
         </div>
       )}
+
+      <ConfirmDialog
+        open={removeTagConfirm.open}
+        onOpenChange={(open) => setRemoveTagConfirm(prev => ({ ...prev, open }))}
+        title="Remove Tag"
+        description={`Remove the tag "${removeTagConfirm.tag}" from this customer?`}
+        confirmLabel="Remove"
+        onConfirm={() => { removeTag(removeTagConfirm.userId, removeTagConfirm.tag); setRemoveTagConfirm({ open: false, userId: "", tag: "" }); }}
+      />
     </div>
   );
 }
