@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { SlidersHorizontal, X, Search, Sparkles, Check, IndianRupee } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,7 +16,7 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { Slider } from "@/components/ui/slider";
 
 const ITEMS_PER_PAGE = 12;
@@ -39,6 +39,7 @@ export default function Shop() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
   const [selectedTag, setSelectedTag] = useState("");
   const [discountFilter, setDiscountFilter] = useState("");
+  const filterScrollRef = useRef<HTMLDivElement>(null);
 
   // Compute min/max prices from products
   const priceExtents = useMemo(() => {
@@ -260,7 +261,7 @@ export default function Shop() {
               </SheetHeader>
             </div>
 
-            <ScrollArea className="flex-1 px-4">
+            <div ref={filterScrollRef} className="flex-1 overflow-y-auto px-4">
               {/* Price Range Slider */}
               <div className="py-4 border-b border-border/50">
                 <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-4 px-2 flex items-center gap-1.5">
@@ -383,7 +384,7 @@ export default function Shop() {
                   />
                 ))}
               </div>
-            </ScrollArea>
+            </div>
 
             {/* Footer with results button */}
             <div className="p-5 border-t border-border bg-card/50 backdrop-blur-sm">
