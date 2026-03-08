@@ -303,6 +303,31 @@ export default function AdminSettings() {
     else { toast.success("Section removed"); loadAll(); }
   };
 
+  const saveDeliveryConfig = async () => {
+    setSavingDelivery(true);
+    const payload = JSON.stringify(deliveryForm);
+    if (deliveryConfigId) {
+      await supabase.from("store_config").update({ value: payload }).eq("id", deliveryConfigId);
+    } else {
+      const { data } = await supabase.from("store_config").insert({ config_type: "delivery_settings", value: payload, is_active: true, sort_order: 0 }).select("id").single();
+      if (data) setDeliveryConfigId(data.id);
+    }
+    toast.success("Delivery settings saved!");
+    setSavingDelivery(false);
+  };
+
+  const addTimeSlot = () => {
+    const slot = newTimeSlot.trim();
+    if (!slot) return;
+    if (deliveryForm.time_slots.includes(slot)) { toast.error("Already exists"); return; }
+    setDeliveryForm(prev => ({ ...prev, time_slots: [...prev.time_slots, slot] }));
+    setNewTimeSlot("");
+  };
+
+  const removeTimeSlot = (slot: string) => {
+    setDeliveryForm(prev => ({ ...prev, time_slots: prev.time_slots.filter(s => s !== slot) }));
+  };
+
   const handleDeleteConfirm = () => {
     if (deleteConfirm.type === "config") {
       if (deleteConfirm.id.startsWith("section:")) {
