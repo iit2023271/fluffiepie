@@ -76,7 +76,7 @@ function HeroBannerCarousel() {
 
   return (
     <div className="relative w-full overflow-hidden rounded-3xl bg-muted shadow-elevated" style={{ minHeight: '200px' }}>
-      <div className="relative aspect-[21/9] md:aspect-[3/1] w-full">
+      <div className="relative aspect-[16/9] sm:aspect-[21/9] md:aspect-[3/1] w-full">
         <AnimatePresence custom={direction} mode="wait">
           <motion.div
             key={banner.id}
