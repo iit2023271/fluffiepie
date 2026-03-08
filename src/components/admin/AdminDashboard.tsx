@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Package, ShoppingCart, Users, TrendingUp, ArrowUpRight, ArrowDownRight, CalendarDays, X, Download, AlertTriangle, DollarSign, BarChart3, Info } from "lucide-react";
+import { Package, ShoppingCart, Users, TrendingUp, ArrowUpRight, ArrowDownRight, CalendarDays, X, Download, AlertTriangle, DollarSign, BarChart3, Info, RefreshCw } from "lucide-react";
 import { format, subDays, startOfMonth, eachDayOfInterval, eachMonthOfInterval, subMonths, isSameDay, isSameMonth, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
