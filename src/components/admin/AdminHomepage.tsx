@@ -409,55 +409,102 @@ export default function AdminHomepage() {
 
           if (section.id === "hero") return (
             <SectionEditor key="hero" id="hero" label="Hero Section" expanded={expandedSection === "hero"} onToggle={() => toggleExpand("hero")} visible={isSectionVisible("hero")}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><Label className="text-xs">Badge Text</Label><Input value={config.hero.badge} onChange={e => updateHero("badge", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Title Line 1</Label><Input value={config.hero.titleLine1} onChange={e => updateHero("titleLine1", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Title Line 2 (highlighted)</Label><Input value={config.hero.titleLine2} onChange={e => updateHero("titleLine2", e.target.value)} className="mt-1" /></div>
-                <div className="md:col-span-2"><Label className="text-xs">Subtitle</Label><Textarea value={config.hero.subtitle} onChange={e => updateHero("subtitle", e.target.value)} className="mt-1" rows={2} /></div>
-                <div><Label className="text-xs">Primary CTA Text</Label><Input value={config.hero.ctaPrimaryText} onChange={e => updateHero("ctaPrimaryText", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Primary CTA Link</Label><Input value={config.hero.ctaPrimaryLink} onChange={e => updateHero("ctaPrimaryLink", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Secondary CTA Text</Label><Input value={config.hero.ctaSecondaryText} onChange={e => updateHero("ctaSecondaryText", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Secondary CTA Link</Label><Input value={config.hero.ctaSecondaryLink} onChange={e => updateHero("ctaSecondaryLink", e.target.value)} className="mt-1" /></div>
-                <div className="md:col-span-2">
-                  <Label className="text-xs">Hero Image</Label>
-                  <div className="mt-1 flex items-center gap-3">
-                    {config.hero.heroImage && (
-                      <img src={config.hero.heroImage} alt="Hero preview" className="w-20 h-20 rounded-xl object-cover border border-border" />
-                    )}
-                    <label className="flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed border-border bg-muted/30 hover:bg-muted/60 cursor-pointer transition-colors text-sm text-muted-foreground">
-                      <Upload className="w-4 h-4" /> Upload Image
-                      <input type="file" accept="image/*" className="hidden" onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        setHeroCropState({ open: true, src: URL.createObjectURL(file) });
-                        e.target.value = "";
-                      }} />
-                    </label>
-                    {config.hero.heroImage && (
-                      <>
-                        <button onClick={() => setHeroCropState({ open: true, src: config.hero.heroImage! })} className="flex items-center gap-1 px-3 py-2 border border-border rounded-xl text-sm hover:bg-secondary">
-                          <Crop className="w-4 h-4" /> Crop
-                        </button>
-                        <button onClick={() => updateHero("heroImage", "")} className="text-xs text-destructive hover:underline">Remove</button>
-                      </>
-                    )}
+              <div className="space-y-5">
+                {/* Layout Controls */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 rounded-xl bg-muted/50 border">
+                  <div>
+                    <Label className="text-xs">📐 Hero Height</Label>
+                    <Select value={config.hero.heroHeight || "default"} onValueChange={v => updateHero("heroHeight", v)}>
+                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="compact">Compact</SelectItem>
+                        <SelectItem value="default">Default</SelectItem>
+                        <SelectItem value="tall">Tall</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-1">Leave empty to use the default cake image</p>
-                  <ImageCropper
-                    open={heroCropState.open}
-                    imageSrc={heroCropState.src}
-                    aspect={16 / 9}
-                    onClose={() => setHeroCropState({ open: false, src: "" })}
-                    onCropComplete={async (blob) => {
-                      const path = `hero/hero-image-${Date.now()}_cropped.jpg`;
-                      const { error } = await supabase.storage.from("homepage-assets").upload(path, blob, { contentType: "image/jpeg", upsert: true });
-                      if (error) { toast.error("Upload failed"); setHeroCropState({ open: false, src: "" }); return; }
-                      const { data: urlData } = supabase.storage.from("homepage-assets").getPublicUrl(path);
-                      updateHero("heroImage", urlData.publicUrl);
-                      setHeroCropState({ open: false, src: "" });
-                      toast.success("Image cropped & uploaded!");
-                    }}
-                  />
+                  <div>
+                    <Label className="text-xs">🖼️ Image Position</Label>
+                    <Select value={config.hero.imagePosition || "right"} onValueChange={v => updateHero("imagePosition", v)}>
+                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="left">Left (Image first)</SelectItem>
+                        <SelectItem value="right">Right (Default)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Live Preview */}
+                <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview</p>
+                  <div className={`flex ${config.hero.imagePosition === "left" ? "flex-row-reverse" : "flex-row"} gap-4 items-center`}>
+                    <div className="flex-1 min-w-0">
+                      <span className="inline-block px-2 py-0.5 bg-blush text-primary text-[8px] font-medium rounded-full mb-1">{config.hero.badge}</span>
+                      <p className="text-[10px] font-bold truncate">{config.hero.titleLine1}</p>
+                      <p className="text-[10px] font-bold text-primary truncate">{config.hero.titleLine2}</p>
+                      <p className="text-[8px] text-muted-foreground truncate">{config.hero.subtitle}</p>
+                      <div className="flex gap-1 mt-1">
+                        <span className="px-2 py-0.5 bg-primary text-primary-foreground text-[7px] rounded">{config.hero.ctaPrimaryText}</span>
+                        {config.hero.ctaSecondaryText && <span className="px-2 py-0.5 border text-[7px] rounded">{config.hero.ctaSecondaryText}</span>}
+                      </div>
+                    </div>
+                    <div className="w-20 h-16 rounded-lg overflow-hidden bg-muted shrink-0">
+                      {config.hero.heroImage ? <img src={config.hero.heroImage} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20" />}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div><Label className="text-xs">Badge Text</Label><Input value={config.hero.badge} onChange={e => updateHero("badge", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Title Line 1</Label><Input value={config.hero.titleLine1} onChange={e => updateHero("titleLine1", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Title Line 2 (highlighted)</Label><Input value={config.hero.titleLine2} onChange={e => updateHero("titleLine2", e.target.value)} className="mt-1" /></div>
+                  <div className="md:col-span-2"><Label className="text-xs">Subtitle</Label><Textarea value={config.hero.subtitle} onChange={e => updateHero("subtitle", e.target.value)} className="mt-1" rows={2} /></div>
+                  <div><Label className="text-xs">Primary CTA Text</Label><Input value={config.hero.ctaPrimaryText} onChange={e => updateHero("ctaPrimaryText", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Primary CTA Link</Label><Input value={config.hero.ctaPrimaryLink} onChange={e => updateHero("ctaPrimaryLink", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Secondary CTA Text</Label><Input value={config.hero.ctaSecondaryText} onChange={e => updateHero("ctaSecondaryText", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Secondary CTA Link</Label><Input value={config.hero.ctaSecondaryLink} onChange={e => updateHero("ctaSecondaryLink", e.target.value)} className="mt-1" /></div>
+                  <div className="md:col-span-2">
+                    <Label className="text-xs">Hero Image</Label>
+                    <div className="mt-1 flex items-center gap-3">
+                      {config.hero.heroImage && (
+                        <img src={config.hero.heroImage} alt="Hero preview" className="w-20 h-20 rounded-xl object-cover border border-border" />
+                      )}
+                      <label className="flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed border-border bg-muted/30 hover:bg-muted/60 cursor-pointer transition-colors text-sm text-muted-foreground">
+                        <Upload className="w-4 h-4" /> Upload Image
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setHeroCropState({ open: true, src: URL.createObjectURL(file) });
+                          e.target.value = "";
+                        }} />
+                      </label>
+                      {config.hero.heroImage && (
+                        <>
+                          <button onClick={() => setHeroCropState({ open: true, src: config.hero.heroImage! })} className="flex items-center gap-1 px-3 py-2 border border-border rounded-xl text-sm hover:bg-secondary">
+                            <Crop className="w-4 h-4" /> Crop
+                          </button>
+                          <button onClick={() => updateHero("heroImage", "")} className="text-xs text-destructive hover:underline">Remove</button>
+                        </>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-1">Leave empty to use the default cake image</p>
+                    <ImageCropper
+                      open={heroCropState.open}
+                      imageSrc={heroCropState.src}
+                      onClose={() => setHeroCropState({ open: false, src: "" })}
+                      showAspectPresets
+                      onCropComplete={async (blob) => {
+                        const path = `hero/hero-image-${Date.now()}_cropped.jpg`;
+                        const { error } = await supabase.storage.from("homepage-assets").upload(path, blob, { contentType: "image/jpeg", upsert: true });
+                        if (error) { toast.error("Upload failed"); setHeroCropState({ open: false, src: "" }); return; }
+                        const { data: urlData } = supabase.storage.from("homepage-assets").getPublicUrl(path);
+                        updateHero("heroImage", urlData.publicUrl);
+                        setHeroCropState({ open: false, src: "" });
+                        toast.success("Image cropped & uploaded!");
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </SectionEditor>
