@@ -31,21 +31,24 @@ export default function Shop() {
     if (searchQuery) result = result.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase()));
     
     // Apply all selected filters
+    const normalize = (value: unknown) => String(value ?? "").trim().toLowerCase();
     for (const [filterType, filterValue] of Object.entries(selectedFilters)) {
       if (!filterValue) continue;
+      const normalizedFilter = normalize(filterValue);
+
       if (filterType === "category") {
-        result = result.filter((p) => p.category === filterValue);
+        result = result.filter((p) => normalize(p.category) === normalizedFilter);
       } else if (filterType === "occasion") {
-        result = result.filter((p) => p.occasion.includes(filterValue));
+        result = result.filter((p) => Array.isArray(p.occasion) && p.occasion.some((o) => normalize(o) === normalizedFilter));
       } else if (filterType === "flavour") {
-        result = result.filter((p) => p.flavour === filterValue);
+        result = result.filter((p) => normalize(p.flavour) === normalizedFilter);
       } else {
         // Custom attribute filter
         result = result.filter((p) => {
           const attrs = (p as any).custom_attributes || {};
           const val = attrs[filterType];
-          if (Array.isArray(val)) return val.includes(filterValue);
-          return val === filterValue;
+          if (Array.isArray(val)) return val.some((item) => normalize(item) === normalizedFilter);
+          return normalize(val) === normalizedFilter;
         });
       }
     }
