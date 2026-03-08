@@ -13,7 +13,7 @@ export default function Shop() {
   const [searchParams] = useSearchParams();
   const initialOccasion = searchParams.get("occasion") || "";
   const { data: products = [] } = useProducts();
-  const { categories: categoryTypes, flavours, occasions } = useStoreConfig();
+  const { filterSections: allFilters } = useStoreConfig();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
