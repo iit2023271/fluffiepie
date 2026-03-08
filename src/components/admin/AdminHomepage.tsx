@@ -781,6 +781,23 @@ export default function AdminHomepage() {
                     </div>
                   ))}
                 </div>
+                {/* Preview */}
+                <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview ({config.howItWorks.steps.length} steps)</p>
+                  <div className="text-center mb-2">
+                    <p className="text-sm font-bold">{config.howItWorks.title}</p>
+                    <p className="text-[10px] text-muted-foreground">{config.howItWorks.subtitle}</p>
+                  </div>
+                  <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.min(config.howItWorks.steps.length, 4)}, 1fr)` }}>
+                    {config.howItWorks.steps.map((step, i) => (
+                      <div key={i} className="text-center p-2 rounded-lg bg-background border">
+                        <span className="text-sm">{step.emoji}</span>
+                        <p className="text-[8px] font-semibold truncate mt-0.5">{step.title}</p>
+                        <p className="text-[7px] text-muted-foreground truncate">{step.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </SectionEditor>
           );
