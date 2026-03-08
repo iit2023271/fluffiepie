@@ -303,8 +303,15 @@ export default function AdminOrders() {
                       <div className="space-y-2">
                         {notes.map((n: any) => (
                           <div key={n.id} className="bg-card rounded-lg p-3 border border-border">
-                            <p className="text-sm">{n.note}</p>
-                            <p className="text-[10px] text-muted-foreground mt-1">{format(new Date(n.created_at), "dd MMM, hh:mm a")}</p>
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <p className="text-sm">{n.note}</p>
+                                <p className="text-[10px] text-muted-foreground mt-1">{format(new Date(n.created_at), "dd MMM, hh:mm a")}</p>
+                              </div>
+                              <button onClick={() => deleteNote(n.id, order.id)} className="shrink-0 p-1 text-muted-foreground hover:text-destructive rounded">
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
                         ))}
                       </div>
