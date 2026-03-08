@@ -970,6 +970,29 @@ function FeatureGridEditor({ data, onChange }: { data: CustomSectionData; onChan
         <div><Label className="text-xs">Section Title</Label><Input value={data.gridTitle || ""} onChange={e => onChange({ gridTitle: e.target.value })} className="mt-1" /></div>
         <div><Label className="text-xs">Section Subtitle</Label><Input value={data.gridSubtitle || ""} onChange={e => onChange({ gridSubtitle: e.target.value })} className="mt-1" /></div>
       </div>
+      <div className="p-3 rounded-xl bg-muted/50 border">
+        <Label className="text-xs">🔲 Grid Columns</Label>
+        <Select value={String(data.gridColumns || 4)} onValueChange={v => onChange({ gridColumns: parseInt(v) })}>
+          <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="2">2 Columns</SelectItem>
+            <SelectItem value="3">3 Columns</SelectItem>
+            <SelectItem value="4">4 Columns (Default)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      {/* Preview */}
+      <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview ({features.length} features in {data.gridColumns || 4} cols)</p>
+        <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${data.gridColumns || 4}, 1fr)` }}>
+          {features.map((f, i) => (
+            <div key={i} className="text-center p-2 rounded-lg bg-background border text-[8px]">
+              <span className="text-sm">{f.emoji}</span>
+              <p className="font-semibold truncate mt-0.5">{f.title}</p>
+            </div>
+          ))}
+        </div>
+      </div>
       <div className="flex items-center justify-between">
         <Label className="text-xs font-semibold uppercase tracking-wider">Features</Label>
         <Button variant="outline" size="sm" onClick={() => onChange({ features: [...features, { emoji: "⭐", title: "Feature", desc: "Description" }] })} className="gap-1 text-xs h-7"><Plus className="w-3 h-3" /> Add</Button>
