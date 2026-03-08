@@ -188,6 +188,7 @@ export default function AdminProducts() {
       low_stock_threshold: (product as any).low_stock_threshold ?? 10,
       sku: (product as any).sku || "",
       custom_attributes: ((product as any).custom_attributes as Record<string, string | string[]>) || {},
+      tags: (product as any).tags || [],
     });
     setImageFile(null);
     setPendingAdditionalFiles([]);
