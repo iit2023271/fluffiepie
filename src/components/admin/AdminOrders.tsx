@@ -241,21 +241,25 @@ export default function AdminOrders() {
     toast.success("Orders downloaded!");
   };
 
-  const filtered = useMemo(() => {
+  const baseFiltered = useMemo(() => {
     return orders.filter(o => {
       const addr = o.delivery_address as any;
       const matchSearch = !search || o.id.toLowerCase().includes(search.toLowerCase()) ||
         (addr?.name || "").toLowerCase().includes(search.toLowerCase()) ||
         (addr?.phone || "").includes(search);
-      const matchStatus = !statusFilter || o.status === statusFilter;
       const orderDate = new Date(o.created_at);
       const matchDateFrom = !dateFrom || orderDate >= startOfDay(dateFrom);
       const matchDateTo = !dateTo || orderDate <= endOfDay(dateTo);
       // When searching, show all orders; otherwise default to today only unless "All Orders" is toggled
       const matchToday = search ? true : showAllOrders ? true : isToday(orderDate);
-      return matchSearch && matchStatus && matchDateFrom && matchDateTo && matchToday;
+      return matchSearch && matchDateFrom && matchDateTo && matchToday;
     });
-  }, [orders, search, statusFilter, dateFrom, dateTo, showAllOrders]);
+  }, [orders, search, dateFrom, dateTo, showAllOrders]);
+
+  const filtered = useMemo(() => {
+    if (!statusFilter) return baseFiltered;
+    return baseFiltered.filter(o => o.status === statusFilter);
+  }, [baseFiltered, statusFilter]);
 
   useEffect(() => { setCurrentPage(1); }, [search, statusFilter, dateFrom, dateTo]);
 
