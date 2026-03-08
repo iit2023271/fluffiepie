@@ -388,17 +388,17 @@ export default function AdminDashboard() {
       </div>
 
       {/* KPI Cards Row 2 */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
         {[
-          { label: "✅ Delivery Rate", value: `${metrics.conversionRate}%`, sub: "Orders successfully delivered" },
-          { label: "❌ Cancel Rate", value: `${metrics.cancelRate}%`, sub: `${metrics.cancelledCount} order${metrics.cancelledCount !== 1 ? "s" : ""} cancelled` },
-          { label: "🏷️ Discounts Given", value: `₹${metrics.totalDiscount.toLocaleString()}`, sub: `Used in ${metrics.couponOrders} order${metrics.couponOrders !== 1 ? "s" : ""}` },
-          { label: "📊 Net Revenue", value: `₹${metrics.netRevenue.toLocaleString()}`, sub: "Revenue after refunds" },
+          { label: "✅ Delivery Rate", value: `${metrics.conversionRate}%`, sub: "Successfully delivered" },
+          { label: "❌ Cancel Rate", value: `${metrics.cancelRate}%`, sub: `${metrics.cancelledCount} cancelled` },
+          { label: "🏷️ Discounts", value: `₹${metrics.totalDiscount.toLocaleString()}`, sub: `${metrics.couponOrders} coupon orders` },
+          { label: "📊 Net Revenue", value: `₹${metrics.netRevenue.toLocaleString()}`, sub: "After refunds" },
         ].map((stat) => (
-          <div key={stat.label} className="bg-card rounded-2xl p-4 shadow-soft">
-            <p className="text-lg font-bold">{stat.value}</p>
-            <p className="text-xs font-medium text-muted-foreground mt-0.5">{stat.label}</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">{stat.sub}</p>
+          <div key={stat.label} className="bg-card rounded-2xl p-3 md:p-4 shadow-soft overflow-hidden">
+            <p className="text-base md:text-lg font-bold truncate">{stat.value}</p>
+            <p className="text-[10px] md:text-xs font-medium text-muted-foreground mt-0.5 truncate">{stat.label}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{stat.sub}</p>
           </div>
         ))}
       </div>
