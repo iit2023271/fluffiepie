@@ -634,8 +634,8 @@ export default function AdminUsers() {
             </div>
             <div className="flex items-center justify-between">
               <p className="text-[11px] text-muted-foreground">✉️ {emailDialog.email || "No email"}</p>
-              <Button onClick={sendEmail} className="gap-1.5" disabled={!emailSubject.trim() || !emailBody.trim() || sendingEmail}>
-                <Send className="w-4 h-4" /> {sendingEmail ? "Sending..." : "Send Email"}
+              <Button onClick={sendEmail} className="gap-1.5" disabled={!emailSubject.trim() || !emailBody.trim()}>
+                <Send className="w-4 h-4" /> Open in Gmail
               </Button>
             </div>
           </div>
