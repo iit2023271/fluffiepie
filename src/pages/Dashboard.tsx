@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Package, User, LogOut, Clock, CheckCircle, Truck, ChefHat } from "lucide-react";
+import { Package, User, LogOut, Clock, CheckCircle, Truck, ChefHat, Search } from "lucide-react";
 import { format } from "date-fns";
 
 interface Order {
@@ -38,6 +38,8 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<Profile>({ full_name: "", phone: "" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [orderSearch, setOrderSearch] = useState("");
+  const [orderStatusFilter, setOrderStatusFilter] = useState("");
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
@@ -125,6 +127,29 @@ export default function Dashboard() {
         {/* Orders */}
         {tab === "orders" && (
           <div className="space-y-4">
+            {orders.length > 0 && (
+              <div className="flex flex-wrap gap-3 mb-2">
+                <div className="relative flex-1 min-w-[180px] max-w-sm">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    placeholder="Search orders..."
+                    value={orderSearch}
+                    onChange={(e) => setOrderSearch(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-border text-sm bg-background focus:outline-none focus:border-primary"
+                  />
+                </div>
+                <select value={orderStatusFilter} onChange={(e) => setOrderStatusFilter(e.target.value)}
+                  className="px-3 py-2 rounded-xl border border-border text-sm bg-background">
+                  <option value="">All Statuses</option>
+                  <option value="placed">Placed</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="baking">Baking</option>
+                  <option value="out_for_delivery">Out for Delivery</option>
+                  <option value="delivered">Delivered</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+            )}
             {orders.length === 0 ? (
               <div className="text-center py-16 rounded-2xl bg-card shadow-soft">
                 <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -135,7 +160,14 @@ export default function Dashboard() {
                 </Link>
               </div>
             ) : (
-              orders.map((order) => {
+              orders
+                .filter((order) => {
+                  const matchSearch = !orderSearch || order.id.toLowerCase().includes(orderSearch.toLowerCase()) ||
+                    (order.items as any[])?.some((item: any) => item.name?.toLowerCase().includes(orderSearch.toLowerCase()));
+                  const matchStatus = !orderStatusFilter || order.status === orderStatusFilter;
+                  return matchSearch && matchStatus;
+                })
+                .map((order) => {
                 const status = statusConfig[order.status] || statusConfig.placed;
                 const StatusIcon = status.icon;
                 return (

@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal, X, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { flavours, categoryTypes, occasions } from "@/data/products";
 import { useProducts } from "@/hooks/useProducts";
@@ -11,6 +11,7 @@ export default function Shop() {
   const initialOccasion = searchParams.get("occasion") || "";
   const { data: products = [] } = useProducts();
 
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedOccasion, setSelectedOccasion] = useState(initialOccasion);
   const [selectedFlavour, setSelectedFlavour] = useState("");
@@ -19,6 +20,7 @@ export default function Shop() {
 
   const filtered = useMemo(() => {
     let result = [...products];
+    if (searchQuery) result = result.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase()));
     if (selectedCategory) result = result.filter((p) => p.category === selectedCategory);
     if (selectedOccasion) result = result.filter((p) => p.occasion.includes(selectedOccasion));
     if (selectedFlavour) result = result.filter((p) => p.flavour === selectedFlavour);
@@ -30,11 +32,12 @@ export default function Shop() {
       default: result.sort((a, b) => b.reviewCount - a.reviewCount);
     }
     return result;
-  }, [selectedCategory, selectedOccasion, selectedFlavour, sortBy]);
+  }, [searchQuery, selectedCategory, selectedOccasion, selectedFlavour, sortBy, products]);
 
-  const hasFilters = selectedCategory || selectedOccasion || selectedFlavour;
+  const hasFilters = selectedCategory || selectedOccasion || selectedFlavour || searchQuery;
 
   const clearFilters = () => {
+    setSearchQuery("");
     setSelectedCategory("");
     setSelectedOccasion("");
     setSelectedFlavour("");
@@ -68,6 +71,17 @@ export default function Shop() {
           {selectedOccasion ? `${selectedOccasion} Cakes` : "All Cakes"}
         </h1>
         <p className="text-muted-foreground">{filtered.length} products found</p>
+      </div>
+
+      {/* Search Bar */}
+      <div className="relative mb-6 max-w-lg">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <input
+          placeholder="Search cakes by name..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border text-sm bg-background focus:outline-none focus:border-primary transition-colors"
+        />
       </div>
 
       {/* Toolbar */}
