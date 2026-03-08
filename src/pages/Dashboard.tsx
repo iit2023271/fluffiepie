@@ -63,6 +63,38 @@ export default function Dashboard() {
     supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => {
       setIsAdmin(!!data);
     });
+
+    // Real-time subscription for order notes
+    const channel = supabase
+      .channel('customer-order-notes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'order_notes' },
+        (payload) => {
+          const note = payload.new as any;
+          if (payload.eventType === 'INSERT' && note?.note_type === 'customer') {
+            setOrderNotes(prev => {
+              const existing = prev[note.order_id] || [];
+              return { ...prev, [note.order_id]: [...existing, { id: note.id, note: note.note, note_type: note.note_type, created_at: note.created_at }] };
+            });
+            toast.info("New note from the store on your order!");
+          } else if (payload.eventType === 'DELETE') {
+            const old = payload.old as any;
+            if (old?.id) {
+              setOrderNotes(prev => {
+                const updated = { ...prev };
+                for (const orderId of Object.keys(updated)) {
+                  updated[orderId] = updated[orderId].filter(n => n.id !== old.id);
+                }
+                return updated;
+              });
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [user, navigate]);
 
   const loadData = async () => {
