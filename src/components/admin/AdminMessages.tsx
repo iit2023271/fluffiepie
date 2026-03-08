@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, MailOpen, Trash2, Search, RefreshCw, X } from "lucide-react";
+import { Mail, MailOpen, Trash2, Search, RefreshCw, X, User } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -11,6 +11,10 @@ interface ContactMessage {
   message: string;
   is_read: boolean;
   created_at: string;
+  user_id: string | null;
+  profile_name?: string | null;
+  profile_email?: string | null;
+  profile_phone?: string | null;
 }
 
 export default function AdminMessages() {
@@ -22,11 +26,38 @@ export default function AdminMessages() {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase
+    // Fetch messages
+    const { data: msgs } = await supabase
       .from("contact_messages" as any)
       .select("*")
       .order("created_at", { ascending: false }) as any;
-    setMessages(data || []);
+
+    if (!msgs) { setMessages([]); setLoading(false); return; }
+
+    // Fetch profiles for user_ids
+    const userIds = [...new Set((msgs as any[]).filter(m => m.user_id).map(m => m.user_id))];
+    let profileMap: Record<string, { full_name: string | null; email: string | null; phone: string | null }> = {};
+
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, email, phone")
+        .in("user_id", userIds);
+      if (profiles) {
+        profiles.forEach((p: any) => {
+          profileMap[p.user_id] = { full_name: p.full_name, email: p.email, phone: p.phone };
+        });
+      }
+    }
+
+    const enriched = (msgs as any[]).map(m => ({
+      ...m,
+      profile_name: m.user_id ? profileMap[m.user_id]?.full_name : null,
+      profile_email: m.user_id ? profileMap[m.user_id]?.email : null,
+      profile_phone: m.user_id ? profileMap[m.user_id]?.phone : null,
+    }));
+
+    setMessages(enriched);
     setLoading(false);
   };
 
@@ -137,6 +168,11 @@ export default function AdminMessages() {
                       <span className={`text-sm truncate ${!msg.is_read ? "font-bold" : "font-medium"}`}>
                         {msg.name}
                       </span>
+                      {msg.user_id && (
+                        <span className="shrink-0" title="Registered user">
+                          <User className="w-3 h-3 text-primary" />
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-muted-foreground truncate mt-0.5">{msg.email}</p>
                     <p className="text-xs text-muted-foreground truncate mt-1 line-clamp-1">{msg.message}</p>
@@ -188,6 +224,26 @@ export default function AdminMessages() {
                   </button>
                 </div>
               </div>
+
+              {/* User Info Card */}
+              {selectedMsg.user_id && (
+                <div className="bg-secondary/50 rounded-xl p-4 mb-4 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <User className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold">
+                      {selectedMsg.profile_name || "Unnamed User"}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+                      {selectedMsg.profile_email && <span>{selectedMsg.profile_email}</span>}
+                      {selectedMsg.profile_phone && <span>📞 {selectedMsg.profile_phone}</span>}
+                      <span className="text-[10px] opacity-60">ID: {selectedMsg.user_id.slice(0, 8)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="bg-secondary/50 rounded-xl p-5 text-sm leading-relaxed whitespace-pre-wrap">
                 {selectedMsg.message}
               </div>
