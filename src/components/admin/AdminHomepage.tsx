@@ -159,6 +159,38 @@ export default function AdminHomepage() {
   const addStep = () => setConfig(prev => ({ ...prev, howItWorks: { ...prev.howItWorks, steps: [...prev.howItWorks.steps, { emoji: "⭐", title: "New Step", desc: "Description" }] } }));
   const removeStep = (idx: number) => setConfig(prev => ({ ...prev, howItWorks: { ...prev.howItWorks, steps: prev.howItWorks.steps.filter((_, i) => i !== idx) } }));
   const updateReviews = (field: string, value: string | number) => setConfig(prev => ({ ...prev, reviews: { ...prev.reviews, [field]: value } }));
+  const updateFooter = (field: string, value: any) => setConfig(prev => ({ ...prev, footer: { ...prev.footer, [field]: value } }));
+  const updateFooterColumn = (colIdx: number, field: string, value: any) => {
+    setConfig(prev => ({
+      ...prev,
+      footer: { ...prev.footer, columns: prev.footer.columns.map((c, i) => i === colIdx ? { ...c, [field]: value } : c) },
+    }));
+  };
+  const updateFooterLink = (colIdx: number, linkIdx: number, field: string, value: string) => {
+    setConfig(prev => ({
+      ...prev,
+      footer: {
+        ...prev.footer,
+        columns: prev.footer.columns.map((c, ci) =>
+          ci === colIdx ? { ...c, links: c.links.map((l, li) => li === linkIdx ? { ...l, [field]: value } : l) } : c
+        ),
+      },
+    }));
+  };
+  const addFooterColumn = () => setConfig(prev => ({ ...prev, footer: { ...prev.footer, columns: [...prev.footer.columns, { title: "New Column", links: [{ label: "Link", url: "#" }] }] } }));
+  const removeFooterColumn = (idx: number) => setConfig(prev => ({ ...prev, footer: { ...prev.footer, columns: prev.footer.columns.filter((_, i) => i !== idx) } }));
+  const addFooterLink = (colIdx: number) => {
+    setConfig(prev => ({
+      ...prev,
+      footer: { ...prev.footer, columns: prev.footer.columns.map((c, i) => i === colIdx ? { ...c, links: [...c.links, { label: "New Link", url: "#" }] } : c) },
+    }));
+  };
+  const removeFooterLink = (colIdx: number, linkIdx: number) => {
+    setConfig(prev => ({
+      ...prev,
+      footer: { ...prev.footer, columns: prev.footer.columns.map((c, ci) => ci === colIdx ? { ...c, links: c.links.filter((_, li) => li !== linkIdx) } : c) },
+    }));
+  };
 
   const toggleExpand = (id: string) => setExpandedSection(prev => prev === id ? null : id);
   const isSectionVisible = (id: string) => config.sections.find(s => s.id === id)?.visible ?? true;
