@@ -50,6 +50,7 @@ export default function Dashboard() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { storeInfo } = useStoreInfo();
+  const { config: deliveryConfig } = useDeliveryConfig();
   const { isWishlisted, toggle: toggleWishlist } = useWishlist();
   const { data: allProducts = [] } = useProducts();
   const [tab, setTab] = useState<"orders" | "profile" | "addresses" | "wishlist">("orders");
@@ -64,7 +65,6 @@ export default function Dashboard() {
   const [existingReviews, setExistingReviews] = useState<Set<string>>(new Set());
   const [orderNotes, setOrderNotes] = useState<Record<string, OrderNote[]>>({});
   const [cancelConfirm, setCancelConfirm] = useState<{ open: boolean; orderId: string }>({ open: false, orderId: "" });
-  const CANCEL_WINDOW_MINUTES = 30;
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
