@@ -308,15 +308,15 @@ export default function AdminOrders() {
 
   const [undoConfirm, setUndoConfirm] = useState<{ open: boolean; orderId: string; prevStatus: string }>({ open: false, orderId: "", prevStatus: "" });
 
-  // Stats from ALL orders (not filtered)
+  // Stats derived from the currently filtered order set
   const orderStats = useMemo(() => {
-    const today = orders.filter(o => isToday(new Date(o.created_at)));
-    const todayRevenue = today.filter(o => o.status !== "cancelled").reduce((s, o) => s + (o.total || 0), 0);
-    const pending = orders.filter(o => ["placed", "confirmed"].includes(o.status));
-    const inProgress = orders.filter(o => ["baking", "out_for_delivery"].includes(o.status));
-    const delivered = orders.filter(o => o.status === "delivered");
-    return { todayCount: today.length, todayRevenue, pendingCount: pending.length, inProgressCount: inProgress.length, deliveredCount: delivered.length };
-  }, [orders]);
+    const revenue = filtered.filter(o => o.status !== "cancelled").reduce((s, o) => s + (o.total || 0), 0);
+    const pending = filtered.filter(o => ["placed", "confirmed"].includes(o.status));
+    const delivered = filtered.filter(o => o.status === "delivered");
+    return { totalCount: filtered.length, revenue, pendingCount: pending.length, deliveredCount: delivered.length };
+  }, [filtered]);
+
+  const statsLabel = showAllOrders ? "All" : (dateFrom || dateTo) ? "Filtered" : "Today's";
 
   return (
     <div>
@@ -336,16 +336,16 @@ export default function AdminOrders() {
         <div className="bg-card rounded-2xl p-4 border border-border">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center"><Package className="w-4 h-4 text-primary" /></div>
-            <span className="text-xs text-muted-foreground">Today's Orders</span>
+            <span className="text-xs text-muted-foreground">{statsLabel} Orders</span>
           </div>
-          <p className="text-2xl font-bold">{orderStats.todayCount}</p>
+          <p className="text-2xl font-bold">{orderStats.totalCount}</p>
         </div>
         <div className="bg-card rounded-2xl p-4 border border-border">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-sm">💰</div>
-            <span className="text-xs text-muted-foreground">Today's Revenue</span>
+            <span className="text-xs text-muted-foreground">{statsLabel} Revenue</span>
           </div>
-          <p className="text-2xl font-bold">₹{orderStats.todayRevenue.toLocaleString()}</p>
+          <p className="text-2xl font-bold">₹{orderStats.revenue.toLocaleString()}</p>
         </div>
         <div className="bg-card rounded-2xl p-4 border border-border">
           <div className="flex items-center gap-2 mb-1">
