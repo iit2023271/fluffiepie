@@ -36,7 +36,7 @@ const statusConfig: Record<string, { label: string; icon: any; color: string }> 
 export default function Dashboard() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<"orders" | "profile">("orders");
+  const [tab, setTab] = useState<"orders" | "profile" | "addresses">("orders");
   const [orders, setOrders] = useState<Order[]>([]);
   const [profile, setProfile] = useState<Profile>({ full_name: "", phone: "" });
   const [loading, setLoading] = useState(true);
