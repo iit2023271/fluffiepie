@@ -88,9 +88,9 @@ export default function Shop() {
     return result;
   }, [searchQuery, selectedFilters, sortBy, products, priceRange]);
 
-  useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedFilters, sortBy]);
+  useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedFilters, sortBy, priceRange]);
 
-  const activeFilterCount = Object.values(selectedFilters).filter(v => v).length;
+  const activeFilterCount = Object.values(selectedFilters).filter(v => v).length + (isPriceFiltered ? 1 : 0);
   const hasFilters = activeFilterCount > 0 || searchQuery;
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
@@ -99,6 +99,7 @@ export default function Shop() {
   const clearFilters = () => {
     setSearchQuery("");
     setSelectedFilters({});
+    setPriceRange([priceExtents.min, priceExtents.max]);
     setCurrentPage(1);
   };
 
