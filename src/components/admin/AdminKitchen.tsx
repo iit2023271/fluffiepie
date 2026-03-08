@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parse, startOfDay, endOfDay, addDays, isToday, isTomorrow, isYesterday } from "date-fns";
-import { ChefHat, Calendar as CalendarIcon, Printer, CheckCircle2, Circle, Clock, Truck } from "lucide-react";
+import { ChefHat, Calendar as CalendarIcon, Printer, CheckCircle2, Circle, Clock, Truck, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface OrderItem {
   name: string;
@@ -153,9 +154,25 @@ export default function AdminKitchen() {
             Items to prepare for <span className="font-semibold text-foreground">{dateLabel}'s deliveries</span>
           </p>
         </div>
-        <Button variant="outline" size="sm" className="text-xs gap-1.5 print:hidden" onClick={() => window.print()}>
-          <Printer className="w-3.5 h-3.5" /> Print Sheet
-        </Button>
+        <div className="flex items-center gap-2 print:hidden">
+          <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={() => {
+            const rows = [["Item", "Weight", "Total Qty", "Orders"]];
+            aggregated.forEach(item => {
+              rows.push([item.name, item.weight, String(item.totalQuantity), item.orders.map(o => `${o.customerName} x${o.quantity}`).join("; ")]);
+            });
+            const csv = rows.map(r => r.map(c => `"${c}"`).join(",")).join("\n");
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a"); a.href = url; a.download = `kitchen-prep-${format(selectedDate, "yyyy-MM-dd")}.csv`; a.click();
+            URL.revokeObjectURL(url);
+            toast.success("Prep sheet exported!");
+          }}>
+            <Download className="w-3.5 h-3.5" /> Export
+          </Button>
+          <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={() => window.print()}>
+            <Printer className="w-3.5 h-3.5" /> Print Sheet
+          </Button>
+        </div>
       </div>
 
       {/* Date Navigation */}
