@@ -50,16 +50,16 @@ function ProductCard({ product, index = 0, isWishlisted = false, onToggleWishlis
     toast.success(`${product.name} added to cart!`);
   }, [product, defaultWeight, isSoldOut, dispatch]);
 
-  const handleIncrement = (e: React.MouseEvent) => {
+  const handleIncrement = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     dispatch({
       type: "UPDATE_QUANTITY",
       payload: { id: product.id, weight: defaultWeight, quantity: cartQty + 1 },
     });
-  };
+  }, [product.id, defaultWeight, cartQty, dispatch]);
 
-  const handleDecrement = (e: React.MouseEvent) => {
+  const handleDecrement = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (cartQty <= 1) {
@@ -71,7 +71,7 @@ function ProductCard({ product, index = 0, isWishlisted = false, onToggleWishlis
         payload: { id: product.id, weight: defaultWeight, quantity: cartQty - 1 },
       });
     }
-  };
+  }, [product.id, defaultWeight, cartQty, dispatch]);
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
