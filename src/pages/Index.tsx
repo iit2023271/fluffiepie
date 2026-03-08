@@ -390,11 +390,159 @@ export default function Index() {
       ) : null,
   };
 
+  // Render a custom section
+  const renderCustomSection = (section: HomepageSection) => {
+    const data = section.customData;
+    if (!data) return null;
+
+    switch (data.type) {
+      case "text_block":
+        return (
+          <section key={section.id} className="container mx-auto px-4 py-16">
+            <div className={`max-w-3xl ${data.alignment === "center" ? "mx-auto text-center" : data.alignment === "right" ? "ml-auto text-right" : ""}`}>
+              {data.heading && <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">{data.heading}</h2>}
+              {data.body && <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{data.body}</p>}
+            </div>
+          </section>
+        );
+
+      case "cta_banner": {
+        const bgMap: Record<string, string> = {
+          primary: "bg-primary text-primary-foreground",
+          blush: "bg-blush text-foreground",
+          cream: "bg-cream text-foreground",
+          muted: "bg-muted text-foreground",
+        };
+        return (
+          <section key={section.id} className={`py-16 ${bgMap[data.ctaBg || "primary"]}`}>
+            <div className="container mx-auto px-4 text-center">
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+                {data.ctaTitle && <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{data.ctaTitle}</h2>}
+                {data.ctaSubtitle && <p className="text-lg opacity-80 mb-6 max-w-lg mx-auto">{data.ctaSubtitle}</p>}
+                {data.ctaButtonText && data.ctaButtonLink && (
+                  <Link
+                    to={data.ctaButtonLink}
+                    className={`inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-medium transition-opacity hover:opacity-90 shadow-card ${
+                      data.ctaBg === "primary" ? "bg-background text-foreground" : "bg-primary text-primary-foreground"
+                    }`}
+                  >
+                    {data.ctaButtonText} <ArrowRight className="w-4 h-4" />
+                  </Link>
+                )}
+              </motion.div>
+            </div>
+          </section>
+        );
+      }
+
+      case "feature_grid":
+        return (
+          <section key={section.id} className="container mx-auto px-4 py-16">
+            <div className="text-center mb-12">
+              {data.gridTitle && <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{data.gridTitle}</h2>}
+              {data.gridSubtitle && <p className="text-muted-foreground">{data.gridSubtitle}</p>}
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {(data.features || []).map((f, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="text-center p-6 rounded-2xl bg-card shadow-soft hover:shadow-card transition-shadow"
+                >
+                  <div className="text-3xl mb-3">{f.emoji}</div>
+                  <h3 className="text-sm font-display font-semibold mb-1">{f.title}</h3>
+                  <p className="text-xs text-muted-foreground">{f.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+        );
+
+      case "faq":
+        return (
+          <section key={section.id} className="container mx-auto px-4 py-16">
+            <div className="text-center mb-12">
+              {data.faqTitle && <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{data.faqTitle}</h2>}
+              {data.faqSubtitle && <p className="text-muted-foreground">{data.faqSubtitle}</p>}
+            </div>
+            <div className="max-w-2xl mx-auto space-y-3">
+              {(data.faqs || []).map((faq, i) => (
+                <FaqItem key={i} question={faq.question} answer={faq.answer} />
+              ))}
+            </div>
+          </section>
+        );
+
+      case "spacer":
+        return <div key={section.id} style={{ height: data.spacerHeight || 60 }} />;
+
+      case "image_gallery":
+        return (
+          <section key={section.id} className="container mx-auto px-4 py-16">
+            <div className="text-center mb-12">
+              {data.galleryTitle && <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{data.galleryTitle}</h2>}
+              {data.gallerySubtitle && <p className="text-muted-foreground">{data.gallerySubtitle}</p>}
+            </div>
+            {(data.images || []).length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {(data.images || []).map((img, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.05 }}
+                    className="rounded-2xl overflow-hidden bg-muted aspect-square"
+                  >
+                    {img.url && <img src={img.url} alt={img.caption || ""} className="w-full h-full object-cover" />}
+                    {img.caption && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-foreground/60 to-transparent p-3">
+                        <p className="text-xs text-background font-medium">{img.caption}</p>
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </section>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <div>
       {config.sections
-        .filter(s => isVisible(s.id))
-        .map(s => sectionRenderers[s.id]?.())}
+        .filter(s => s.visible)
+        .map(s => {
+          if (BUILTIN_SECTION_IDS.includes(s.id)) {
+            return sectionRenderers[s.id]?.();
+          }
+          return renderCustomSection(s);
+        })}
+    </div>
+  );
+}
+
+// FAQ accordion item
+function FaqItem({ question, answer }: { question: string; answer: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border border-border rounded-2xl overflow-hidden">
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between p-5 text-left hover:bg-secondary/30 transition-colors">
+        <span className="text-sm font-semibold pr-4">{question}</span>
+        <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="px-5 pb-5 pt-0">
+          <p className="text-sm text-muted-foreground leading-relaxed">{answer}</p>
+        </div>
+      )}
     </div>
   );
 }
