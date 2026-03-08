@@ -172,6 +172,12 @@ export default function ProductDetail() {
         </motion.div>
       </div>
 
+      {/* Reviews */}
+      <section className="mt-20">
+        <h2 className="text-2xl font-display font-bold mb-8">Customer Reviews</h2>
+        <ProductReviews productId={product.id} />
+      </section>
+
       {/* Related */}
       {related.length > 0 && (
         <section className="mt-20">
