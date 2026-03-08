@@ -1094,6 +1094,43 @@ function ImageGalleryEditor({ data, onChange }: { data: CustomSectionData; onCha
         <div><Label className="text-xs">Section Title</Label><Input value={data.galleryTitle || ""} onChange={e => onChange({ galleryTitle: e.target.value })} className="mt-1" /></div>
         <div><Label className="text-xs">Section Subtitle</Label><Input value={data.gallerySubtitle || ""} onChange={e => onChange({ gallerySubtitle: e.target.value })} className="mt-1" /></div>
       </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 rounded-xl bg-muted/50 border">
+        <div>
+          <Label className="text-xs">🔲 Grid Columns</Label>
+          <Select value={String(data.galleryColumns || 3)} onValueChange={v => onChange({ galleryColumns: parseInt(v) })}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="2">2 Columns</SelectItem>
+              <SelectItem value="3">3 Columns (Default)</SelectItem>
+              <SelectItem value="4">4 Columns</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label className="text-xs">📐 Image Shape</Label>
+          <Select value={data.galleryAspect || "square"} onValueChange={v => onChange({ galleryAspect: v as any })}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="square">Square</SelectItem>
+              <SelectItem value="portrait">Portrait (Tall)</SelectItem>
+              <SelectItem value="landscape">Landscape (Wide)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      {/* Preview */}
+      {images.length > 0 && (
+        <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview</p>
+          <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${data.galleryColumns || 3}, 1fr)` }}>
+            {images.map((img, i) => (
+              <div key={i} className={`rounded-lg overflow-hidden bg-muted ${data.galleryAspect === "portrait" ? "aspect-[3/4]" : data.galleryAspect === "landscape" ? "aspect-video" : "aspect-square"}`}>
+                {img.url && <img src={img.url} alt="" className="w-full h-full object-cover" />}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <Label className="text-xs font-semibold uppercase tracking-wider">Images</Label>
         <Button variant="outline" size="sm" onClick={() => onChange({ images: [...images, { url: "", caption: "" }] })} className="gap-1 text-xs h-7"><Plus className="w-3 h-3" /> Add</Button>
