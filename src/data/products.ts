@@ -23,6 +23,7 @@ export interface Product {
   weights: { label: string; price: number }[];
   isNew?: boolean;
   isBestseller?: boolean;
+  tags?: string[];
   custom_attributes?: Record<string, string | string[]>;
 }
 
