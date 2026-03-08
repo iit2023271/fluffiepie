@@ -86,7 +86,7 @@ function HeroBannerCarousel() {
             animate="center"
             exit="exit"
             transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
-            className="absolute inset-0"
+            className="absolute inset-0 will-change-transform"
           >
             {banner.image_url ? (
               <img src={banner.image_url} alt={banner.title} className="w-full h-full object-cover" />
