@@ -360,9 +360,9 @@ export default function AdminDashboard() {
       {/* KPI Cards Row 1 - Main metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
         {[
-          { label: "💰 Total Revenue", value: `₹${metrics.totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-primary", change: timeRange !== "custom" ? metrics.revenueChange : null, sub: "All orders (excl. cancelled)", tooltip: "Total money from all orders" },
+          { label: "💰 Revenue", value: `₹${metrics.totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-primary", change: timeRange !== "custom" ? metrics.revenueChange : null, sub: `From ${metrics.deliveredCount} delivered orders`, tooltip: "Revenue from delivered orders only" },
           { label: "📦 Total Orders", value: metrics.totalOrders, icon: ShoppingCart, color: "text-accent", change: timeRange !== "custom" ? metrics.ordersChange : null, sub: `${metrics.deliveredCount} delivered · ${metrics.cancelledCount} cancelled`, tooltip: "Number of orders placed" },
-          { label: "🧾 Avg. Order Value", value: `₹${metrics.avgOrderValue.toLocaleString()}`, icon: BarChart3, color: "text-primary", change: null, sub: "Average amount per order", tooltip: "How much each customer spends on average" },
+          { label: "🧾 Avg. Order Value", value: `₹${metrics.avgOrderValue.toLocaleString()}`, icon: BarChart3, color: "text-primary", change: null, sub: "Average per delivered order", tooltip: "Average amount per delivered order" },
           { label: "👥 Customers", value: metrics.uniqueCustomers, icon: Users, color: "text-accent", change: null, sub: `${metrics.repeatCustomers} ordered again`, tooltip: "Unique customers who placed orders" },
         ].map((stat) => (
           <div key={stat.label} className="bg-card rounded-2xl p-5 shadow-soft">
