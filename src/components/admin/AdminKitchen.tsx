@@ -27,15 +27,25 @@ const STATUS_EMOJI: Record<string, string> = {
 };
 
 /**
- * Resolves "Today, 9AM - 12PM" or "Tomorrow, 2PM - 5PM" into an actual Date
- * based on when the order was created.
+ * Resolves delivery slot string into an actual Date.
+ * Supports new format "dd MMM yyyy, time" and legacy "Today/Tomorrow" format.
  */
 function resolveDeliveryDate(deliverySlot: string | null, orderCreatedAt: string): Date {
   if (!deliverySlot) return new Date(orderCreatedAt);
   const lower = deliverySlot.toLowerCase();
-  const orderDate = new Date(orderCreatedAt);
-  if (lower.startsWith("tomorrow")) return addDays(startOfDay(orderDate), 1);
-  return startOfDay(orderDate); // "Today" or unknown → same day as order
+
+  // Legacy format: "Today, ..." or "Tomorrow, ..."
+  if (lower.startsWith("tomorrow")) return addDays(startOfDay(new Date(orderCreatedAt)), 1);
+  if (lower.startsWith("today") || lower.startsWith("day after")) return startOfDay(new Date(orderCreatedAt));
+
+  // New format: "dd MMM yyyy, time" — try to parse the date part
+  try {
+    const datePart = deliverySlot.split(",")[0].trim();
+    const parsed = parse(datePart, "dd MMM yyyy", new Date());
+    if (!isNaN(parsed.getTime())) return startOfDay(parsed);
+  } catch {}
+
+  return startOfDay(new Date(orderCreatedAt));
 }
 
 export default function AdminKitchen() {
