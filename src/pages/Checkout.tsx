@@ -24,8 +24,8 @@ export default function Checkout() {
   const [form, setForm] = useState({
     firstName: "", lastName: "", phone: "", address: "", city: "", pincode: "",
   });
-  const [deliveryDay, setDeliveryDay] = useState("Today");
-  const [deliverySlot, setDeliverySlot] = useState("9AM - 12PM");
+  const [deliveryDate, setDeliveryDate] = useState<Date | undefined>(undefined);
+  const [deliveryTime, setDeliveryTime] = useState("");
 
   const applyCoupon = async () => {
     if (!coupon.trim()) { toast.error("Enter a coupon code"); return; }
