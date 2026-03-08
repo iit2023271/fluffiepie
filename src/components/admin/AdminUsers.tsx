@@ -221,7 +221,7 @@ export default function AdminUsers() {
                     <div className="hidden sm:flex items-center gap-4 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1"><ShoppingBag className="w-3.5 h-3.5" />{u.orders.length}</span>
                       <span className="font-semibold text-foreground">₹{totalSpent.toLocaleString()}</span>
-                      {u.roles.length > 0 && <Badge variant="outline" className="text-xs">{u.roles[0].role}</Badge>}
+                      
                     </div>
                     {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                   </div>
