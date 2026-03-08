@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Star, Trash2, Search, Calendar as CalendarIcon, X, SortAsc, SortDesc } from "lucide-react";
+import { Star, Trash2, Search, Calendar as CalendarIcon, X, SortAsc, SortDesc, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { format, isToday, isYesterday, startOfDay, endOfDay } from "date-fns";
 import { Input } from "@/components/ui/input";
