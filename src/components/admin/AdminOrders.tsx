@@ -308,13 +308,14 @@ export default function AdminOrders() {
 
   const [undoConfirm, setUndoConfirm] = useState<{ open: boolean; orderId: string; prevStatus: string }>({ open: false, orderId: "", prevStatus: "" });
 
-  // Today's stats
-  const todayStats = useMemo(() => {
+  // Stats from ALL orders (not filtered)
+  const orderStats = useMemo(() => {
     const today = orders.filter(o => isToday(new Date(o.created_at)));
-    const todayRevenue = today.reduce((s, o) => s + (o.total || 0), 0);
+    const todayRevenue = today.filter(o => o.status !== "cancelled").reduce((s, o) => s + (o.total || 0), 0);
     const pending = orders.filter(o => ["placed", "confirmed"].includes(o.status));
     const inProgress = orders.filter(o => ["baking", "out_for_delivery"].includes(o.status));
-    return { todayCount: today.length, todayRevenue, pendingCount: pending.length, inProgressCount: inProgress.length };
+    const delivered = orders.filter(o => o.status === "delivered");
+    return { todayCount: today.length, todayRevenue, pendingCount: pending.length, inProgressCount: inProgress.length, deliveredCount: delivered.length };
   }, [orders]);
 
   return (
