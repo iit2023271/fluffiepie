@@ -240,7 +240,7 @@ export default function AdminKitchen() {
 
         {!isToday(selectedDate) && (
           <Button variant="ghost" size="sm" className="text-xs"
-            onClick={() => { setSelectedDate(new Date()); setCheckedItems(new Set()); }}>
+            onClick={() => setSelectedDate(new Date())}>
             Go to Today
           </Button>
         )}
