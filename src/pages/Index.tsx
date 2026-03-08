@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Truck, Palette, Gift, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useHomepageConfig } from "@/hooks/useHomepageConfig";
 
 import heroCake from "@/assets/hero-cake.jpg";
 import catBirthday from "@/assets/category-birthday.jpg";
@@ -12,19 +13,12 @@ import catWedding from "@/assets/category-wedding.jpg";
 import catAnniversary from "@/assets/category-anniversary.jpg";
 import catCustom from "@/assets/category-custom.jpg";
 
-const categoryImages = [
-  { name: "Birthday", slug: "Birthday", image: catBirthday },
-  { name: "Wedding", slug: "Wedding", image: catWedding },
-  { name: "Anniversary", slug: "Anniversary", image: catAnniversary },
-  { name: "Custom", slug: "Custom", image: catCustom },
-];
-
-const steps = [
-  { icon: Palette, title: "Choose & Customize", desc: "Pick your cake and personalize it" },
-  { icon: Gift, title: "We Bake Fresh", desc: "Handcrafted by expert bakers" },
-  { icon: Truck, title: "Delivered to You", desc: "Right on time, every time" },
-];
-
+const categoryImages: Record<string, string> = {
+  Birthday: catBirthday,
+  Wedding: catWedding,
+  Anniversary: catAnniversary,
+  Custom: catCustom,
+};
 
 interface Banner {
   id: string;
@@ -160,8 +154,9 @@ function HeroBannerCarousel() {
 }
 
 export default function Index() {
+  const { config, loading: configLoading } = useHomepageConfig();
   const { data: allProducts = [] } = useProducts();
-  const featured = allProducts.filter((p) => p.isBestseller || p.isNew).slice(0, 4);
+  const featured = allProducts.filter((p) => p.isBestseller || p.isNew).slice(0, config.trending.count);
 
   const [reviews, setReviews] = useState<any[]>([]);
   useEffect(() => {
@@ -172,9 +167,8 @@ export default function Index() {
         .gte("rating", 4)
         .not("comment", "is", null)
         .order("created_at", { ascending: false })
-        .limit(6);
+        .limit(config.reviews.count);
       if (data && data.length > 0) {
-        // Fetch profile names for review authors
         const userIds = [...new Set(data.map(r => r.user_id))];
         const { data: profiles } = await supabase
           .from("profiles")
@@ -185,17 +179,33 @@ export default function Index() {
       }
     };
     loadReviews();
+  }, [config.reviews.count]);
+
+  const isVisible = (id: string) => config.sections.find(s => s.id === id)?.visible ?? true;
+
+  // Get categories from store_config
+  const [occasions, setOccasions] = useState<string[]>([]);
+  useEffect(() => {
+    supabase
+      .from("store_config")
+      .select("value")
+      .eq("config_type", "occasion")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .then(({ data }) => {
+        if (data) setOccasions(data.map(d => d.value));
+      });
   }, []);
 
-  return (
-    <div>
-      {/* Banner Carousel */}
-      <section className="container mx-auto px-4 pt-6 pb-2">
+  // Build section renderers
+  const sectionRenderers: Record<string, () => React.ReactNode> = {
+    banners: () => (
+      <section key="banners" className="container mx-auto px-4 pt-6 pb-2">
         <HeroBannerCarousel />
       </section>
-
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-cream">
+    ),
+    hero: () => (
+      <section key="hero" className="relative overflow-hidden bg-cream">
         <div className="container mx-auto px-4 py-16 md:py-24">
           <div className="grid md:grid-cols-2 gap-10 items-center">
             <motion.div
@@ -204,29 +214,31 @@ export default function Index() {
               transition={{ duration: 0.7 }}
             >
               <span className="inline-block px-4 py-1.5 bg-blush text-primary text-sm font-medium rounded-full mb-6">
-                🎂 Freshly Baked, Daily
+                {config.hero.badge}
               </span>
               <h1 className="text-4xl md:text-6xl font-display font-bold text-foreground leading-tight mb-6">
-                Cakes That Make
+                {config.hero.titleLine1}
                 <br />
-                <span className="text-primary">Moments Magic</span>
+                <span className="text-primary">{config.hero.titleLine2}</span>
               </h1>
               <p className="text-lg text-muted-foreground mb-8 max-w-md">
-                Handcrafted premium cakes for every celebration. Order online and get it delivered fresh to your doorstep.
+                {config.hero.subtitle}
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link
-                  to="/shop"
+                  to={config.hero.ctaPrimaryLink}
                   className="inline-flex items-center gap-2 px-8 py-3.5 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 transition-opacity shadow-card"
                 >
-                  Order Now <ArrowRight className="w-4 h-4" />
+                  {config.hero.ctaPrimaryText} <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link
-                  to="/shop?occasion=Custom"
-                  className="inline-flex items-center gap-2 px-8 py-3.5 bg-background text-foreground rounded-xl font-medium border border-border hover:bg-secondary transition-colors"
-                >
-                  Custom Cake
-                </Link>
+                {config.hero.ctaSecondaryText && (
+                  <Link
+                    to={config.hero.ctaSecondaryLink}
+                    className="inline-flex items-center gap-2 px-8 py-3.5 bg-background text-foreground rounded-xl font-medium border border-border hover:bg-secondary transition-colors"
+                  >
+                    {config.hero.ctaSecondaryText}
+                  </Link>
+                )}
               </div>
             </motion.div>
             <motion.div
@@ -236,53 +248,56 @@ export default function Index() {
               className="relative"
             >
               <div className="relative rounded-3xl overflow-hidden shadow-elevated">
-                <img src={heroCake} alt="Premium chocolate cake with berries and gold leaf" className="w-full" />
+                <img src={heroCake} alt="Premium cake" className="w-full" />
               </div>
             </motion.div>
           </div>
         </div>
       </section>
-
-      {/* Categories */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">Shop by Occasion</h2>
-          <p className="text-muted-foreground">Find the perfect cake for your celebration</p>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {categoryImages.map((cat, i) => (
-            <motion.div
-              key={cat.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-            >
-              <Link
-                to={`/shop?occasion=${cat.slug}`}
-                className="group block relative rounded-2xl overflow-hidden aspect-[3/4]"
+    ),
+    categories: () => {
+      const displayOccasions = occasions.length > 0 ? occasions.filter(o => categoryImages[o]) : Object.keys(categoryImages);
+      return (
+        <section key="categories" className="container mx-auto px-4 py-16">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{config.categories.title}</h2>
+            <p className="text-muted-foreground">{config.categories.subtitle}</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            {displayOccasions.slice(0, 4).map((name, i) => (
+              <motion.div
+                key={name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
               >
-                <img
-                  src={cat.image}
-                  alt={cat.name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 to-transparent" />
-                <div className="absolute bottom-4 left-4">
-                  <h3 className="text-lg font-display font-bold text-background">{cat.name}</h3>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Featured Products */}
-      <section className="container mx-auto px-4 py-16 bg-cream rounded-3xl mx-4">
+                <Link
+                  to={`/shop?occasion=${name}`}
+                  className="group block relative rounded-2xl overflow-hidden aspect-[3/4]"
+                >
+                  <img
+                    src={categoryImages[name] || catCustom}
+                    alt={name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 to-transparent" />
+                  <div className="absolute bottom-4 left-4">
+                    <h3 className="text-lg font-display font-bold text-background">{name}</h3>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      );
+    },
+    trending: () => (
+      <section key="trending" className="container mx-auto px-4 py-16 bg-cream rounded-3xl mx-4">
         <div className="flex items-center justify-between mb-10">
           <div>
-            <h2 className="text-3xl font-display font-bold mb-2">Trending Cakes</h2>
-            <p className="text-muted-foreground">Our most loved creations</p>
+            <h2 className="text-3xl font-display font-bold mb-2">{config.trending.title}</h2>
+            <p className="text-muted-foreground">{config.trending.subtitle}</p>
           </div>
           <Link
             to="/shop"
@@ -302,25 +317,25 @@ export default function Index() {
           </Link>
         </div>
       </section>
-
-      {/* How It Works */}
-      <section className="container mx-auto px-4 py-20">
+    ),
+    howItWorks: () => (
+      <section key="howItWorks" className="container mx-auto px-4 py-20">
         <div className="text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">How It Works</h2>
-          <p className="text-muted-foreground">Three simple steps to your dream cake</p>
+          <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{config.howItWorks.title}</h2>
+          <p className="text-muted-foreground">{config.howItWorks.subtitle}</p>
         </div>
-        <div className="grid md:grid-cols-3 gap-8">
-          {steps.map((step, i) => (
+        <div className={`grid md:grid-cols-${config.howItWorks.steps.length} gap-8`}>
+          {config.howItWorks.steps.map((step, i) => (
             <motion.div
-              key={step.title}
+              key={i}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.15 }}
               className="text-center p-8 rounded-2xl bg-card shadow-soft hover:shadow-card transition-shadow"
             >
-              <div className="w-16 h-16 rounded-2xl bg-blush flex items-center justify-center mx-auto mb-5">
-                <step.icon className="w-7 h-7 text-primary" />
+              <div className="w-16 h-16 rounded-2xl bg-blush flex items-center justify-center mx-auto mb-5 text-2xl">
+                {step.emoji}
               </div>
               <h3 className="text-lg font-display font-semibold mb-2">{step.title}</h3>
               <p className="text-sm text-muted-foreground">{step.desc}</p>
@@ -328,16 +343,17 @@ export default function Index() {
           ))}
         </div>
       </section>
-
-      {reviews.length > 0 && (
-        <section className="bg-blush py-20">
+    ),
+    reviews: () =>
+      reviews.length > 0 ? (
+        <section key="reviews" className="bg-blush py-20">
           <div className="container mx-auto px-4">
             <div className="text-center mb-14">
-              <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">What Our Customers Say</h2>
-              <p className="text-muted-foreground">Real reviews from real cake lovers</p>
+              <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{config.reviews.title}</h2>
+              <p className="text-muted-foreground">{config.reviews.subtitle}</p>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
-              {reviews.slice(0, 3).map((r, i) => {
+              {reviews.slice(0, config.reviews.count).map((r, i) => {
                 const name = r.author_name || "Customer";
                 const initials = name.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase();
                 return (
@@ -370,7 +386,14 @@ export default function Index() {
             </div>
           </div>
         </section>
-      )}
+      ) : null,
+  };
+
+  return (
+    <div>
+      {config.sections
+        .filter(s => isVisible(s.id))
+        .map(s => sectionRenderers[s.id]?.())}
     </div>
   );
 }
