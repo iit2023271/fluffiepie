@@ -311,6 +311,14 @@ export default function Dashboard() {
           </DialogContent>
         </Dialog>
 
+        {/* Addresses */}
+        {tab === "addresses" && (
+          <div className="p-6 rounded-2xl bg-card shadow-soft max-w-lg">
+            <h3 className="font-display font-semibold text-lg mb-4">Saved Addresses</h3>
+            <SavedAddresses mode="manage" />
+          </div>
+        )}
+
         {/* Profile */}
         {tab === "profile" && (
           <div className="p-6 rounded-2xl bg-card shadow-soft max-w-lg">
