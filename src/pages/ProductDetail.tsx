@@ -38,6 +38,7 @@ export default function ProductDetail() {
     );
   }
 
+  const isSoldOut = (product.stockQuantity ?? 100) <= 0;
   const currentPrice = product.weights[selectedWeight].price;
   const totalPrice = currentPrice * quantity;
 
