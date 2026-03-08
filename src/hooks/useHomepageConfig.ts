@@ -34,7 +34,14 @@ export interface CustomSectionData {
   // image_gallery
   galleryTitle?: string;
   gallerySubtitle?: string;
+  galleryColumns?: number;
+  galleryAspect?: "square" | "portrait" | "landscape";
   images?: { url: string; caption: string }[];
+  // text_block extras
+  textSize?: "sm" | "md" | "lg";
+  textBg?: "none" | "muted" | "cream" | "blush";
+  // feature_grid extras
+  gridColumns?: number;
 }
 
 export interface HomepageSection {
