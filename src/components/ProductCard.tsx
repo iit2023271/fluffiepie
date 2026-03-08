@@ -20,12 +20,9 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
   const { productTags } = useStoreConfig();
   const isSoldOut = (product.stockQuantity ?? 100) <= 0;
   
-  // Get the product's active tag and its color
   const activeTag = product.tags?.[0];
   const tagDef = activeTag ? productTags.find(t => t.name === activeTag) : null;
-  // Fallback for legacy is_bestseller/is_new
   const displayTag = tagDef || (product.isBestseller ? { name: "Bestseller", bgColor: "", textColor: "" } : product.isNew ? { name: "New", bgColor: "", textColor: "" } : null);
-  const isLegacyTag = !tagDef && displayTag;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -59,33 +56,49 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
+      initial={{ opacity: 0, y: 30, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.4, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ y: -6, transition: { duration: 0.25, ease: "easeOut" } }}
+      whileTap={{ scale: 0.97, transition: { duration: 0.1 } }}
     >
       <Link to={isSoldOut ? "#" : `/product/${product.slug}`} className="group block" onClick={isSoldOut ? (e: React.MouseEvent) => { e.preventDefault(); toast.error("This product is currently sold out"); } : undefined}>
-        <div className="relative rounded-2xl overflow-hidden bg-card shadow-soft hover:shadow-card transition-shadow duration-300">
+        <div className="relative rounded-2xl overflow-hidden bg-card shadow-soft hover:shadow-elevated transition-shadow duration-300">
           {/* Image */}
           <div className="relative aspect-square overflow-hidden">
-            <img
+            <motion.img
               src={product.image}
               alt={product.name}
-              className={`w-full h-full object-cover transition-transform duration-500 will-change-transform group-hover:scale-105 ${isSoldOut ? "grayscale opacity-60" : ""}`}
+              className={`w-full h-full object-cover ${isSoldOut ? "grayscale opacity-60" : ""}`}
               loading="lazy"
               decoding="async"
+              whileHover={{ scale: 1.08 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             />
             {/* Sold Out Overlay */}
             {isSoldOut && (
-              <div className="absolute inset-0 flex items-center justify-center bg-background/40 backdrop-blur-[2px] z-10">
-                <span className="px-4 py-2 bg-destructive text-destructive-foreground text-sm font-bold rounded-full uppercase tracking-wider shadow-lg">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="absolute inset-0 flex items-center justify-center bg-background/40 backdrop-blur-[2px] z-10"
+              >
+                <motion.span
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className="px-4 py-2 bg-destructive text-destructive-foreground text-sm font-bold rounded-full uppercase tracking-wider shadow-lg"
+                >
                   Sold Out
-                </span>
-              </div>
+                </motion.span>
+              </motion.div>
             )}
             {/* Badge */}
             <div className="absolute top-3 left-3">
               {displayTag && (
-                <span
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.6, x: -10 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  transition={{ delay: index * 0.06 + 0.2, type: "spring", stiffness: 200 }}
                   className={`px-2.5 py-1 text-xs font-semibold rounded-full ${
                     tagDef?.bgColor
                       ? ""
@@ -96,25 +109,33 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
                   style={tagDef?.bgColor ? { backgroundColor: `hsl(${tagDef.bgColor})`, color: `hsl(${tagDef.textColor})` } : undefined}
                 >
                   {displayTag.name}
-                </span>
+                </motion.span>
               )}
             </div>
-            {/* Wishlist */}
-            <button
+            {/* Wishlist — always visible on mobile */}
+            <motion.button
               onClick={handleWishlist}
-              className={`absolute top-3 right-3 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center transition-opacity active:scale-95 ${isWishlisted ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+              whileTap={{ scale: 0.8 }}
+              className={`absolute top-3 right-3 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center transition-all active:bg-background ${isWishlisted ? "opacity-100" : "opacity-100 md:opacity-0 md:group-hover:opacity-100"}`}
               aria-label={isWishlisted ? "Remove from favorites" : "Add to favorites"}
             >
-              <Heart className={`w-4 h-4 ${isWishlisted ? "fill-destructive text-destructive" : "text-primary"}`} />
-            </button>
-            {/* Quick add */}
-            <button
+              <motion.div
+                animate={isWishlisted ? { scale: [1, 1.3, 1] } : { scale: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Heart className={`w-4.5 h-4.5 ${isWishlisted ? "fill-destructive text-destructive" : "text-primary"}`} />
+              </motion.div>
+            </motion.button>
+            {/* Quick add — always visible on mobile */}
+            <motion.button
               onClick={handleAddToCart}
-              className="absolute bottom-3 right-3 w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all active:scale-90 shadow-card"
+              whileTap={{ scale: 0.85 }}
+              whileHover={{ scale: 1.1 }}
+              className="absolute bottom-3 right-3 w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shadow-card"
               aria-label="Add to cart"
             >
               <ShoppingCart className="w-4 h-4" />
-            </button>
+            </motion.button>
           </div>
 
           {/* Content */}

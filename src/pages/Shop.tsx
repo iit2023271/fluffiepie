@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { SlidersHorizontal, X, Search, Sparkles, Check, IndianRupee } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useStoreConfig } from "@/hooks/useStoreConfig";
 import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
@@ -183,13 +184,23 @@ export default function Shop() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="container mx-auto px-4 py-8"
+    >
+      <motion.div
+        initial={{ opacity: 0, y: -15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        className="mb-6"
+      >
         <h1 className="text-3xl md:text-4xl font-display font-bold mb-2">
           {selectedFilters["occasion"] ? `${selectedFilters["occasion"]} Cakes` : "All Cakes"}
         </h1>
         <p className="text-muted-foreground">{filtered.length} products found</p>
-      </div>
+      </motion.div>
 
       {/* Search Bar */}
       <div className="relative mb-5 max-w-lg">
@@ -439,16 +450,31 @@ export default function Shop() {
 
       {/* Product grid — full width now */}
       <div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-          {paginatedProducts.map((product, i) => (
-            <ProductCard key={product.id} product={product} index={i} isWishlisted={isWishlisted(product.id)} onToggleWishlist={toggleWishlist} />
-          ))}
-        </div>
+        <motion.div layout className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <AnimatePresence mode="popLayout">
+            {paginatedProducts.map((product, i) => (
+              <motion.div
+                key={product.id}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3, delay: i * 0.04 }}
+              >
+                <ProductCard product={product} index={i} isWishlisted={isWishlisted(product.id)} onToggleWishlist={toggleWishlist} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
         {filtered.length === 0 && (
-          <div className="text-center py-20">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-20"
+          >
             <p className="text-lg font-display text-muted-foreground">No cakes found matching your filters.</p>
             <button onClick={clearFilters} className="mt-4 text-primary hover:underline text-sm">Clear all filters</button>
-          </div>
+          </motion.div>
         )}
         <Pagination
           currentPage={currentPage}
@@ -458,6 +484,6 @@ export default function Shop() {
           itemsPerPage={ITEMS_PER_PAGE}
         />
       </div>
-    </div>
+    </motion.div>
   );
 }
