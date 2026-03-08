@@ -189,9 +189,10 @@ export default function ProductDetail() {
           <div className="flex gap-3 mb-8">
             <button
               onClick={handleAddToCart}
-              className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 transition-opacity"
+              disabled={isSoldOut}
+              className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-medium transition-opacity ${isSoldOut ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-primary text-primary-foreground hover:opacity-90"}`}
             >
-              <ShoppingCart className="w-4 h-4" /> Add to Cart
+              <ShoppingCart className="w-4 h-4" /> {isSoldOut ? "Sold Out" : "Add to Cart"}
             </button>
             <button
               onClick={() => toast.success("Added to wishlist!")}
