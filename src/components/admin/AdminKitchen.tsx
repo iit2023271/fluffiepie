@@ -201,6 +201,11 @@ export default function AdminKitchen() {
           <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={() => window.print()}>
             <Printer className="w-3.5 h-3.5" /> Print Sheet
           </Button>
+          {hasUnsavedChanges && (
+            <Button size="sm" className="text-xs gap-1.5 animate-pulse" onClick={saveCheckedItems}>
+              <Save className="w-3.5 h-3.5" /> Save Progress
+            </Button>
+          )}
         </div>
       </div>
 
