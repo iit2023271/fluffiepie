@@ -33,7 +33,7 @@ export default function Navbar() {
         <Link to="/" className="flex items-center gap-2">
           <span className="text-2xl font-display font-bold text-primary">🧁</span>
           <span className="text-xl font-display font-bold text-foreground">
-            Sweet<span className="text-primary">Crumbs</span>
+            Fluffie<span className="text-primary">Pie</span>
           </span>
         </Link>
 

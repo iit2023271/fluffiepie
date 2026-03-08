@@ -197,7 +197,7 @@ export const DEFAULT_HOMEPAGE_CONFIG: HomepageConfig = {
     newsletterEnabled: true,
     newsletterTitle: "Newsletter",
     newsletterSubtitle: "Get fresh updates & sweet deals.",
-    copyrightText: "© 2026 SweetCrumbs. All rights reserved.",
+    copyrightText: "© 2026 FluffiePie. All rights reserved.",
   },
 };
 

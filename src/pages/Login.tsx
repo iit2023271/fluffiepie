@@ -56,7 +56,7 @@ export default function Login() {
             {isSignup ? "Create Account" : "Welcome Back"}
           </h1>
           <p className="text-muted-foreground">
-            {isSignup ? "Join SweetCrumbs for delicious deliveries" : "Sign in to your SweetCrumbs account"}
+            {isSignup ? "Join FluffiePie for delicious deliveries" : "Sign in to your FluffiePie account"}
           </p>
         </div>
 
