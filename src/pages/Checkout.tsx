@@ -1,13 +1,23 @@
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
-import { Link } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Link, useNavigate } from "react-router-dom";
 import { ChevronLeft, Tag, MapPin } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Checkout() {
   const { state, totalPrice, dispatch } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [coupon, setCoupon] = useState("");
   const [discount, setDiscount] = useState(0);
+  const [placing, setPlacing] = useState(false);
+  const [form, setForm] = useState({
+    firstName: "", lastName: "", phone: "", address: "", city: "", pincode: "",
+  });
+  const [deliveryDay, setDeliveryDay] = useState("Today");
+  const [deliverySlot, setDeliverySlot] = useState("9AM - 12PM");
 
   const applyCoupon = () => {
     if (coupon.toUpperCase() === "SWEET10") {
@@ -20,6 +30,60 @@ export default function Checkout() {
 
   const deliveryFee = totalPrice >= 999 ? 0 : 49;
   const finalTotal = totalPrice - discount + deliveryFee;
+
+  const handlePlaceOrder = async () => {
+    if (!form.firstName || !form.phone || !form.address || !form.city || !form.pincode) {
+      toast.error("Please fill in all address fields");
+      return;
+    }
+
+    if (!user) {
+      toast.error("Please sign in to place an order");
+      navigate("/login");
+      return;
+    }
+
+    setPlacing(true);
+    const orderItems = state.items.map((item) => ({
+      name: item.product.name,
+      slug: item.product.slug,
+      weight: item.weight,
+      quantity: item.quantity,
+      price: item.price,
+      message: item.message,
+      image: item.product.image,
+    }));
+
+    const { error } = await supabase.from("orders").insert({
+      user_id: user.id,
+      items: orderItems,
+      delivery_address: {
+        name: `${form.firstName} ${form.lastName}`,
+        phone: form.phone,
+        address: form.address,
+        city: form.city,
+        pincode: form.pincode,
+      },
+      delivery_slot: `${deliveryDay}, ${deliverySlot}`,
+      subtotal: totalPrice,
+      discount,
+      delivery_fee: deliveryFee,
+      total: finalTotal,
+      coupon_code: coupon || null,
+      status: "placed",
+      payment_status: "paid",
+    });
+
+    setPlacing(false);
+    if (error) {
+      toast.error("Failed to place order. Please try again.");
+      return;
+    }
+
+    toast.success("Order placed successfully! 🎉");
+    dispatch({ type: "CLEAR_CART" });
+    navigate("/dashboard");
+  };
 
   if (state.items.length === 0) {
     return (
@@ -38,20 +102,28 @@ export default function Checkout() {
 
       <h1 className="text-3xl font-display font-bold mb-8">Checkout</h1>
 
+      {!user && (
+        <div className="p-4 rounded-2xl bg-blush mb-6 flex items-center justify-between">
+          <p className="text-sm">Sign in to save your order history and track deliveries.</p>
+          <Link to="/login" className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90">
+            Sign In
+          </Link>
+        </div>
+      )}
+
       <div className="grid md:grid-cols-5 gap-8">
-        {/* Form */}
         <div className="md:col-span-3 space-y-6">
           <div className="p-6 rounded-2xl bg-card shadow-soft">
             <h3 className="font-display font-semibold text-lg mb-4 flex items-center gap-2">
               <MapPin className="w-5 h-5 text-primary" /> Delivery Address
             </h3>
             <div className="grid grid-cols-2 gap-3">
-              <input placeholder="First Name" className="col-span-1 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
-              <input placeholder="Last Name" className="col-span-1 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
-              <input placeholder="Phone Number" className="col-span-2 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
-              <input placeholder="Address" className="col-span-2 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
-              <input placeholder="City" className="px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
-              <input placeholder="Pincode" className="px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+              <input placeholder="First Name" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} className="col-span-1 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+              <input placeholder="Last Name" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} className="col-span-1 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+              <input placeholder="Phone Number" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="col-span-2 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+              <input placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="col-span-2 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+              <input placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+              <input placeholder="Pincode" value={form.pincode} onChange={(e) => setForm({ ...form, pincode: e.target.value })} className="px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
             </div>
           </div>
 
@@ -59,14 +131,26 @@ export default function Checkout() {
             <h3 className="font-display font-semibold text-lg mb-4">Delivery Slot</h3>
             <div className="grid grid-cols-3 gap-2">
               {["Today", "Tomorrow", "Day After"].map((day) => (
-                <button key={day} className="px-3 py-2 rounded-xl border border-border text-sm hover:border-primary hover:bg-primary/5 transition-colors">
+                <button
+                  key={day}
+                  onClick={() => setDeliveryDay(day)}
+                  className={`px-3 py-2 rounded-xl border text-sm transition-colors ${
+                    deliveryDay === day ? "border-primary bg-primary/10 text-primary font-medium" : "border-border hover:border-primary/50"
+                  }`}
+                >
                   {day}
                 </button>
               ))}
             </div>
             <div className="grid grid-cols-3 gap-2 mt-3">
               {["9AM - 12PM", "12PM - 4PM", "4PM - 8PM"].map((slot) => (
-                <button key={slot} className="px-3 py-2 rounded-xl border border-border text-xs hover:border-primary hover:bg-primary/5 transition-colors">
+                <button
+                  key={slot}
+                  onClick={() => setDeliverySlot(slot)}
+                  className={`px-3 py-2 rounded-xl border text-xs transition-colors ${
+                    deliverySlot === slot ? "border-primary bg-primary/10 text-primary font-medium" : "border-border hover:border-primary/50"
+                  }`}
+                >
                   {slot}
                 </button>
               ))}
@@ -74,7 +158,6 @@ export default function Checkout() {
           </div>
         </div>
 
-        {/* Summary */}
         <div className="md:col-span-2">
           <div className="p-6 rounded-2xl bg-card shadow-soft sticky top-24">
             <h3 className="font-display font-semibold text-lg mb-4">Order Summary</h3>
@@ -89,7 +172,6 @@ export default function Checkout() {
               ))}
             </div>
 
-            {/* Coupon */}
             <div className="flex gap-2 mb-4">
               <div className="flex-1 relative">
                 <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -128,13 +210,11 @@ export default function Checkout() {
             </div>
 
             <button
-              onClick={() => {
-                toast.success("Order placed successfully! 🎉");
-                dispatch({ type: "CLEAR_CART" });
-              }}
-              className="w-full mt-6 py-3.5 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 transition-opacity"
+              onClick={handlePlaceOrder}
+              disabled={placing}
+              className="w-full mt-6 py-3.5 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
             >
-              Place Order — ₹{finalTotal.toLocaleString()}
+              {placing ? "Placing Order..." : `Place Order — ₹${finalTotal.toLocaleString()}`}
             </button>
           </div>
         </div>

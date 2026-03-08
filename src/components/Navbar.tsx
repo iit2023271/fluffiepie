@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart, Search, Heart, User, Menu, X } from "lucide-react";
+import { ShoppingCart, Search, Heart, User, Menu, X, LogOut } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
@@ -13,6 +14,7 @@ const navLinks = [
 
 export default function Navbar() {
   const { totalItems, dispatch } = useCart();
+  const { user, signOut } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -26,7 +28,6 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
             <Link
@@ -45,9 +46,6 @@ export default function Navbar() {
           <button className="p-2 rounded-full hover:bg-secondary transition-colors" aria-label="Search">
             <Search className="w-5 h-5 text-muted-foreground" />
           </button>
-          <Link to="/wishlist" className="p-2 rounded-full hover:bg-secondary transition-colors" aria-label="Wishlist">
-            <Heart className="w-5 h-5 text-muted-foreground" />
-          </Link>
           <button
             onClick={() => dispatch({ type: "TOGGLE_CART" })}
             className="p-2 rounded-full hover:bg-secondary transition-colors relative"
@@ -60,9 +58,20 @@ export default function Navbar() {
               </span>
             )}
           </button>
-          <Link to="/account" className="p-2 rounded-full hover:bg-secondary transition-colors hidden md:flex" aria-label="Account">
-            <User className="w-5 h-5 text-muted-foreground" />
-          </Link>
+
+          {user ? (
+            <Link to="/dashboard" className="p-2 rounded-full hover:bg-secondary transition-colors hidden md:flex" aria-label="Dashboard">
+              <User className="w-5 h-5 text-primary" />
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="hidden md:inline-flex items-center gap-1 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+            >
+              Sign In
+            </Link>
+          )}
+
           <button
             className="p-2 md:hidden rounded-full hover:bg-secondary transition-colors"
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -73,7 +82,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -93,6 +101,20 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
+              {user ? (
+                <>
+                  <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2 px-3 rounded-lg hover:bg-secondary transition-colors">
+                    My Account
+                  </Link>
+                  <button onClick={() => { signOut(); setMobileOpen(false); }} className="text-sm font-medium py-2 px-3 rounded-lg hover:bg-secondary transition-colors text-left flex items-center gap-2 text-destructive">
+                    <LogOut className="w-4 h-4" /> Sign Out
+                  </button>
+                </>
+              ) : (
+                <Link to="/login" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2 px-3 rounded-lg bg-primary text-primary-foreground text-center">
+                  Sign In
+                </Link>
+              )}
             </nav>
           </motion.div>
         )}
