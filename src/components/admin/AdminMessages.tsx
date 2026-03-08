@@ -267,5 +267,15 @@ export default function AdminMessages() {
         </div>
       </div>
     </div>
+
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={(open) => setDeleteConfirm(prev => ({ ...prev, open }))}
+        title="Delete Message"
+        description="Are you sure you want to delete this message? This action cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={() => { deleteMsg(deleteConfirm.id); setDeleteConfirm({ open: false, id: "" }); }}
+      />
+    </div>
   );
 }
