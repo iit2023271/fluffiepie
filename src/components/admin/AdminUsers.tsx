@@ -3,6 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ChevronDown, ChevronUp, MapPin, ShoppingBag, User, Phone, Calendar, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import Pagination from "@/components/Pagination";
+
+const ITEMS_PER_PAGE = 10;
 
 interface UserDetail {
   profile: any;
