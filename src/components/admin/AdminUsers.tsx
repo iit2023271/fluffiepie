@@ -85,7 +85,7 @@ export default function AdminUsers() {
   const sendEmail = () => {
     if (!emailDialog.email) { toast.error("No email available"); return; }
     const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(emailDialog.email)}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-    window.open(gmailUrl, "_blank");
+    const a = document.createElement("a"); a.href = gmailUrl; a.target = "_blank"; a.rel = "noopener noreferrer"; document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setEmailDialog({ open: false, email: "", name: "" });
     toast.success("Gmail opened!");
   };

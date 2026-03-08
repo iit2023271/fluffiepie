@@ -123,7 +123,14 @@ export default function AdminOrders() {
       const body = `Hi ${customerName},\n\nYour order #${shortId} status has been updated to: ${statusLabel}.\n\n${itemsList ? `Order Items:\n${itemsList}\n\n` : ""}Total: ₹${Number(order.total).toLocaleString()}\n\nThank you for ordering with us!`;
 
       const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      window.open(gmailUrl, "_blank");
+      const a = document.createElement("a");
+      a.href = gmailUrl;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      toast.success("Gmail compose opened!");
     } catch (e) { console.error("Notification failed:", e); }
   };
 

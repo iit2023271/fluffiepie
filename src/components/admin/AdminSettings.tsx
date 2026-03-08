@@ -375,7 +375,7 @@ export default function AdminSettings() {
     const body = `Hi Test Customer,\n\nYour order #TEST0000 status has been updated to: ${statusLabel}.\n\nOrder Items:\n• Test Cake (1kg) x1\n\nTotal: ₹999\n\nThank you for ordering with us!\n\n⚠️ This is a test email — no real order was placed`;
 
     const gmailUrl = `https://mail.google.com/mail/?view=cm&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.open(gmailUrl, "_blank");
+    const a = document.createElement("a"); a.href = gmailUrl; a.target = "_blank"; a.rel = "noopener noreferrer"; document.body.appendChild(a); a.click(); document.body.removeChild(a);
     toast.success("Gmail compose opened with test email");
   };
 
