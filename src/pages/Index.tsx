@@ -168,12 +168,21 @@ export default function Index() {
     const loadReviews = async () => {
       const { data } = await supabase
         .from("reviews")
-        .select("*, profiles!reviews_user_id_fkey(full_name), products!reviews_product_id_fkey(name)")
+        .select("*, products(name)")
         .gte("rating", 4)
         .not("comment", "is", null)
         .order("created_at", { ascending: false })
         .limit(6);
-      if (data) setReviews(data);
+      if (data && data.length > 0) {
+        // Fetch profile names for review authors
+        const userIds = [...new Set(data.map(r => r.user_id))];
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, full_name")
+          .in("user_id", userIds);
+        const profileMap = new Map(profiles?.map(p => [p.user_id, p.full_name]) || []);
+        setReviews(data.map(r => ({ ...r, author_name: profileMap.get(r.user_id) || "Customer" })));
+      }
     };
     loadReviews();
   }, []);
