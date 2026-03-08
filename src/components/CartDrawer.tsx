@@ -21,8 +21,8 @@ export default function CartDrawer() {
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-full max-w-md bg-background z-50 flex flex-col shadow-elevated"
+            transition={{ type: "tween", duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+            className="fixed right-0 top-0 h-full w-full max-w-md bg-background z-50 flex flex-col shadow-elevated will-change-transform"
           >
             <div className="flex items-center justify-between p-4 border-b border-border">
               <h2 className="text-lg font-display font-semibold">Your Cart</h2>

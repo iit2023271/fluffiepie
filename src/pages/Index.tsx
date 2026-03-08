@@ -85,11 +85,11 @@ function HeroBannerCarousel() {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-            className="absolute inset-0"
+            transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+            className="absolute inset-0 will-change-transform"
           >
             {banner.image_url ? (
-              <img src={banner.image_url} alt={banner.title} className="w-full h-full object-cover" />
+              <img src={banner.image_url} alt={banner.title} className="w-full h-full object-cover" loading="eager" decoding="async" />
             ) : (
               <div className="w-full h-full bg-gradient-to-r from-primary/20 to-accent/20" />
             )}
@@ -210,9 +210,9 @@ export default function Index() {
         <div className="container mx-auto px-4 py-16 md:py-24">
           <div className="grid md:grid-cols-2 gap-10 items-center">
             <motion.div
-              initial={{ opacity: 0, x: -30 }}
+              initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.7 }}
+              transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
             >
               <span className="inline-block px-4 py-1.5 bg-blush text-primary text-sm font-medium rounded-full mb-6">
                 {config.hero.badge}
@@ -243,13 +243,13 @@ export default function Index() {
               </div>
             </motion.div>
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
+              transition={{ duration: 0.5, delay: 0.1, ease: [0.32, 0.72, 0, 1] }}
               className="relative"
             >
               <div className="relative rounded-3xl overflow-hidden shadow-elevated">
-                <img src={config.hero.heroImage || heroCake} alt="Premium cake" className="w-full" />
+                <img src={config.hero.heroImage || heroCake} alt="Premium cake" className="w-full" loading="eager" decoding="async" />
               </div>
             </motion.div>
           </div>
@@ -280,7 +280,9 @@ export default function Index() {
                   <img
                     src={categoryImages[name] || catCustom}
                     alt={name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-500 will-change-transform group-hover:scale-105"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 to-transparent" />
                   <div className="absolute bottom-4 left-4">
