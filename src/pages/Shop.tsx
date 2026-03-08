@@ -6,6 +6,7 @@ import { useStoreConfig } from "@/hooks/useStoreConfig";
 import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
 import Pagination from "@/components/Pagination";
+import { useWishlist } from "@/hooks/useWishlist";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -14,6 +15,7 @@ export default function Shop() {
   const initialOccasion = searchParams.get("occasion") || "";
   const { data: products = [] } = useProducts();
   const { filterSections: allFilters } = useStoreConfig();
+  const { isWishlisted, toggle: toggleWishlist } = useWishlist();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string>>(() => {
@@ -176,7 +178,7 @@ export default function Shop() {
         <div className="flex-1">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
             {paginatedProducts.map((product, i) => (
-              <ProductCard key={product.id} product={product} index={i} />
+              <ProductCard key={product.id} product={product} index={i} isWishlisted={isWishlisted(product.id)} onToggleWishlist={toggleWishlist} />
             ))}
           </div>
           {filtered.length === 0 && (

@@ -3,15 +3,19 @@ import { Heart, ShoppingCart, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { Product } from "@/data/products";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
 interface Props {
   product: Product;
   index?: number;
+  isWishlisted?: boolean;
+  onToggleWishlist?: (productId: string) => void;
 }
 
-export default function ProductCard({ product, index = 0 }: Props) {
+export default function ProductCard({ product, index = 0, isWishlisted = false, onToggleWishlist }: Props) {
   const { dispatch } = useCart();
+  const { user } = useAuth();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -26,6 +30,17 @@ export default function ProductCard({ product, index = 0 }: Props) {
       },
     });
     toast.success(`${product.name} added to cart!`);
+  };
+
+  const handleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) {
+      toast.error("Please sign in to save favorites");
+      return;
+    }
+    onToggleWishlist?.(product.id);
+    toast.success(isWishlisted ? "Removed from favorites" : "Added to favorites! ❤️");
   };
 
   return (
@@ -60,11 +75,11 @@ export default function ProductCard({ product, index = 0 }: Props) {
             </div>
             {/* Wishlist */}
             <button
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); toast.success("Added to wishlist!"); }}
-              className="absolute top-3 right-3 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity active:scale-95"
-              aria-label="Add to wishlist"
+              onClick={handleWishlist}
+              className={`absolute top-3 right-3 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center transition-opacity active:scale-95 ${isWishlisted ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+              aria-label={isWishlisted ? "Remove from favorites" : "Add to favorites"}
             >
-              <Heart className="w-4 h-4 text-primary" />
+              <Heart className={`w-4 h-4 ${isWishlisted ? "fill-destructive text-destructive" : "text-primary"}`} />
             </button>
             {/* Quick add */}
             <button

@@ -4,12 +4,16 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Package, User, LogOut, Clock, CheckCircle, Truck, ChefHat, Search, Shield, Star, MessageSquare, MapPin, StickyNote } from "lucide-react";
+import { Package, User, LogOut, Clock, CheckCircle, Truck, ChefHat, Search, Shield, Star, MapPin, StickyNote, Heart, XCircle } from "lucide-react";
 import SavedAddresses from "@/components/SavedAddresses";
 import ReviewForm from "@/components/ReviewForm";
+import ProductCard from "@/components/ProductCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { format } from "date-fns";
+import { format, differenceInMinutes } from "date-fns";
 import { useStoreInfo } from "@/hooks/useStoreInfo";
+import { useWishlist } from "@/hooks/useWishlist";
+import { useProducts } from "@/hooks/useProducts";
+import ConfirmDialog from "@/components/admin/ConfirmDialog";
 
 interface OrderNote {
   id: string;
@@ -45,7 +49,9 @@ export default function Dashboard() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { storeInfo } = useStoreInfo();
-  const [tab, setTab] = useState<"orders" | "profile" | "addresses">("orders");
+  const { isWishlisted, toggle: toggleWishlist } = useWishlist();
+  const { data: allProducts = [] } = useProducts();
+  const [tab, setTab] = useState<"orders" | "profile" | "addresses" | "wishlist">("orders");
   const [orders, setOrders] = useState<Order[]>([]);
   const [profile, setProfile] = useState<Profile>({ full_name: "", phone: "" });
   const [loading, setLoading] = useState(true);
@@ -56,6 +62,8 @@ export default function Dashboard() {
   const [reviewingOrder, setReviewingOrder] = useState<Order | null>(null);
   const [existingReviews, setExistingReviews] = useState<Set<string>>(new Set());
   const [orderNotes, setOrderNotes] = useState<Record<string, OrderNote[]>>({});
+  const [cancelConfirm, setCancelConfirm] = useState<{ open: boolean; orderId: string }>({ open: false, orderId: "" });
+  const CANCEL_WINDOW_MINUTES = 30;
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
@@ -180,6 +188,24 @@ export default function Dashboard() {
     window.open(url, "_blank");
   };
 
+  const canCancelOrder = (order: Order) => {
+    if (order.status !== "placed") return false;
+    const minutesSincePlaced = differenceInMinutes(new Date(), new Date(order.created_at));
+    return minutesSincePlaced <= CANCEL_WINDOW_MINUTES;
+  };
+
+  const cancelOrder = async (orderId: string) => {
+    const { error } = await supabase.from("orders").update({ status: "cancelled" }).eq("id", orderId);
+    if (error) toast.error("Failed to cancel order");
+    else {
+      toast.success("Order cancelled");
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: "cancelled" } : o));
+    }
+    setCancelConfirm({ open: false, orderId: "" });
+  };
+
+  const wishlistProducts = allProducts.filter(p => isWishlisted(p.id));
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
@@ -224,6 +250,7 @@ export default function Dashboard() {
         <div className="flex gap-2 mb-8">
           {[
             { key: "orders" as const, icon: Package, label: "My Orders" },
+            { key: "wishlist" as const, icon: Heart, label: "Favorites" },
             { key: "addresses" as const, icon: MapPin, label: "Addresses" },
             { key: "profile" as const, icon: User, label: "Profile" },
           ].map((t) => (
@@ -402,6 +429,14 @@ export default function Dashboard() {
                     <div className="flex items-center justify-between pt-3 border-t border-border">
                       <span className="font-semibold">Total: ₹{order.total.toLocaleString()}</span>
                       <div className="flex items-center gap-3">
+                        {canCancelOrder(order) && (
+                          <button
+                            onClick={() => setCancelConfirm({ open: true, orderId: order.id })}
+                            className="flex items-center gap-1.5 text-xs font-medium text-destructive hover:underline"
+                          >
+                            <XCircle className="w-3.5 h-3.5" /> Cancel Order
+                          </button>
+                        )}
                         {storeInfo.whatsappNumber && (
                           <button
                             onClick={() => sendToWhatsApp(order)}
@@ -475,6 +510,28 @@ export default function Dashboard() {
           </DialogContent>
         </Dialog>
 
+        {/* Wishlist */}
+        {tab === "wishlist" && (
+          <div>
+            {wishlistProducts.length === 0 ? (
+              <div className="text-center py-16 rounded-2xl bg-card shadow-soft">
+                <Heart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="font-display font-semibold text-lg mb-2">No favorites yet</h3>
+                <p className="text-sm text-muted-foreground mb-4">Tap the heart icon on any cake to save it here!</p>
+                <Link to="/shop" className="inline-flex px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90">
+                  Browse Cakes
+                </Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {wishlistProducts.map((product, i) => (
+                  <ProductCard key={product.id} product={product} index={i} isWishlisted={true} onToggleWishlist={toggleWishlist} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Addresses */}
         {tab === "addresses" && (
           <div className="p-6 rounded-2xl bg-card shadow-soft max-w-lg">
@@ -526,6 +583,17 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+
+        {/* Cancel Order Confirm */}
+        <ConfirmDialog
+          open={cancelConfirm.open}
+          onOpenChange={(open) => setCancelConfirm(prev => ({ ...prev, open }))}
+          title="Cancel Order"
+          description="Are you sure you want to cancel this order? This action cannot be undone."
+          confirmLabel="Yes, Cancel Order"
+          variant="destructive"
+          onConfirm={() => cancelOrder(cancelConfirm.orderId)}
+        />
       </motion.div>
     </div>
   );
