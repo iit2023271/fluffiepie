@@ -120,6 +120,7 @@ export default function AdminPanel() {
           {activeTab === "kitchen" && <AdminKitchen />}
           {activeTab === "users" && <AdminUsers />}
           {activeTab === "reviews" && <AdminReviews />}
+          {activeTab === "themes" && <AdminThemes />}
           {activeTab === "settings" && <AdminSettings />}
         </main>
       </div>
