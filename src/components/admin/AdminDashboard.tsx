@@ -275,55 +275,58 @@ export default function AdminDashboard() {
   return (
     <div>
       {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-display font-bold">📊 Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-1">Your store performance at a glance</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={exportCSV}>
-            <Download className="w-3.5 h-3.5" /> Download Report
-          </Button>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant={timeRange === "custom" ? "default" : "outline"} size="sm" className={cn("text-xs gap-1.5")}>
-                <CalendarDays className="w-3.5 h-3.5" />
-                {timeRange === "custom" ? dateLabel : "📅 Pick Dates"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <div className="p-3 space-y-3">
-                <p className="text-sm font-medium">Select date range</p>
-                <div className="flex gap-3">
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-1.5">Start Date</p>
-                    <Calendar mode="single" selected={dateFrom} onSelect={(d) => handleDateSelect("from", d)} disabled={(date) => date > new Date()} className={cn("p-2 pointer-events-auto")} />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={exportCSV}>
+              <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Download</span> Report
+            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant={timeRange === "custom" ? "default" : "outline"} size="sm" className={cn("text-xs gap-1.5")}>
+                  <CalendarDays className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{timeRange === "custom" ? dateLabel : "📅 Pick Dates"}</span>
+                  <span className="sm:hidden">📅</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <div className="p-3 space-y-3">
+                  <p className="text-sm font-medium">Select date range</p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-1.5">Start Date</p>
+                      <Calendar mode="single" selected={dateFrom} onSelect={(d) => handleDateSelect("from", d)} disabled={(date) => date > new Date()} className={cn("p-2 pointer-events-auto")} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-1.5">End Date</p>
+                      <Calendar mode="single" selected={dateTo} onSelect={(d) => handleDateSelect("to", d)} disabled={(date) => date > new Date() || (dateFrom ? date < dateFrom : false)} className={cn("p-2 pointer-events-auto")} />
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-1.5">End Date</p>
-                    <Calendar mode="single" selected={dateTo} onSelect={(d) => handleDateSelect("to", d)} disabled={(date) => date > new Date() || (dateFrom ? date < dateFrom : false)} className={cn("p-2 pointer-events-auto")} />
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+                    {[
+                      { label: "Today", fn: () => { const t = new Date(); setDateFrom(t); setDateTo(t); setTimeRange("custom"); } },
+                      { label: "Yesterday", fn: () => { const y = subDays(new Date(), 1); setDateFrom(y); setDateTo(y); setTimeRange("custom"); } },
+                      { label: "Last 7 days", fn: () => { setDateFrom(subDays(new Date(), 6)); setDateTo(new Date()); setTimeRange("custom"); } },
+                      { label: "This month", fn: () => { setDateFrom(startOfMonth(new Date())); setDateTo(new Date()); setTimeRange("custom"); } },
+                    ].map((preset) => (
+                      <Button key={preset.label} variant="ghost" size="sm" className="text-xs" onClick={preset.fn}>{preset.label}</Button>
+                    ))}
                   </div>
                 </div>
-                <div className="flex gap-2 pt-2 border-t border-border">
-                  {[
-                    { label: "Today", fn: () => { const t = new Date(); setDateFrom(t); setDateTo(t); setTimeRange("custom"); } },
-                    { label: "Yesterday", fn: () => { const y = subDays(new Date(), 1); setDateFrom(y); setDateTo(y); setTimeRange("custom"); } },
-                    { label: "Last 7 days", fn: () => { setDateFrom(subDays(new Date(), 6)); setDateTo(new Date()); setTimeRange("custom"); } },
-                    { label: "This month", fn: () => { setDateFrom(startOfMonth(new Date())); setDateTo(new Date()); setTimeRange("custom"); } },
-                  ].map((preset) => (
-                    <Button key={preset.label} variant="ghost" size="sm" className="text-xs" onClick={preset.fn}>{preset.label}</Button>
-                  ))}
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-          {timeRange === "custom" && (
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={clearDateFilter} title="Clear date filter"><X className="w-3.5 h-3.5" /></Button>
-          )}
+              </PopoverContent>
+            </Popover>
+            {timeRange === "custom" && (
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={clearDateFilter} title="Clear date filter"><X className="w-3.5 h-3.5" /></Button>
+            )}
+          </div>
           <div className="flex gap-1 bg-secondary rounded-xl p-1">
-            {([["7d", "7 Days"], ["30d", "30 Days"], ["90d", "90 Days"], ["12m", "1 Year"]] as [TimeRange, string][]).map(([key, label]) => (
+            {([["7d", "7D"], ["30d", "30D"], ["90d", "90D"], ["12m", "1Y"]] as [TimeRange, string][]).map(([key, label]) => (
               <button key={key} onClick={() => { setTimeRange(key); setDateFrom(undefined); setDateTo(undefined); }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${timeRange === key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${timeRange === key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
                 {label}
               </button>
             ))}
@@ -361,47 +364,47 @@ export default function AdminDashboard() {
       )}
 
       {/* KPI Cards Row 1 - Main metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4">
         {[
-          { label: "💰 Revenue", value: `₹${metrics.totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-primary", change: timeRange !== "custom" ? metrics.revenueChange : null, sub: `From ${metrics.deliveredCount} delivered orders`, tooltip: "Revenue from delivered orders only" },
-          { label: "📦 Total Orders", value: metrics.totalOrders, icon: ShoppingCart, color: "text-accent", change: timeRange !== "custom" ? metrics.ordersChange : null, sub: `${metrics.deliveredCount} delivered · ${metrics.cancelledCount} cancelled`, tooltip: "Number of orders placed" },
-          { label: "🧾 Avg. Order Value", value: `₹${metrics.avgOrderValue.toLocaleString()}`, icon: BarChart3, color: "text-primary", change: null, sub: "Average per delivered order", tooltip: "Average amount per delivered order" },
-          { label: "👥 Customers", value: metrics.uniqueCustomers, icon: Users, color: "text-accent", change: null, sub: `${metrics.repeatCustomers} ordered again`, tooltip: "Unique customers who placed orders" },
+          { label: "💰 Revenue", value: `₹${metrics.totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-primary", change: timeRange !== "custom" ? metrics.revenueChange : null, sub: `${metrics.deliveredCount} delivered`, tooltip: "Revenue from delivered orders only" },
+          { label: "📦 Orders", value: metrics.totalOrders, icon: ShoppingCart, color: "text-accent", change: timeRange !== "custom" ? metrics.ordersChange : null, sub: `${metrics.deliveredCount} ✔ · ${metrics.cancelledCount} ✗`, tooltip: "Number of orders placed" },
+          { label: "🧾 Avg. Value", value: `₹${metrics.avgOrderValue.toLocaleString()}`, icon: BarChart3, color: "text-primary", change: null, sub: "Per delivered order", tooltip: "Average amount per delivered order" },
+          { label: "👥 Customers", value: metrics.uniqueCustomers, icon: Users, color: "text-accent", change: null, sub: `${metrics.repeatCustomers} repeat`, tooltip: "Unique customers who placed orders" },
         ].map((stat) => (
-          <div key={stat.label} className="bg-card rounded-2xl p-5 shadow-soft">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-medium text-muted-foreground">{stat.label}</p>
+          <div key={stat.label} className="bg-card rounded-2xl p-3 md:p-5 shadow-soft overflow-hidden">
+            <div className="flex items-start justify-between mb-2 md:mb-3 gap-1">
+              <p className="text-[10px] md:text-xs font-medium text-muted-foreground leading-tight">{stat.label}</p>
               {stat.change !== null && (
-                <span className={`flex items-center gap-0.5 text-xs font-medium ${stat.change >= 0 ? "text-primary" : "text-destructive"}`}>
-                  {stat.change >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                  {Math.abs(stat.change)}% vs last week
+                <span className={`flex items-center gap-0.5 text-[10px] font-medium whitespace-nowrap ${stat.change >= 0 ? "text-primary" : "text-destructive"}`}>
+                  {stat.change >= 0 ? <ArrowUpRight className="w-3 h-3 shrink-0" /> : <ArrowDownRight className="w-3 h-3 shrink-0" />}
+                  {Math.abs(stat.change)}%
                 </span>
               )}
             </div>
-            <p className="text-2xl font-bold">{stat.value}</p>
-            <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
+            <p className="text-xl md:text-2xl font-bold truncate">{stat.value}</p>
+            <p className="text-[10px] md:text-xs text-muted-foreground mt-1 truncate">{stat.sub}</p>
           </div>
         ))}
       </div>
 
       {/* KPI Cards Row 2 */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
         {[
-          { label: "✅ Delivery Rate", value: `${metrics.conversionRate}%`, sub: "Orders successfully delivered" },
-          { label: "❌ Cancel Rate", value: `${metrics.cancelRate}%`, sub: `${metrics.cancelledCount} order${metrics.cancelledCount !== 1 ? "s" : ""} cancelled` },
-          { label: "🏷️ Discounts Given", value: `₹${metrics.totalDiscount.toLocaleString()}`, sub: `Used in ${metrics.couponOrders} order${metrics.couponOrders !== 1 ? "s" : ""}` },
-          { label: "📊 Net Revenue", value: `₹${metrics.netRevenue.toLocaleString()}`, sub: "Revenue after refunds" },
+          { label: "✅ Delivery Rate", value: `${metrics.conversionRate}%`, sub: "Successfully delivered" },
+          { label: "❌ Cancel Rate", value: `${metrics.cancelRate}%`, sub: `${metrics.cancelledCount} cancelled` },
+          { label: "🏷️ Discounts", value: `₹${metrics.totalDiscount.toLocaleString()}`, sub: `${metrics.couponOrders} coupon orders` },
+          { label: "📊 Net Revenue", value: `₹${metrics.netRevenue.toLocaleString()}`, sub: "After refunds" },
         ].map((stat) => (
-          <div key={stat.label} className="bg-card rounded-2xl p-4 shadow-soft">
-            <p className="text-lg font-bold">{stat.value}</p>
-            <p className="text-xs font-medium text-muted-foreground mt-0.5">{stat.label}</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">{stat.sub}</p>
+          <div key={stat.label} className="bg-card rounded-2xl p-3 md:p-4 shadow-soft overflow-hidden">
+            <p className="text-base md:text-lg font-bold truncate">{stat.value}</p>
+            <p className="text-[10px] md:text-xs font-medium text-muted-foreground mt-0.5 truncate">{stat.label}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{stat.sub}</p>
           </div>
         ))}
       </div>
 
       {/* Revenue Chart */}
-      <div className="bg-card rounded-2xl p-6 shadow-soft mb-6">
+      <div className="bg-card rounded-2xl p-4 md:p-6 shadow-soft mb-6">
         <div className="flex items-start justify-between mb-4">
           <div>
             <h3 className="font-display font-semibold text-lg">
@@ -412,7 +415,7 @@ export default function AdminDashboard() {
             </p>
           </div>
         </div>
-        <div className="h-72">
+        <div className="h-56 md:h-72 -mx-2">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData}>
               <defs>
@@ -432,10 +435,10 @@ export default function AdminDashboard() {
 
       {/* Orders Chart + Status Pie */}
       <div className="grid md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-card rounded-2xl p-6 shadow-soft">
-          <h3 className="font-display font-semibold text-lg mb-1">📦 Orders Volume</h3>
+        <div className="bg-card rounded-2xl p-4 md:p-6 shadow-soft">
+          <h3 className="font-display font-semibold text-base md:text-lg mb-1">📦 Orders Volume</h3>
           <p className="text-xs text-muted-foreground mb-4">How many orders you're receiving each day</p>
-          <div className="h-56">
+          <div className="h-48 md:h-56 -mx-2">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
                 <XAxis dataKey={chartXKey} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
@@ -446,13 +449,13 @@ export default function AdminDashboard() {
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="bg-card rounded-2xl p-6 shadow-soft">
-          <h3 className="font-display font-semibold text-lg mb-1">🔄 Order Status Breakdown</h3>
-          <p className="text-xs text-muted-foreground mb-4">Where your orders are in the pipeline</p>
+        <div className="bg-card rounded-2xl p-4 md:p-6 shadow-soft">
+          <h3 className="font-display font-semibold text-base md:text-lg mb-1">🔄 Status Breakdown</h3>
+          <p className="text-xs text-muted-foreground mb-4">Order pipeline overview</p>
           {statusData.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-10">No orders to show.</p>
           ) : (
-            <div className="h-56 flex items-center">
+            <div className="h-48 md:h-56 flex items-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={statusData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value" nameKey="name">
@@ -468,8 +471,8 @@ export default function AdminDashboard() {
       </div>
 
       {/* CLV + Top Products + Recent Orders */}
-      <div className="grid md:grid-cols-3 gap-6">
-        <div className="bg-card rounded-2xl p-6 shadow-soft">
+      <div className="grid md:grid-cols-3 gap-4 md:gap-6">
+        <div className="bg-card rounded-2xl p-4 md:p-6 shadow-soft">
           <h3 className="font-display font-semibold text-lg mb-1">💎 Customer Value</h3>
           <p className="text-xs text-muted-foreground mb-4">How much each customer spends over time</p>
           <div className="space-y-4">
@@ -493,7 +496,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="bg-card rounded-2xl p-6 shadow-soft">
+        <div className="bg-card rounded-2xl p-4 md:p-6 shadow-soft">
           <h3 className="font-display font-semibold text-lg mb-1">🏆 Best Sellers</h3>
           <p className="text-xs text-muted-foreground mb-4">Your top performing products</p>
           {topProducts.length === 0 ? (
@@ -516,7 +519,7 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        <div className="bg-card rounded-2xl p-6 shadow-soft">
+        <div className="bg-card rounded-2xl p-4 md:p-6 shadow-soft">
           <h3 className="font-display font-semibold text-lg mb-1">🕐 Recent Orders</h3>
           <p className="text-xs text-muted-foreground mb-4">Latest orders from your store</p>
           {recentOrders.length === 0 ? (
