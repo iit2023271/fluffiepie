@@ -30,6 +30,10 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isSoldOut) {
+      toast.error("This product is currently sold out");
+      return;
+    }
     dispatch({
       type: "ADD_ITEM",
       payload: {
