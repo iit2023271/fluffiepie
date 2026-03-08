@@ -168,19 +168,7 @@ export default function Checkout() {
       return;
     }
 
-    // Send order confirmation email
-    if (orderData) {
-      supabase.functions.invoke("send-order-notification", {
-        body: {
-          orderId: orderData.id,
-          newStatus: "placed",
-          customerName,
-          orderTotal: finalTotal,
-          items: orderItems,
-          userId: user.id,
-        },
-      }).catch(console.error);
-    }
+    // Order notification will be handled via Gmail from admin panel
 
     toast.success("Order placed successfully! 🎉");
     dispatch({ type: "CLEAR_CART" });
