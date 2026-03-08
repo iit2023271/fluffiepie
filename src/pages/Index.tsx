@@ -553,11 +553,10 @@ export default function Index() {
             </div>
           );
 
-          if (showNav || showNavAtStart) {
+          if ((showNav || showNavAtStart) && navItems.length > 0) {
             return (
               <div key={`nav-${s.id}`}>
-                {showNavAtStart && <SectionNavBar sections={navSections} getLabel={getSectionLabel} onNavigate={scrollToSection} />}
-                {showNav && !showNavAtStart && <SectionNavBar sections={navSections} getLabel={getSectionLabel} onNavigate={scrollToSection} />}
+                <SectionNavBar items={navItems} onNavigate={scrollToSection} />
                 {sectionNode}
               </div>
             );
