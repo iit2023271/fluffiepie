@@ -249,7 +249,7 @@ export default function Index() {
               className="relative"
             >
               <div className="relative rounded-3xl overflow-hidden shadow-elevated">
-                <img src={config.hero.heroImage || heroCake} alt="Premium cake" className="w-full" />
+                <img src={config.hero.heroImage || heroCake} alt="Premium cake" className="w-full" loading="eager" decoding="async" />
               </div>
             </motion.div>
           </div>
