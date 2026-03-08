@@ -122,26 +122,43 @@ export default function AdminThemes() {
       customColors: customColors,
       bannerText: bannerEnabled ? bannerText : undefined,
       bannerEmoji: preset?.bannerEmoji,
-      bannerBg: preset?.bannerBg,
-      bannerTextColor: preset?.bannerTextColor,
+      bannerBg: preset?.bannerBg || customColors.primary,
+      bannerTextColor: preset?.bannerTextColor || customColors.primaryForeground,
     };
 
     // Check if config row exists
-    const { data: existing } = await supabase
+    const { data: existing, error: fetchErr } = await supabase
       .from("store_config")
       .select("id")
       .eq("config_type", "active_theme")
       .maybeSingle();
 
+    if (fetchErr) {
+      console.error("Theme fetch error:", fetchErr);
+      toast.error("Failed to save theme");
+      setSaving(false);
+      return;
+    }
+
+    let saveError;
     if (existing) {
-      await supabase
+      const { error } = await supabase
         .from("store_config")
         .update({ value: JSON.stringify(themeData), is_active: true })
         .eq("id", existing.id);
+      saveError = error;
     } else {
-      await supabase
+      const { error } = await supabase
         .from("store_config")
         .insert({ config_type: "active_theme", value: JSON.stringify(themeData), is_active: true });
+      saveError = error;
+    }
+
+    if (saveError) {
+      console.error("Theme save error:", saveError);
+      toast.error("Failed to save theme: " + saveError.message);
+      setSaving(false);
+      return;
     }
 
     setSaving(false);
