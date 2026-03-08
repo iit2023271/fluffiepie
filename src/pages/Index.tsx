@@ -350,21 +350,34 @@ export default function Index() {
     },
     trending: () => (
       <section key="trending" className="container mx-auto px-4 py-16 bg-cream rounded-3xl mx-4">
-        <div className="flex items-center justify-between mb-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="flex items-center justify-between mb-10"
+        >
           <div>
             <h2 className="text-3xl font-display font-bold mb-2">{config.trending.title}</h2>
             <p className="text-muted-foreground">{config.trending.subtitle}</p>
           </div>
           <Link
             to="/shop"
-            className="hidden md:inline-flex items-center gap-1 text-primary font-medium text-sm hover:underline"
+            className="hidden md:inline-flex items-center gap-1 text-primary font-medium text-sm hover:underline group"
           >
-            View All <ArrowRight className="w-4 h-4" />
+            View All <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
-        </div>
+        </motion.div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {featured.map((product, i) => (
-            <ProductCard key={product.id} product={product} index={i} />
+            <motion.div
+              key={product.id}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, type: "spring", stiffness: 100 }}
+            >
+              <ProductCard product={product} index={i} />
+            </motion.div>
           ))}
         </div>
         <div className="mt-8 text-center md:hidden">
