@@ -26,7 +26,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import SavedAddresses from "@/components/SavedAddresses";
 import { useDeliveryConfig } from "@/hooks/useDeliveryConfig";
 
-const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } } };
+const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
 
 export default function Checkout() {
