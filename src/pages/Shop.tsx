@@ -24,7 +24,7 @@ export default function Shop() {
   const [searchParams] = useSearchParams();
   const initialOccasion = searchParams.get("occasion") || "";
   const { data: products = [] } = useProducts();
-  const { filterSections: allFilters } = useStoreConfig();
+  const { filterSections: allFilters, productTags } = useStoreConfig();
   const { isWishlisted, toggle: toggleWishlist } = useWishlist();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,6 +36,8 @@ export default function Shop() {
   const [sortBy, setSortBy] = useState("popularity");
   const [currentPage, setCurrentPage] = useState(1);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
+  const [selectedTag, setSelectedTag] = useState("");
+  const [discountFilter, setDiscountFilter] = useState("");
 
   // Compute min/max prices from products
   const priceExtents = useMemo(() => {
@@ -57,6 +59,21 @@ export default function Shop() {
     
     // Price range filter
     result = result.filter(p => p.basePrice >= priceRange[0] && p.basePrice <= priceRange[1]);
+
+    // Tag filter
+    if (selectedTag) {
+      result = result.filter(p => p.tags && p.tags.includes(selectedTag));
+    }
+
+    // Discount filter
+    if (discountFilter) {
+      const minDiscount = parseInt(discountFilter);
+      result = result.filter(p => {
+        if (!p.originalPrice || p.originalPrice <= p.basePrice) return false;
+        const pct = Math.round(((p.originalPrice - p.basePrice) / p.originalPrice) * 100);
+        return pct >= minDiscount;
+      });
+    }
 
     const normalize = (value: unknown) => String(value ?? "").trim().toLowerCase();
     for (const [filterType, filterValue] of Object.entries(selectedFilters)) {
@@ -86,11 +103,11 @@ export default function Shop() {
       default: result.sort((a, b) => b.reviewCount - a.reviewCount);
     }
     return result;
-  }, [searchQuery, selectedFilters, sortBy, products, priceRange]);
+  }, [searchQuery, selectedFilters, sortBy, products, priceRange, selectedTag, discountFilter]);
 
-  useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedFilters, sortBy, priceRange]);
+  useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedFilters, sortBy, priceRange, selectedTag, discountFilter]);
 
-  const activeFilterCount = Object.values(selectedFilters).filter(v => v).length + (isPriceFiltered ? 1 : 0);
+  const activeFilterCount = Object.values(selectedFilters).filter(v => v).length + (isPriceFiltered ? 1 : 0) + (selectedTag ? 1 : 0) + (discountFilter ? 1 : 0);
   const hasFilters = activeFilterCount > 0 || searchQuery;
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
@@ -100,6 +117,8 @@ export default function Shop() {
     setSearchQuery("");
     setSelectedFilters({});
     setPriceRange([priceExtents.min, priceExtents.max]);
+    setSelectedTag("");
+    setDiscountFilter("");
     setCurrentPage(1);
   };
 
@@ -266,6 +285,82 @@ export default function Shop() {
                 </div>
               </div>
 
+              {/* Product Tag Filter */}
+              {productTags.length > 0 && (
+                <div className="py-4 border-b border-border/50">
+                  <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-2 flex items-center gap-1.5">
+                    <span className="w-1 h-4 rounded-full bg-primary/40" />
+                    Product Tag
+                  </h4>
+                  <div className="flex flex-col gap-1">
+                    {productTags.map((tag) => {
+                      const isSelected = selectedTag === tag.name;
+                      return (
+                        <button
+                          key={tag.name}
+                          onClick={() => setSelectedTag(isSelected ? "" : tag.name)}
+                          className={`group flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all duration-200 ${
+                            isSelected
+                              ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+                              : "text-foreground hover:bg-secondary/80 hover:pl-4"
+                          }`}
+                        >
+                          <span className="flex items-center gap-2">
+                            {isSelected && <Check className="w-3.5 h-3.5" />}
+                            <span
+                              className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                              style={!isSelected ? { backgroundColor: `hsl(${tag.bgColor})`, color: `hsl(${tag.textColor})` } : undefined}
+                            >
+                              {tag.name}
+                            </span>
+                          </span>
+                          {!isSelected && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/20 group-hover:bg-primary/40 transition-colors" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Discount Filter */}
+              <div className="py-4 border-b border-border/50">
+                <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-2 flex items-center gap-1.5">
+                  <span className="w-1 h-4 rounded-full bg-green-500/40" />
+                  Discount
+                </h4>
+                <div className="flex flex-col gap-1">
+                  {[
+                    { label: "10% or more", value: "10" },
+                    { label: "20% or more", value: "20" },
+                    { label: "30% or more", value: "30" },
+                    { label: "50% or more", value: "50" },
+                  ].map((opt) => {
+                    const isSelected = discountFilter === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => setDiscountFilter(isSelected ? "" : opt.value)}
+                        className={`group flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all duration-200 ${
+                          isSelected
+                            ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+                            : "text-foreground hover:bg-secondary/80 hover:pl-4"
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          {isSelected && <Check className="w-3.5 h-3.5" />}
+                          {opt.label}
+                        </span>
+                        {!isSelected && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/20 group-hover:bg-primary/40 transition-colors" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div className="divide-y divide-border/50">
                 {allFilters.map(f => (
                   <FilterSection
@@ -304,6 +399,22 @@ export default function Shop() {
                   {value} <X className="w-3 h-3" />
                 </button>
               ) : null
+            )}
+            {selectedTag && (
+              <button
+                onClick={() => setSelectedTag("")}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium whitespace-nowrap flex-shrink-0"
+              >
+                {selectedTag} <X className="w-3 h-3" />
+              </button>
+            )}
+            {discountFilter && (
+              <button
+                onClick={() => setDiscountFilter("")}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium whitespace-nowrap flex-shrink-0"
+              >
+                {discountFilter}%+ off <X className="w-3 h-3" />
+              </button>
             )}
           </div>
         )}
