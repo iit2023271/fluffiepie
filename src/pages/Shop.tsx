@@ -96,7 +96,7 @@ export default function Shop() {
     return result;
   }, [searchQuery, selectedFilters, sortBy, products, selectedTag, discountFilter]);
 
-  useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedFilters, sortBy, priceRange, selectedTag, discountFilter]);
+  useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedFilters, sortBy, selectedTag, discountFilter]);
 
   const activeFilterCount = Object.values(selectedFilters).filter(v => v).length + (isPriceFiltered ? 1 : 0) + (selectedTag ? 1 : 0) + (discountFilter ? 1 : 0);
   const hasFilters = activeFilterCount > 0 || searchQuery;
