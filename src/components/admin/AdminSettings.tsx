@@ -77,6 +77,12 @@ export default function AdminSettings() {
   // Coupon analytics
   const [orders, setOrders] = useState<any[]>([]);
 
+  // Notification settings
+  const [emailSettings, setEmailSettings] = useState<Record<string, boolean>>({
+    placed: true, confirmed: true, baking: true, out_for_delivery: true, delivered: true, cancelled: true,
+  });
+  const [savingEmail, setSavingEmail] = useState(false);
+  const [testingEmail, setTestingEmail] = useState<string | null>(null);
   useEffect(() => { loadAll(); }, []);
 
   const loadAll = async () => {
