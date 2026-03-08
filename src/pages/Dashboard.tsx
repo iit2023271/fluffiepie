@@ -4,7 +4,9 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Package, User, LogOut, Clock, CheckCircle, Truck, ChefHat, Search, Shield } from "lucide-react";
+import { Package, User, LogOut, Clock, CheckCircle, Truck, ChefHat, Search, Shield, Star, MessageSquare } from "lucide-react";
+import ReviewForm from "@/components/ReviewForm";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
 
 interface Order {
@@ -41,6 +43,8 @@ export default function Dashboard() {
   const [orderSearch, setOrderSearch] = useState("");
   const [orderStatusFilter, setOrderStatusFilter] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
+  const [reviewingOrder, setReviewingOrder] = useState<Order | null>(null);
+  const [existingReviews, setExistingReviews] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
@@ -58,6 +62,16 @@ export default function Dashboard() {
     ]);
     if (ordersRes.data) setOrders(ordersRes.data);
     if (profileRes.data) setProfile(profileRes.data);
+    // Load existing reviews by this user
+    if (user) {
+      const { data: reviews } = await supabase
+        .from("reviews")
+        .select("product_id, order_id")
+        .eq("user_id", user.id);
+      if (reviews) {
+        setExistingReviews(new Set(reviews.map((r: any) => `${r.product_id}-${r.order_id}`)));
+      }
+    }
     setLoading(false);
   };
 
@@ -215,19 +229,29 @@ export default function Dashboard() {
 
                     <div className="flex items-center justify-between pt-3 border-t border-border">
                       <span className="font-semibold">Total: ₹{order.total.toLocaleString()}</span>
-                      {/* Status timeline */}
-                      <div className="flex items-center gap-1">
-                        {["placed", "confirmed", "baking", "out_for_delivery", "delivered"].map((s, i) => {
-                          const steps = ["placed", "confirmed", "baking", "out_for_delivery", "delivered"];
-                          const currentIndex = steps.indexOf(order.status);
-                          const isComplete = i <= currentIndex;
-                          return (
-                            <div key={s} className="flex items-center">
-                              <div className={`w-2 h-2 rounded-full ${isComplete ? "bg-primary" : "bg-border"}`} />
-                              {i < 4 && <div className={`w-4 h-0.5 ${isComplete ? "bg-primary" : "bg-border"}`} />}
-                            </div>
-                          );
-                        })}
+                      <div className="flex items-center gap-3">
+                        {order.status === "delivered" && (
+                          <button
+                            onClick={() => setReviewingOrder(order)}
+                            className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                          >
+                            <Star className="w-3.5 h-3.5" /> Write Review
+                          </button>
+                        )}
+                        {/* Status timeline */}
+                        <div className="flex items-center gap-1">
+                          {["placed", "confirmed", "baking", "out_for_delivery", "delivered"].map((s, i) => {
+                            const steps = ["placed", "confirmed", "baking", "out_for_delivery", "delivered"];
+                            const currentIndex = steps.indexOf(order.status);
+                            const isComplete = i <= currentIndex;
+                            return (
+                              <div key={s} className="flex items-center">
+                                <div className={`w-2 h-2 rounded-full ${isComplete ? "bg-primary" : "bg-border"}`} />
+                                {i < 4 && <div className={`w-4 h-0.5 ${isComplete ? "bg-primary" : "bg-border"}`} />}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -236,6 +260,45 @@ export default function Dashboard() {
             )}
           </div>
         )}
+
+        {/* Review Dialog */}
+        <Dialog open={!!reviewingOrder} onOpenChange={(open) => !open && setReviewingOrder(null)}>
+          <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Review Your Order</DialogTitle>
+            </DialogHeader>
+            {reviewingOrder && (
+              <div className="space-y-6">
+                {(reviewingOrder.items as any[]).map((item: any) => {
+                  const key = `${item.productId}-${reviewingOrder.id}`;
+                  const alreadyReviewed = existingReviews.has(key);
+                  if (alreadyReviewed) {
+                    return (
+                      <div key={key} className="p-3 rounded-xl bg-secondary/50">
+                        <p className="text-sm font-medium">{item.name}</p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                          <CheckCircle className="w-3 h-3" /> Already reviewed
+                        </p>
+                      </div>
+                    );
+                  }
+                  return (
+                    <ReviewForm
+                      key={key}
+                      productId={item.productId}
+                      productName={item.name}
+                      orderId={reviewingOrder.id}
+                      userId={user!.id}
+                      onSubmitted={() => {
+                        setExistingReviews((prev) => new Set([...prev, key]));
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Profile */}
         {tab === "profile" && (

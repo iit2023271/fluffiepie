@@ -5,6 +5,7 @@ import { Star, ShoppingCart, Heart, Minus, Plus, ChevronLeft, Truck, Shield, Clo
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/context/CartContext";
 import ProductCard from "@/components/ProductCard";
+import ProductReviews from "@/components/ProductReviews";
 import { toast } from "sonner";
 
 export default function ProductDetail() {
@@ -170,6 +171,12 @@ export default function ProductDetail() {
           </div>
         </motion.div>
       </div>
+
+      {/* Reviews */}
+      <section className="mt-20">
+        <h2 className="text-2xl font-display font-bold mb-8">Customer Reviews</h2>
+        <ProductReviews productId={product.id} />
+      </section>
 
       {/* Related */}
       {related.length > 0 && (

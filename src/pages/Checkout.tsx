@@ -77,6 +77,7 @@ export default function Checkout() {
 
     setPlacing(true);
     const orderItems = state.items.map((item) => ({
+      productId: item.product.id,
       name: item.product.name,
       slug: item.product.slug,
       weight: item.weight,
