@@ -166,6 +166,37 @@ export default function AdminSettings() {
     loadAll();
   };
 
+  const addProductTag = async () => {
+    if (!newTagName.trim()) { toast.error("Enter a tag name"); return; }
+    const hexToHslLocal = (hex: string) => {
+      let r = 0, g = 0, b = 0;
+      if (hex.length === 7) {
+        r = parseInt(hex.substring(1, 3), 16); g = parseInt(hex.substring(3, 5), 16); b = parseInt(hex.substring(5, 7), 16);
+      }
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h = 0, s = 0;
+      const l = (max + min) / 2;
+      if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+          case g: h = ((b - r) / d + 2) / 6; break;
+          case b: h = ((r - g) / d + 4) / 6; break;
+        }
+      }
+      return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+    };
+    const tagValue = JSON.stringify({ name: newTagName.trim(), bgColor: hexToHslLocal(newTagBg), textColor: hexToHslLocal(newTagText) });
+    const maxOrder = configItems.filter(c => c.config_type === "product_tag").reduce((m, c) => Math.max(m, c.sort_order), 0);
+    const { error } = await supabase.from("store_config").insert({ config_type: "product_tag", value: tagValue, sort_order: maxOrder + 1 });
+    if (error) { toast.error("Failed to add tag"); return; }
+    toast.success(`Tag "${newTagName.trim()}" added!`);
+    setNewTagName(""); setNewTagBg("#c0392b"); setNewTagText("#ffffff");
+    loadAll();
+  };
+
   const toggleConfig = async (id: string, active: boolean) => {
     const { error } = await supabase.from("store_config").update({ is_active: !active }).eq("id", id);
     if (error) toast.error("Failed to update");
