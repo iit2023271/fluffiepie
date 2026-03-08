@@ -521,15 +521,52 @@ export default function Index() {
     }
   };
 
+  // Sections to show in nav (exclude banners, hero, spacers)
+  const navSections = config.sections.filter(
+    s => s.visible && s.id !== "banners" && s.id !== "hero" && !(s.customData?.type === "spacer")
+  );
+
+  const getSectionLabel = (s: HomepageSection) => {
+    if (BUILTIN_SECTION_IDS.includes(s.id)) return SECTION_LABELS[s.id] || s.id;
+    return s.label || CUSTOM_TYPE_LABELS[s.customType!]?.label || "Section";
+  };
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(`section-${id}`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <div>
       {config.sections
         .filter(s => s.visible)
-        .map(s => {
-          if (BUILTIN_SECTION_IDS.includes(s.id)) {
-            return sectionRenderers[s.id]?.();
+        .map((s, idx, arr) => {
+          // Insert section nav after banners (or at start if no banners)
+          const prevId = idx > 0 ? arr[idx - 1].id : null;
+          const showNav = (prevId === "banners" && s.id === "hero") ||
+            (idx === 0 && s.id !== "banners" && s.id === "hero") ||
+            (prevId === "banners" && s.id !== "hero");
+          const showNavAtStart = idx === 0 && s.id !== "banners";
+
+          const sectionNode = (
+            <div key={s.id} id={`section-${s.id}`}>
+              {BUILTIN_SECTION_IDS.includes(s.id)
+                ? sectionRenderers[s.id]?.()
+                : renderCustomSection(s)}
+            </div>
+          );
+
+          if (showNav || showNavAtStart) {
+            return (
+              <div key={`nav-${s.id}`}>
+                {showNavAtStart && <SectionNavBar sections={navSections} getLabel={getSectionLabel} onNavigate={scrollToSection} />}
+                {showNav && !showNavAtStart && <SectionNavBar sections={navSections} getLabel={getSectionLabel} onNavigate={scrollToSection} />}
+                {sectionNode}
+              </div>
+            );
           }
-          return renderCustomSection(s);
+
+          return sectionNode;
         })}
     </div>
   );
