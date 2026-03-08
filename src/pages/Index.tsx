@@ -342,51 +342,32 @@ export default function Index() {
         </div>
       </section>
     ),
-    reviews: () =>
-      reviews.length > 0 ? (
+    reviews: () => {
+      const revCols = config.reviews.columns || 3;
+      return reviews.length > 0 ? (
         <section key="reviews" className="bg-blush py-20 overflow-hidden">
           <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-14"
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-14">
               <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{config.reviews.title}</h2>
               <p className="text-muted-foreground">{config.reviews.subtitle}</p>
             </motion.div>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid gap-6" style={{ gridTemplateColumns: `repeat(1, 1fr)` }} data-desktop-cols={`r${revCols}`}>
+              <style>{`@media(min-width:768px){[data-desktop-cols="r${revCols}"]{grid-template-columns:repeat(${revCols},1fr)!important}}`}</style>
               {reviews.slice(0, config.reviews.count).map((r, i) => {
                 const name = r.author_name || "Customer";
                 const initials = name.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase();
                 return (
-                  <motion.div
-                    key={r.id}
-                    initial={{ opacity: 0, y: 30, rotateX: 15 }}
-                    whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.15, type: "spring", stiffness: 80 }}
-                    whileHover={{ y: -5, scale: 1.02, transition: { duration: 0.25 } }}
-                    className="bg-background rounded-2xl p-6 shadow-soft hover:shadow-elevated transition-shadow"
-                  >
+                  <motion.div key={r.id} initial={{ opacity: 0, y: 30, rotateX: 15 }} whileInView={{ opacity: 1, y: 0, rotateX: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.15, type: "spring", stiffness: 80 }} whileHover={{ y: -5, scale: 1.02, transition: { duration: 0.25 } }} className="bg-background rounded-2xl p-6 shadow-soft hover:shadow-elevated transition-shadow">
                     <div className="flex items-center gap-1 mb-3">
                       {Array.from({ length: r.rating }).map((_, j) => (
-                        <motion.div
-                          key={j}
-                          initial={{ opacity: 0, scale: 0 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: i * 0.1 + j * 0.05 }}
-                        >
+                        <motion.div key={j} initial={{ opacity: 0, scale: 0 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.1 + j * 0.05 }}>
                           <Star className="w-4 h-4 fill-accent text-accent" />
                         </motion.div>
                       ))}
                     </div>
                     <p className="text-sm text-foreground mb-4 leading-relaxed">"{r.comment}"</p>
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
-                        {initials}
-                      </div>
+                      <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">{initials}</div>
                       <div>
                         <span className="text-sm font-medium">{name}</span>
                         {r.products?.name && <p className="text-xs text-muted-foreground">on {r.products.name}</p>}
@@ -398,7 +379,8 @@ export default function Index() {
             </div>
           </div>
         </section>
-      ) : null,
+      ) : null;
+    },
   };
 
   // Render a custom section
