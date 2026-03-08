@@ -24,6 +24,11 @@ export default function ProductDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
+  // Track recently viewed
+  useEffect(() => {
+    if (product) addViewed(product.id);
+  }, [product?.id]);
+
   if (!product) {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
