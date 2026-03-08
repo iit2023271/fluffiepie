@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Star, ShoppingCart, Heart, Minus, Plus, ChevronLeft, Truck, Shield, Clock } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Star, ShoppingCart, Heart, Minus, Plus, ChevronLeft, Truck, Shield, Clock, X, ChevronRight, ZoomIn } from "lucide-react";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/context/CartContext";
 import ProductCard from "@/components/ProductCard";
@@ -18,6 +18,7 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [message, setMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   if (!product) {
     return (
@@ -63,12 +64,18 @@ export default function ProductDetail() {
           animate={{ opacity: 1, x: 0 }}
           className="space-y-3"
         >
-          <div className="relative rounded-3xl overflow-hidden bg-cream aspect-square">
+          <div
+            className="relative rounded-3xl overflow-hidden bg-cream aspect-square cursor-zoom-in group"
+            onClick={() => setLightboxOpen(true)}
+          >
             <img
               src={allImages[selectedImage] || product.image}
               alt={product.name}
               className="w-full h-full object-cover transition-all duration-300"
             />
+            <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/5 transition-colors flex items-center justify-center">
+              <ZoomIn className="w-8 h-8 text-background opacity-0 group-hover:opacity-70 transition-opacity drop-shadow-lg" />
+            </div>
             {product.isBestseller && (
               <span className="absolute top-4 left-4 px-3 py-1 bg-primary text-primary-foreground text-xs font-semibold rounded-full">
                 Bestseller
@@ -214,6 +221,123 @@ export default function ProductDetail() {
           </div>
         </section>
       )}
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {lightboxOpen && (
+          <Lightbox
+            images={allImages}
+            initialIndex={selectedImage}
+            onClose={() => setLightboxOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+/* ── Fullscreen Lightbox ─────────────────────────────────── */
+function Lightbox({ images, initialIndex, onClose }: { images: string[]; initialIndex: number; onClose: () => void }) {
+  const [index, setIndex] = useState(initialIndex);
+  const [scale, setScale] = useState(1);
+
+  const prev = useCallback(() => { setIndex(i => (i - 1 + images.length) % images.length); setScale(1); }, [images.length]);
+  const next = useCallback(() => { setIndex(i => (i + 1) % images.length); setScale(1); }, [images.length]);
+
+  const toggleZoom = useCallback(() => {
+    setScale(s => s === 1 ? 2 : 1);
+  }, []);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "ArrowRight") next();
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [onClose, prev, next]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 z-50 bg-foreground/90 backdrop-blur-md flex items-center justify-center"
+      onClick={onClose}
+    >
+      {/* Close button */}
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-background/20 hover:bg-background/40 flex items-center justify-center transition-colors"
+      >
+        <X className="w-5 h-5 text-background" />
+      </button>
+
+      {/* Counter */}
+      {images.length > 1 && (
+        <span className="absolute top-5 left-1/2 -translate-x-1/2 text-sm text-background/70 font-medium">
+          {index + 1} / {images.length}
+        </span>
+      )}
+
+      {/* Prev */}
+      {images.length > 1 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); prev(); }}
+          className="absolute left-3 md:left-6 z-10 w-10 h-10 rounded-full bg-background/20 hover:bg-background/40 flex items-center justify-center transition-colors"
+        >
+          <ChevronLeft className="w-5 h-5 text-background" />
+        </button>
+      )}
+
+      {/* Image */}
+      <motion.div
+        key={index}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.2 }}
+        className="max-w-[90vw] max-h-[85vh] flex items-center justify-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <img
+          src={images[index]}
+          alt={`Image ${index + 1}`}
+          onClick={toggleZoom}
+          className="max-w-full max-h-[85vh] object-contain rounded-lg cursor-zoom-in transition-transform duration-300"
+          style={{ transform: `scale(${scale})`, cursor: scale > 1 ? "zoom-out" : "zoom-in" }}
+          draggable={false}
+        />
+      </motion.div>
+
+      {/* Next */}
+      {images.length > 1 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); next(); }}
+          className="absolute right-3 md:right-6 z-10 w-10 h-10 rounded-full bg-background/20 hover:bg-background/40 flex items-center justify-center transition-colors"
+        >
+          <ChevronRight className="w-5 h-5 text-background" />
+        </button>
+      )}
+
+      {/* Thumbnails */}
+      {images.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+          {images.map((img, i) => (
+            <button
+              key={i}
+              onClick={(e) => { e.stopPropagation(); setIndex(i); setScale(1); }}
+              className={`w-12 h-12 rounded-lg overflow-hidden border-2 transition-colors ${
+                i === index ? "border-background" : "border-transparent opacity-50 hover:opacity-80"
+              }`}
+            >
+              <img src={img} alt="" className="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
+    </motion.div>
   );
 }
