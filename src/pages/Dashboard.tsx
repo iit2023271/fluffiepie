@@ -13,6 +13,7 @@ import { format, differenceInMinutes } from "date-fns";
 import { useStoreInfo } from "@/hooks/useStoreInfo";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useProducts } from "@/hooks/useProducts";
+import { useDeliveryConfig } from "@/hooks/useDeliveryConfig";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 
 interface OrderNote {

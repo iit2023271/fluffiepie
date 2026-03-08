@@ -5,12 +5,14 @@ export interface DeliveryConfig {
   delivery_fee: number;
   free_delivery_threshold: number;
   time_slots: string[];
+  cancel_window_minutes: number;
 }
 
 const DEFAULT_CONFIG: DeliveryConfig = {
   delivery_fee: 49,
   free_delivery_threshold: 999,
   time_slots: ["9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"],
+  cancel_window_minutes: 30,
 };
 
 export function useDeliveryConfig() {

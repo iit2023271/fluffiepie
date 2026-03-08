@@ -1163,6 +1163,17 @@ export default function AdminSettings() {
               />
               <p className="text-xs text-muted-foreground mt-1">Orders above this amount get free delivery</p>
             </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Cancel Window (minutes)</label>
+              <input
+                type="number"
+                min={0}
+                value={deliveryForm.cancel_window_minutes}
+                onChange={(e) => setDeliveryForm(prev => ({ ...prev, cancel_window_minutes: Number(e.target.value) }))}
+                className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Customers can cancel their order within this many minutes after placing. Set 0 to disable cancellation.</p>
+            </div>
           </div>
 
           <div>
