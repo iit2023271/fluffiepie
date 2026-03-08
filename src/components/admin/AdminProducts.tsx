@@ -7,6 +7,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { useStoreConfig } from "@/hooks/useStoreConfig";
 import { Badge } from "@/components/ui/badge";
 import ImageCropper from "@/components/admin/ImageCropper";
+import ConfirmDialog from "@/components/admin/ConfirmDialog";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -35,6 +36,7 @@ export default function AdminProducts() {
   const [currentPage, setCurrentPage] = useState(1);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [showCropper, setShowCropper] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id: string; name: string }>({ open: false, id: "", name: "" });
 
   useEffect(() => { loadProducts(); }, []);
 
@@ -115,7 +117,6 @@ export default function AdminProducts() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this product?")) return;
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) toast.error("Failed to delete");
     else { toast.success("Product deleted"); loadProducts(); }
@@ -425,7 +426,7 @@ export default function AdminProducts() {
                       <td className="px-4 py-3">
                         <div className="flex gap-1">
                           <button onClick={() => openEdit(product)} className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-foreground"><Pencil className="w-4 h-4" /></button>
-                          <button onClick={() => handleDelete(product.id)} className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
+                          <button onClick={() => setDeleteConfirm({ open: true, id: product.id, name: product.name })} className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       </td>
                     </tr>
@@ -439,6 +440,15 @@ export default function AdminProducts() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={(open) => setDeleteConfirm(prev => ({ ...prev, open }))}
+        title="Delete Product"
+        description={`Are you sure you want to delete "${deleteConfirm.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={() => { handleDelete(deleteConfirm.id); setDeleteConfirm({ open: false, id: "", name: "" }); }}
+      />
     </div>
   );
 }
