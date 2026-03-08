@@ -9,7 +9,7 @@ import { format } from "date-fns";
 
 interface Order {
   id: string;
-  items: any[];
+  items: any;
   status: string;
   total: number;
   created_at: string;
