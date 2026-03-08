@@ -495,7 +495,7 @@ export default function Index() {
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.05 }}
-                    className="rounded-2xl overflow-hidden bg-muted aspect-square"
+                    className="relative rounded-2xl overflow-hidden bg-muted aspect-square"
                   >
                     {img.url && <img src={img.url} alt={img.caption || ""} className="w-full h-full object-cover" />}
                     {img.caption && (
