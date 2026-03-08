@@ -59,20 +59,21 @@ export default function Shop() {
     return result;
   }, [searchQuery, selectedFilters, sortBy, products]);
 
-  useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedCategory, selectedOccasion, selectedFlavour, sortBy]);
+  useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedFilters, sortBy]);
 
-  const hasFilters = selectedCategory || selectedOccasion || selectedFlavour || searchQuery;
+  const hasFilters = Object.values(selectedFilters).some(v => v) || searchQuery;
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginatedProducts = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
-  // Reset page when filters change
   const clearFilters = () => {
     setSearchQuery("");
-    setSelectedCategory("");
-    setSelectedOccasion("");
-    setSelectedFlavour("");
+    setSelectedFilters({});
     setCurrentPage(1);
+  };
+
+  const selectFilter = (type: string, value: string) => {
+    setSelectedFilters(prev => ({ ...prev, [type]: prev[type] === value ? "" : value }));
   };
 
   const FilterSection = ({ title, options, selected, onSelect }: { title: string; options: string[]; selected: string; onSelect: (v: string) => void }) => (
