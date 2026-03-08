@@ -484,7 +484,7 @@ export default function Index() {
           <section key={section.id} className={`relative py-16 overflow-hidden ${data.ctaBgImage ? "text-background" : bgMap[data.ctaBg || "primary"]}`}>
             {data.ctaBgImage && (
               <>
-                <img src={data.ctaBgImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                <img src={data.ctaBgImage} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
                 <div className="absolute inset-0 bg-foreground/50" />
               </>
             )}
