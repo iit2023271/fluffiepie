@@ -10,7 +10,8 @@ import AdminSettings from "@/components/admin/AdminSettings";
 import AdminKitchen from "@/components/admin/AdminKitchen";
 import AdminHomepage from "@/components/admin/AdminHomepage";
 import AdminReviews from "@/components/admin/AdminReviews";
-import { LayoutDashboard, Package, ShoppingCart, Users, LogOut, ChevronLeft, Settings, ChefHat, Home, MessageSquare } from "lucide-react";
+import AdminThemes from "@/components/admin/AdminThemes";
+import { LayoutDashboard, Package, ShoppingCart, Users, LogOut, ChevronLeft, Settings, ChefHat, Home, MessageSquare, Palette } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
