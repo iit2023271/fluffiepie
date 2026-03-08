@@ -266,6 +266,11 @@ export default function AdminOrders() {
 
   const handleStatusChange = (orderId: string, newStatus: string) => {
     const order = orders.find(o => o.id === orderId);
+    // Block changes on finalized orders
+    if (order && (order.status === "delivered" || order.status === "cancelled")) {
+      toast.error(`Cannot change status — order is already ${order.status}`);
+      return;
+    }
     if (newStatus === "cancelled" && order?.status !== "cancelled") {
       setStatusChangeConfirm({ open: true, orderId, newStatus });
     } else {
