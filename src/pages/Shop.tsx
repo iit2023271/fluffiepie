@@ -383,7 +383,7 @@ export default function Shop() {
                   />
                 ))}
               </div>
-            </ScrollArea>
+            </div>
 
             {/* Footer with results button */}
             <div className="p-5 border-t border-border bg-card/50 backdrop-blur-sm">
