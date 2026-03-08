@@ -37,3 +37,5 @@ function RecentlyViewed({ excludeId }: Props) {
     </section>
   );
 }
+
+export default memo(RecentlyViewed);
