@@ -6,6 +6,7 @@ import { useStoreConfig } from "@/hooks/useStoreConfig";
 import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
 import Pagination from "@/components/Pagination";
+import { useWishlist } from "@/hooks/useWishlist";
 
 const ITEMS_PER_PAGE = 12;
 
