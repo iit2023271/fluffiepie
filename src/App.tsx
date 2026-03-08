@@ -22,6 +22,7 @@ const AdminPanel = lazy(() => import("./pages/AdminPanel"));
 const Location = lazy(() => import("./pages/Location"));
 const Social = lazy(() => import("./pages/Social"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Install = lazy(() => import("./pages/Install"));
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App = () => (
                   <Route path="/admin" element={<AdminPanel />} />
                   <Route path="/location" element={<Location />} />
                   <Route path="/social" element={<Social />} />
+                  <Route path="/install" element={<Install />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>

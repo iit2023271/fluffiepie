@@ -229,6 +229,69 @@ export default function Dashboard() {
                       ))}
                     </div>
 
+                    {/* Order Tracking Timeline */}
+                    {order.status !== "cancelled" && (
+                      <div className="mb-4 py-3 px-2 bg-secondary/30 rounded-xl">
+                        <div className="flex items-center justify-between relative">
+                          {/* Progress bar background */}
+                          <div className="absolute top-[14px] left-[20px] right-[20px] h-1 bg-border rounded-full" />
+                          {/* Progress bar fill */}
+                          {(() => {
+                            const steps = ["placed", "confirmed", "baking", "out_for_delivery", "delivered"];
+                            const currentIndex = steps.indexOf(order.status);
+                            const pct = currentIndex >= 0 ? (currentIndex / (steps.length - 1)) * 100 : 0;
+                            return (
+                              <div
+                                className="absolute top-[14px] left-[20px] h-1 bg-primary rounded-full transition-all duration-500"
+                                style={{ width: `calc(${pct}% - ${pct < 100 ? 0 : 0}px)`, maxWidth: 'calc(100% - 40px)' }}
+                              />
+                            );
+                          })()}
+                          {[
+                            { key: "placed", label: "Placed", icon: Clock },
+                            { key: "confirmed", label: "Confirmed", icon: CheckCircle },
+                            { key: "baking", label: "Baking", icon: ChefHat },
+                            { key: "out_for_delivery", label: "On the Way", icon: Truck },
+                            { key: "delivered", label: "Delivered", icon: CheckCircle },
+                          ].map((step, i) => {
+                            const steps = ["placed", "confirmed", "baking", "out_for_delivery", "delivered"];
+                            const currentIndex = steps.indexOf(order.status);
+                            const isComplete = i <= currentIndex;
+                            const isCurrent = i === currentIndex;
+                            const StepIcon = step.icon;
+                            return (
+                              <div key={step.key} className="flex flex-col items-center relative z-10" style={{ flex: 1 }}>
+                                <div
+                                  className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                                    isCurrent
+                                      ? "bg-primary text-primary-foreground ring-4 ring-primary/20 scale-110"
+                                      : isComplete
+                                      ? "bg-primary text-primary-foreground"
+                                      : "bg-muted text-muted-foreground border-2 border-border"
+                                  }`}
+                                >
+                                  <StepIcon className="w-3.5 h-3.5" />
+                                </div>
+                                <span
+                                  className={`text-[10px] mt-1.5 text-center leading-tight ${
+                                    isCurrent ? "font-bold text-primary" : isComplete ? "font-medium text-foreground" : "text-muted-foreground"
+                                  }`}
+                                >
+                                  {step.label}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {order.status === "cancelled" && (
+                      <div className="mb-4 py-2 px-3 bg-destructive/10 rounded-xl text-center">
+                        <span className="text-sm font-medium text-destructive">Order Cancelled</span>
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between pt-3 border-t border-border">
                       <span className="font-semibold">Total: ₹{order.total.toLocaleString()}</span>
                       <div className="flex items-center gap-3">
@@ -240,20 +303,6 @@ export default function Dashboard() {
                             <Star className="w-3.5 h-3.5" /> Write Review
                           </button>
                         )}
-                        {/* Status timeline */}
-                        <div className="flex items-center gap-1">
-                          {["placed", "confirmed", "baking", "out_for_delivery", "delivered"].map((s, i) => {
-                            const steps = ["placed", "confirmed", "baking", "out_for_delivery", "delivered"];
-                            const currentIndex = steps.indexOf(order.status);
-                            const isComplete = i <= currentIndex;
-                            return (
-                              <div key={s} className="flex items-center">
-                                <div className={`w-2 h-2 rounded-full ${isComplete ? "bg-primary" : "bg-border"}`} />
-                                {i < 4 && <div className={`w-4 h-0.5 ${isComplete ? "bg-primary" : "bg-border"}`} />}
-                              </div>
-                            );
-                          })}
-                        </div>
                       </div>
                     </div>
                   </div>

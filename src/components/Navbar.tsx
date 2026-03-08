@@ -5,6 +5,7 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
+import SearchOverlay from "@/components/SearchOverlay";
 
 const navLinks = [
   { label: "Home", path: "/" },
@@ -19,6 +20,7 @@ export default function Navbar() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
@@ -52,7 +54,7 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <button className="p-2 rounded-full hover:bg-secondary transition-colors" aria-label="Search">
+          <button onClick={() => setSearchOpen(true)} className="p-2 rounded-full hover:bg-secondary transition-colors" aria-label="Search">
             <Search className="w-5 h-5 text-muted-foreground" />
           </button>
           <button
@@ -141,6 +143,8 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>
   );
 }
