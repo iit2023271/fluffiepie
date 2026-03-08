@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
+import { useSEO } from "@/hooks/useSEO";
 import { useSearchParams } from "react-router-dom";
 import { SlidersHorizontal, X, Search, Sparkles, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
