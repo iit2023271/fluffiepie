@@ -218,12 +218,34 @@ export default function Shop() {
         />
       </div>
 
+      {/* Sort chips (scrollable on mobile) */}
+      <div className="flex items-center gap-2 mb-4 overflow-x-auto scrollbar-hide pb-1">
+        {[
+          { value: "popularity", label: "Most Popular" },
+          { value: "price-low", label: "Price: Low to High" },
+          { value: "price-high", label: "Price: High to Low" },
+          { value: "rating", label: "Highest Rated" },
+        ].map((opt) => (
+          <button
+            key={opt.value}
+            onClick={() => setSortBy(opt.value)}
+            className={`px-3.5 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+              sortBy === opt.value
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "bg-secondary text-secondary-foreground hover:bg-primary/10"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-6 gap-3">
         {/* Filter sheet trigger */}
         <Sheet>
           <SheetTrigger asChild>
-            <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-medium bg-card hover:bg-secondary transition-all hover:shadow-sm group">
+            <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-sm font-medium bg-card hover:bg-secondary transition-all hover:shadow-sm active:scale-95 group">
               <SlidersHorizontal className="w-4 h-4 group-hover:text-primary transition-colors" />
               Filters
               {activeFilterCount > 0 && (
