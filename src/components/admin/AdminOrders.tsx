@@ -338,28 +338,28 @@ export default function AdminOrders() {
             <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center"><Package className="w-4 h-4 text-primary" /></div>
             <span className="text-xs text-muted-foreground">Today's Orders</span>
           </div>
-          <p className="text-2xl font-bold">{todayStats.todayCount}</p>
+          <p className="text-2xl font-bold">{orderStats.todayCount}</p>
         </div>
         <div className="bg-card rounded-2xl p-4 border border-border">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-sm">💰</div>
             <span className="text-xs text-muted-foreground">Today's Revenue</span>
           </div>
-          <p className="text-2xl font-bold">₹{todayStats.todayRevenue.toLocaleString()}</p>
+          <p className="text-2xl font-bold">₹{orderStats.todayRevenue.toLocaleString()}</p>
         </div>
         <div className="bg-card rounded-2xl p-4 border border-border">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center"><Timer className="w-4 h-4 text-amber-600" /></div>
             <span className="text-xs text-muted-foreground">Needs Action</span>
           </div>
-          <p className="text-2xl font-bold text-amber-600">{todayStats.pendingCount}</p>
+          <p className="text-2xl font-bold text-amber-600">{orderStats.pendingCount}</p>
         </div>
         <div className="bg-card rounded-2xl p-4 border border-border">
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 rounded-xl bg-orange-100 flex items-center justify-center text-sm">🔥</div>
-            <span className="text-xs text-muted-foreground">In Progress</span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-sm">✅</div>
+            <span className="text-xs text-muted-foreground">Delivered</span>
           </div>
-          <p className="text-2xl font-bold text-orange-600">{todayStats.inProgressCount}</p>
+          <p className="text-2xl font-bold text-emerald-600">{orderStats.deliveredCount}</p>
         </div>
       </div>
 
