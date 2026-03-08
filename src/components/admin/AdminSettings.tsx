@@ -204,6 +204,51 @@ export default function AdminSettings() {
     loadAll();
   };
 
+  // Email notification settings
+  const EMAIL_STATUS_CONFIG: Record<string, { label: string; emoji: string; description: string }> = {
+    placed: { label: "Order Placed", emoji: "📦", description: "When a customer places a new order" },
+    confirmed: { label: "Order Confirmed", emoji: "✅", description: "When you confirm an order" },
+    baking: { label: "Being Prepared", emoji: "🧁", description: "When the order starts preparation" },
+    out_for_delivery: { label: "Out for Delivery", emoji: "🚚", description: "When the order is dispatched" },
+    delivered: { label: "Delivered", emoji: "✔️", description: "When the order is delivered" },
+    cancelled: { label: "Cancelled", emoji: "❌", description: "When an order is cancelled" },
+  };
+
+  const toggleEmailStatus = async (status: string) => {
+    const newValue = !emailSettings[status];
+    setEmailSettings(prev => ({ ...prev, [status]: newValue }));
+    const existing = configItems.find(c => c.config_type === "email_notification" && c.value === status);
+    if (existing) {
+      await supabase.from("store_config").update({ is_active: newValue }).eq("id", existing.id);
+    } else {
+      await supabase.from("store_config").insert({ config_type: "email_notification", value: status, is_active: newValue, sort_order: 0 });
+    }
+    toast.success(`${EMAIL_STATUS_CONFIG[status]?.label} email ${newValue ? "enabled" : "disabled"}`);
+    loadAll();
+  };
+
+  const sendTestEmail = async (status: string) => {
+    setTestingEmail(status);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-order-notification", {
+        body: {
+          orderId: "test-00000000",
+          newStatus: status,
+          customerName: "Test Customer",
+          orderTotal: 999,
+          items: [{ name: "Test Cake", weight: "1kg", quantity: 1, price: 999 }],
+          isTest: true,
+        },
+      });
+      if (error) throw error;
+      if (data?.success) toast.success("Test email sent! Check your inbox.");
+      else toast.error(data?.error || "Failed to send test email");
+    } catch (e: any) {
+      toast.error("Failed to send test email");
+    }
+    setTestingEmail(null);
+  };
+
   // Coupon analytics
   const couponStats = coupons.map(c => {
     const couponOrders = orders.filter(o => o.coupon_code === c.code);
