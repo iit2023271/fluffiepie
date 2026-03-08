@@ -141,19 +141,24 @@ export default function AdminProducts() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
-  const filtered = products.filter((p) => {
-    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
-    const matchCategory = !categoryFilter || p.category === categoryFilter;
-    const matchStatus = !statusFilter || 
-      (statusFilter === "active" && p.is_active) || 
-      (statusFilter === "inactive" && !p.is_active) ||
-      (statusFilter === "bestseller" && p.is_bestseller) ||
-      (statusFilter === "new" && p.is_new);
-    return matchSearch && matchCategory && matchStatus;
-  });
+  const [currentPage, setCurrentPage] = useState(1);
 
-  return (
-    <div>
+  const filtered = useMemo(() => {
+    setCurrentPage(1);
+    return products.filter((p) => {
+      const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
+      const matchCategory = !categoryFilter || p.category === categoryFilter;
+      const matchStatus = !statusFilter || 
+        (statusFilter === "active" && p.is_active) || 
+        (statusFilter === "inactive" && !p.is_active) ||
+        (statusFilter === "bestseller" && p.is_bestseller) ||
+        (statusFilter === "new" && p.is_new);
+      return matchSearch && matchCategory && matchStatus;
+    });
+  }, [products, search, categoryFilter, statusFilter]);
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-display font-bold">Products</h1>
         <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90">
