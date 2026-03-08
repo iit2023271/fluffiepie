@@ -96,6 +96,25 @@ export default function AdminProducts() {
     return data.publicUrl;
   };
 
+  const uploadSingleFile = async (file: File): Promise<string | null> => {
+    const ext = file.name.split(".").pop();
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from("product-images").upload(path, file);
+    if (error) { toast.error("Additional image upload failed"); return null; }
+    const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
+  const handleAddAdditionalImage = (file: File) => {
+    setCropSrc(URL.createObjectURL(file));
+    setCropTarget("additional");
+    setShowCropper(true);
+  };
+
+  const removeAdditionalImage = (index: number) => {
+    setForm(f => ({ ...f, images: f.images.filter((_, i) => i !== index) }));
+  };
+
   const handleSave = async () => {
     if (!form.name || !form.slug) { toast.error("Name and slug are required"); return; }
     setSaving(true);
