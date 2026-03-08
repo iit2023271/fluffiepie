@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, CheckCircle2, XCircle } from "lucide-react";
+import { z } from "zod";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -15,8 +16,29 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const passwordChecks = {
+    length: password.length >= 8,
+    uppercase: /[A-Z]/.test(password),
+    lowercase: /[a-z]/.test(password),
+    number: /\d/.test(password),
+    special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+  };
+  const isStrongPassword = Object.values(passwordChecks).every(Boolean);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isSignup) {
+      if (!fullName.trim() || fullName.trim().length < 2) {
+        toast.error("Please enter a valid full name");
+        return;
+      }
+      if (!isStrongPassword) {
+        toast.error("Please meet all password requirements");
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -106,6 +128,23 @@ export default function Login() {
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
+
+          {isSignup && password.length > 0 && (
+            <div className="space-y-1 text-xs">
+              {[
+                { key: "length" as const, label: "At least 8 characters" },
+                { key: "uppercase" as const, label: "One uppercase letter" },
+                { key: "lowercase" as const, label: "One lowercase letter" },
+                { key: "number" as const, label: "One number" },
+                { key: "special" as const, label: "One special character" },
+              ].map(({ key, label }) => (
+                <div key={key} className={`flex items-center gap-1.5 ${passwordChecks[key] ? "text-green-600" : "text-muted-foreground"}`}>
+                  {passwordChecks[key] ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                  {label}
+                </div>
+              ))}
+            </div>
+          )}
 
           {!isSignup && (
             <div className="text-right">

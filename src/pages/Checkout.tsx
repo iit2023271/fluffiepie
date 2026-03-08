@@ -6,6 +6,18 @@ import { Link, useNavigate } from "react-router-dom";
 import { ChevronLeft, Tag, MapPin, CalendarIcon, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays, isBefore, startOfDay } from "date-fns";
+import { z } from "zod";
+
+const addressSchema = z.object({
+  firstName: z.string().trim().min(1, "First name is required").max(50),
+  lastName: z.string().trim().max(50),
+  phone: z.string().trim().regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit phone number"),
+  address: z.string().trim().min(5, "Address too short").max(200),
+  city: z.string().trim().min(2, "City is required").max(50),
+  pincode: z.string().trim().regex(/^\d{6}$/, "Enter a valid 6-digit pincode"),
+});
+
+const couponSchema = z.string().trim().min(1).max(20).regex(/^[A-Z0-9]+$/i, "Invalid coupon format");
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -30,7 +42,8 @@ export default function Checkout() {
   const [deliveryTime, setDeliveryTime] = useState("");
 
   const applyCoupon = async () => {
-    if (!coupon.trim()) { toast.error("Enter a coupon code"); return; }
+    const parsed = couponSchema.safeParse(coupon);
+    if (!parsed.success) { toast.error("Enter a valid coupon code"); return; }
     const { data, error } = await supabase
       .from("coupons")
       .select("*")
@@ -80,8 +93,10 @@ export default function Checkout() {
         return;
       }
     } else {
-      if (!form.firstName || !form.phone || !form.address || !form.city || !form.pincode) {
-        toast.error("Please fill in all address fields");
+      const result = addressSchema.safeParse(form);
+      if (!result.success) {
+        const firstError = result.error.errors[0]?.message || "Invalid address fields";
+        toast.error(firstError);
         return;
       }
     }
