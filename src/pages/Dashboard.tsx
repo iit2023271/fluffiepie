@@ -53,6 +53,7 @@ export default function Dashboard() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [reviewingOrder, setReviewingOrder] = useState<Order | null>(null);
   const [existingReviews, setExistingReviews] = useState<Set<string>>(new Set());
+  const [orderNotes, setOrderNotes] = useState<Record<string, OrderNote[]>>({});
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
