@@ -275,6 +275,7 @@ export type Database = {
           sku: string | null
           slug: string
           stock_quantity: number
+          tags: string[]
           updated_at: string
           weights: Json
         }
@@ -299,6 +300,7 @@ export type Database = {
           sku?: string | null
           slug: string
           stock_quantity?: number
+          tags?: string[]
           updated_at?: string
           weights?: Json
         }
@@ -323,6 +325,7 @@ export type Database = {
           sku?: string | null
           slug?: string
           stock_quantity?: number
+          tags?: string[]
           updated_at?: string
           weights?: Json
         }
