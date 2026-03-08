@@ -100,12 +100,22 @@ export default function Dashboard() {
             </h1>
             <p className="text-muted-foreground">{user?.email}</p>
           </div>
-          <button
-            onClick={handleSignOut}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-destructive hover:border-destructive transition-colors"
-          >
-            <LogOut className="w-4 h-4" /> Sign Out
-          </button>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-accent-foreground text-sm font-medium hover:opacity-90 transition-opacity"
+              >
+                <Shield className="w-4 h-4" /> Admin Panel
+              </Link>
+            )}
+            <button
+              onClick={handleSignOut}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-destructive hover:border-destructive transition-colors"
+            >
+              <LogOut className="w-4 h-4" /> Sign Out
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}
