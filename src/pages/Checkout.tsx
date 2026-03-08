@@ -218,7 +218,7 @@ export default function Checkout() {
                 Apply
               </button>
             </div>
-            <p className="text-xs text-muted-foreground mb-4">Try: SWEET10</p>
+            
 
             <div className="border-t border-border pt-4 space-y-2 text-sm">
               <div className="flex justify-between">
