@@ -241,21 +241,25 @@ export default function AdminOrders() {
     toast.success("Orders downloaded!");
   };
 
-  const filtered = useMemo(() => {
+  const baseFiltered = useMemo(() => {
     return orders.filter(o => {
       const addr = o.delivery_address as any;
       const matchSearch = !search || o.id.toLowerCase().includes(search.toLowerCase()) ||
         (addr?.name || "").toLowerCase().includes(search.toLowerCase()) ||
         (addr?.phone || "").includes(search);
-      const matchStatus = !statusFilter || o.status === statusFilter;
       const orderDate = new Date(o.created_at);
       const matchDateFrom = !dateFrom || orderDate >= startOfDay(dateFrom);
       const matchDateTo = !dateTo || orderDate <= endOfDay(dateTo);
       // When searching, show all orders; otherwise default to today only unless "All Orders" is toggled
       const matchToday = search ? true : showAllOrders ? true : isToday(orderDate);
-      return matchSearch && matchStatus && matchDateFrom && matchDateTo && matchToday;
+      return matchSearch && matchDateFrom && matchDateTo && matchToday;
     });
-  }, [orders, search, statusFilter, dateFrom, dateTo, showAllOrders]);
+  }, [orders, search, dateFrom, dateTo, showAllOrders]);
+
+  const filtered = useMemo(() => {
+    if (!statusFilter) return baseFiltered;
+    return baseFiltered.filter(o => o.status === statusFilter);
+  }, [baseFiltered, statusFilter]);
 
   useEffect(() => { setCurrentPage(1); }, [search, statusFilter, dateFrom, dateTo]);
 
@@ -271,9 +275,9 @@ export default function AdminOrders() {
 
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    orders.forEach(o => { counts[o.status] = (counts[o.status] || 0) + 1; });
+    baseFiltered.forEach(o => { counts[o.status] = (counts[o.status] || 0) + 1; });
     return counts;
-  }, [orders]);
+  }, [baseFiltered]);
 
   const hasDateFilter = dateFrom || dateTo;
   const clearDateFilter = () => { setDateFrom(undefined); setDateTo(undefined); };
@@ -387,7 +391,7 @@ export default function AdminOrders() {
       <div className="flex flex-wrap gap-2 mb-4">
         <button onClick={() => setStatusFilter("")}
           className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${!statusFilter ? "bg-foreground text-background shadow-md" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"}`}>
-          All Statuses ({filtered.length})
+          All Statuses ({baseFiltered.length})
         </button>
         {statusOptions.map(s => {
           const cfg = STATUS_CONFIG[s];
