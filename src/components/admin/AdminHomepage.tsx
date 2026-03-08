@@ -58,6 +58,8 @@ export default function AdminHomepage() {
           trending: { ...DEFAULT_HOMEPAGE_CONFIG.trending, ...(parsed.trending || {}) },
           howItWorks: { ...DEFAULT_HOMEPAGE_CONFIG.howItWorks, ...(parsed.howItWorks || {}) },
           reviews: { ...DEFAULT_HOMEPAGE_CONFIG.reviews, ...(parsed.reviews || {}) },
+          sectionNav: { ...DEFAULT_HOMEPAGE_CONFIG.sectionNav, ...(parsed.sectionNav || {}), items: parsed.sectionNav?.items || DEFAULT_HOMEPAGE_CONFIG.sectionNav.items },
+          footer: { ...DEFAULT_HOMEPAGE_CONFIG.footer, ...(parsed.footer || {}), columns: parsed.footer?.columns || DEFAULT_HOMEPAGE_CONFIG.footer.columns },
           sections: parsed.sections || DEFAULT_HOMEPAGE_CONFIG.sections,
         });
         setExistingId(data.id);
@@ -600,64 +602,6 @@ export default function AdminHomepage() {
           return null;
         })}
 
-        {/* Footer Editor */}
-        <SectionEditor id="footer" label="Footer" expanded={expandedSection === "footer"} onToggle={() => toggleExpand("footer")} visible={true}>
-          <div className="space-y-5">
-            <div>
-              <Label className="text-xs">Brand Description</Label>
-              <Textarea value={config.footer.brandDescription} onChange={e => updateFooter("brandDescription", e.target.value)} className="mt-1" rows={2} />
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <Label className="text-xs font-semibold uppercase tracking-wider">Link Columns</Label>
-                <Button variant="outline" size="sm" onClick={addFooterColumn} className="gap-1 text-xs h-7" disabled={config.footer.columns.length >= 4}>
-                  <Plus className="w-3 h-3" /> Add Column
-                </Button>
-              </div>
-              <div className="space-y-4">
-                {config.footer.columns.map((col, colIdx) => (
-                  <div key={colIdx} className="p-4 rounded-xl border border-border bg-muted/20 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Input value={col.title} onChange={e => updateFooterColumn(colIdx, "title", e.target.value)} className="flex-1 h-8 text-sm font-semibold" placeholder="Column title" />
-                      <Button variant="ghost" size="sm" onClick={() => removeFooterColumn(colIdx)} disabled={config.footer.columns.length <= 1} className="text-destructive hover:text-destructive h-8 px-2">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                    {col.links.map((link, linkIdx) => (
-                      <div key={linkIdx} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
-                        <Input value={link.label} onChange={e => updateFooterLink(colIdx, linkIdx, "label", e.target.value)} className="h-7 text-xs" placeholder="Label" />
-                        <Input value={link.url} onChange={e => updateFooterLink(colIdx, linkIdx, "url", e.target.value)} className="h-7 text-xs" placeholder="/path or URL" />
-                        <button onClick={() => removeFooterLink(colIdx, linkIdx)} disabled={col.links.length <= 1} className="p-1 rounded hover:bg-destructive/10 disabled:opacity-30">
-                          <Trash2 className="w-3 h-3 text-destructive" />
-                        </button>
-                      </div>
-                    ))}
-                    <Button variant="outline" size="sm" onClick={() => addFooterLink(colIdx)} className="gap-1 text-xs h-6 w-full">
-                      <Plus className="w-3 h-3" /> Add Link
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="flex items-center justify-between p-3 rounded-xl border border-border">
-              <div>
-                <Label className="text-xs font-semibold">Newsletter Section</Label>
-                <p className="text-[10px] text-muted-foreground">Email signup in footer</p>
-              </div>
-              <Switch checked={config.footer.newsletterEnabled} onCheckedChange={v => updateFooter("newsletterEnabled", v)} />
-            </div>
-            {config.footer.newsletterEnabled && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><Label className="text-xs">Newsletter Title</Label><Input value={config.footer.newsletterTitle} onChange={e => updateFooter("newsletterTitle", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Newsletter Subtitle</Label><Input value={config.footer.newsletterSubtitle} onChange={e => updateFooter("newsletterSubtitle", e.target.value)} className="mt-1" /></div>
-              </div>
-            )}
-            <div>
-              <Label className="text-xs">Copyright Text</Label>
-              <Input value={config.footer.copyrightText} onChange={e => updateFooter("copyrightText", e.target.value)} className="mt-1" />
-            </div>
-          </div>
-        </SectionEditor>
       </div>
 
       <ConfirmDialog
