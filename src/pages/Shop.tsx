@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
-import { SlidersHorizontal, X, Search, Sparkles, Check, IndianRupee } from "lucide-react";
+import { SlidersHorizontal, X, Search, Sparkles, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStoreConfig } from "@/hooks/useStoreConfig";
 import { useProducts } from "@/hooks/useProducts";
