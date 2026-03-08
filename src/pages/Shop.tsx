@@ -39,6 +39,7 @@ export default function Shop() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
   const [selectedTag, setSelectedTag] = useState("");
   const [discountFilter, setDiscountFilter] = useState("");
+  const filterScrollRef = useRef<HTMLDivElement>(null);
 
   // Compute min/max prices from products
   const priceExtents = useMemo(() => {
