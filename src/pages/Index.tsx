@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Truck, Palette, Gift, Star } from "lucide-react";
-import { products } from "@/data/products";
+import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
 
 import heroCake from "@/assets/hero-cake.jpg";
@@ -30,7 +30,8 @@ const testimonials = [
 ];
 
 export default function Index() {
-  const featured = products.filter((p) => p.isBestseller || p.isNew).slice(0, 4);
+  const { data: allProducts = [] } = useProducts();
+  const featured = allProducts.filter((p) => p.isBestseller || p.isNew).slice(0, 4);
 
   return (
     <div>
