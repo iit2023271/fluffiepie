@@ -29,9 +29,26 @@ export default function Shop() {
   const filtered = useMemo(() => {
     let result = [...products];
     if (searchQuery) result = result.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase()));
-    if (selectedCategory) result = result.filter((p) => p.category === selectedCategory);
-    if (selectedOccasion) result = result.filter((p) => p.occasion.includes(selectedOccasion));
-    if (selectedFlavour) result = result.filter((p) => p.flavour === selectedFlavour);
+    
+    // Apply all selected filters
+    for (const [filterType, filterValue] of Object.entries(selectedFilters)) {
+      if (!filterValue) continue;
+      if (filterType === "category") {
+        result = result.filter((p) => p.category === filterValue);
+      } else if (filterType === "occasion") {
+        result = result.filter((p) => p.occasion.includes(filterValue));
+      } else if (filterType === "flavour") {
+        result = result.filter((p) => p.flavour === filterValue);
+      } else {
+        // Custom attribute filter
+        result = result.filter((p) => {
+          const attrs = (p as any).custom_attributes || {};
+          const val = attrs[filterType];
+          if (Array.isArray(val)) return val.includes(filterValue);
+          return val === filterValue;
+        });
+      }
+    }
 
     switch (sortBy) {
       case "price-low": result.sort((a, b) => a.basePrice - b.basePrice); break;
@@ -40,7 +57,7 @@ export default function Shop() {
       default: result.sort((a, b) => b.reviewCount - a.reviewCount);
     }
     return result;
-  }, [searchQuery, selectedCategory, selectedOccasion, selectedFlavour, sortBy, products]);
+  }, [searchQuery, selectedFilters, sortBy, products]);
 
   useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedCategory, selectedOccasion, selectedFlavour, sortBy]);
 
