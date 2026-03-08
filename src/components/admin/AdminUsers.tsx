@@ -51,7 +51,6 @@ export default function AdminUsers() {
   };
 
   const filtered = useMemo(() => {
-    setCurrentPage(1);
     let result = [...users];
     if (search) {
       const q = search.toLowerCase();
@@ -75,6 +74,8 @@ export default function AdminUsers() {
     }
     return result;
   }, [users, search, roleFilter, sortBy]);
+
+  useEffect(() => { setCurrentPage(1); }, [search, roleFilter, sortBy]);
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
