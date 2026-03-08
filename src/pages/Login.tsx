@@ -16,8 +16,29 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const passwordChecks = {
+    length: password.length >= 8,
+    uppercase: /[A-Z]/.test(password),
+    lowercase: /[a-z]/.test(password),
+    number: /\d/.test(password),
+    special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+  };
+  const isStrongPassword = Object.values(passwordChecks).every(Boolean);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isSignup) {
+      if (!fullName.trim() || fullName.trim().length < 2) {
+        toast.error("Please enter a valid full name");
+        return;
+      }
+      if (!isStrongPassword) {
+        toast.error("Please meet all password requirements");
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
