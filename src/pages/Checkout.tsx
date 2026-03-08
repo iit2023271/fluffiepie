@@ -147,7 +147,7 @@ export default function Checkout() {
         };
 
 
-    const { error } = await supabase.from("orders").insert({
+    const { data: orderData, error } = await supabase.from("orders").insert({
       user_id: user.id,
       items: orderItems,
       delivery_address: deliveryAddress,
@@ -167,9 +167,32 @@ export default function Checkout() {
       return;
     }
 
-    // Order notification will be handled via Gmail from admin panel
+    // Build WhatsApp message
+    const orderId = orderData?.id?.slice(0, 8).toUpperCase() || "N/A";
+    const itemLines = orderItems.map(
+      (item: any) => `• ${item.name} (${item.weight}) x${item.quantity} — ₹${item.price * item.quantity}`
+    ).join("\n");
+    const addrLine = `${deliveryAddress.name}, ${deliveryAddress.phone}\n${deliveryAddress.address}, ${deliveryAddress.city} - ${deliveryAddress.pincode}`;
+    const slot = `${format(deliveryDate!, "dd MMM yyyy")}, ${deliveryTime}`;
 
-    toast.success("Order placed successfully! 🎉");
+    const whatsappMsg = encodeURIComponent(
+      `🎂 *New Order — #${orderId}*\n\n` +
+      `📋 *Items:*\n${itemLines}\n\n` +
+      `📦 *Subtotal:* ₹${totalPrice}\n` +
+      (discount > 0 ? `🏷️ *Discount:* -₹${discount}\n` : "") +
+      `🚚 *Delivery:* ₹${deliveryFee}\n` +
+      `💰 *Total:* ₹${finalTotal}\n\n` +
+      `📍 *Delivery Address:*\n${addrLine}\n\n` +
+      `🕐 *Delivery Slot:* ${slot}\n\n` +
+      `Please confirm this order. Thank you! 🙏`
+    );
+
+    const whatsappNum = storeInfo.whatsappNumber?.replace(/\D/g, "") || "";
+    if (whatsappNum) {
+      window.open(`https://wa.me/${whatsappNum}?text=${whatsappMsg}`, "_blank");
+    }
+
+    toast.success("Order placed! Please confirm via WhatsApp 🎉");
     dispatch({ type: "CLEAR_CART" });
     navigate("/dashboard");
   };
