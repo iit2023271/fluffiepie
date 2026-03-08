@@ -32,7 +32,7 @@ export default function ProductCard({ product, index = 0 }: Props) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.08 }}
+      transition={{ duration: 0.3, delay: index * 0.05 }}
     >
       <Link to={`/product/${product.slug}`} className="group block">
         <div className="relative rounded-2xl overflow-hidden bg-card shadow-soft hover:shadow-card transition-shadow duration-300">
@@ -41,8 +41,9 @@ export default function ProductCard({ product, index = 0 }: Props) {
             <img
               src={product.image}
               alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              className="w-full h-full object-cover transition-transform duration-500 will-change-transform group-hover:scale-105"
               loading="lazy"
+              decoding="async"
             />
             {/* Badges */}
             <div className="absolute top-3 left-3 flex flex-col gap-1.5">
@@ -60,7 +61,7 @@ export default function ProductCard({ product, index = 0 }: Props) {
             {/* Wishlist */}
             <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); toast.success("Added to wishlist!"); }}
-              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
+              className="absolute top-3 right-3 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity active:scale-95"
               aria-label="Add to wishlist"
             >
               <Heart className="w-4 h-4 text-primary" />
@@ -68,7 +69,7 @@ export default function ProductCard({ product, index = 0 }: Props) {
             {/* Quick add */}
             <button
               onClick={handleAddToCart}
-              className="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-card"
+              className="absolute bottom-3 right-3 w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all active:scale-90 shadow-card"
               aria-label="Add to cart"
             >
               <ShoppingCart className="w-4 h-4" />

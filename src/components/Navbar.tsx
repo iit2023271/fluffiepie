@@ -104,7 +104,8 @@ export default function Navbar() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="md:hidden border-t border-border overflow-hidden bg-background"
+            transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
+            className="md:hidden border-t border-border overflow-hidden bg-background will-change-auto"
           >
             <nav className="flex flex-col p-4 gap-3">
               {navLinks.map((link) => (

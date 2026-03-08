@@ -103,6 +103,8 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
@@ -121,6 +123,50 @@
   .shadow-soft { box-shadow: var(--shadow-soft); }
   .shadow-card { box-shadow: var(--shadow-card); }
   .shadow-elevated { box-shadow: var(--shadow-elevated); }
+
+  /* GPU-accelerated smooth transitions */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+}
+
+/* Touch responsiveness */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger touch targets on mobile */
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Disable hover effects that cause lag on mobile */
+  .group:hover .group-hover\:scale-110 {
+    transform: none !important;
+  }
+
+  /* Active states instead of hover for touch feedback */
+  button:active, a:active, [role="button"]:active {
+    opacity: 0.85;
+    transform: scale(0.97);
+    transition: transform 0.1s ease, opacity 0.1s ease;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .scrollbar-hide::-webkit-scrollbar { display: none; }
