@@ -261,9 +261,9 @@ export default function Dashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-8">
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
           {[
-            { key: "orders" as const, icon: Package, label: "My Orders" },
+            { key: "orders" as const, icon: Package, label: "Orders" },
             { key: "wishlist" as const, icon: Heart, label: "Favorites" },
             { key: "addresses" as const, icon: MapPin, label: "Addresses" },
             { key: "profile" as const, icon: User, label: "Profile" },
@@ -271,7 +271,7 @@ export default function Dashboard() {
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
                 tab === t.key
                   ? "bg-primary text-primary-foreground"
                   : "bg-secondary text-secondary-foreground hover:bg-primary/10"
