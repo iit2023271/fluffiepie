@@ -11,6 +11,7 @@ export default function Shop() {
   const initialOccasion = searchParams.get("occasion") || "";
   const { data: products = [] } = useProducts();
 
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedOccasion, setSelectedOccasion] = useState(initialOccasion);
   const [selectedFlavour, setSelectedFlavour] = useState("");
@@ -19,6 +20,7 @@ export default function Shop() {
 
   const filtered = useMemo(() => {
     let result = [...products];
+    if (searchQuery) result = result.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase()));
     if (selectedCategory) result = result.filter((p) => p.category === selectedCategory);
     if (selectedOccasion) result = result.filter((p) => p.occasion.includes(selectedOccasion));
     if (selectedFlavour) result = result.filter((p) => p.flavour === selectedFlavour);
