@@ -121,7 +121,7 @@ export default function AdminUsers() {
     return result;
   }, [users, search, roleFilter, tagFilter, sortBy]);
 
-  useEffect(() => { setCurrentPage(1); }, [search, roleFilter, tagFilter, sortBy]);
+  useEffect(() => { setCurrentPage(1); }, [search, tagFilter, sortBy]);
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
