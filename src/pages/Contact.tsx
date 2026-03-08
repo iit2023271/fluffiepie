@@ -179,6 +179,7 @@ export default function Contact() {
             transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className="lg:col-span-3"
           >
+            {user ? (
             <form
               onSubmit={handleSubmit}
               className="bg-card rounded-2xl border border-border shadow-soft p-6 md:p-8 space-y-5"
@@ -232,6 +233,19 @@ export default function Contact() {
                 )}
               </motion.button>
             </form>
+            ) : (
+              <div className="bg-card rounded-2xl border border-border shadow-soft p-6 md:p-8 flex flex-col items-center justify-center text-center min-h-[300px]">
+                <LogIn className="w-10 h-10 text-muted-foreground mb-4 opacity-50" />
+                <h2 className="text-xl font-display font-bold text-foreground mb-2">Sign in to send a message</h2>
+                <p className="text-sm text-muted-foreground mb-6">Please log in to your account to contact us.</p>
+                <Link
+                  to="/login"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 transition-opacity"
+                >
+                  <LogIn className="w-4 h-4" /> Sign In
+                </Link>
+              </div>
+            )}
           </motion.div>
         </div>
 
