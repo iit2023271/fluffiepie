@@ -35,11 +35,29 @@ export default function Shop() {
   });
   const [sortBy, setSortBy] = useState("popularity");
   const [currentPage, setCurrentPage] = useState(1);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
+
+  // Compute min/max prices from products
+  const priceExtents = useMemo(() => {
+    if (products.length === 0) return { min: 0, max: 5000 };
+    const prices = products.map(p => p.basePrice);
+    return { min: Math.floor(Math.min(...prices)), max: Math.ceil(Math.max(...prices)) };
+  }, [products]);
+
+  // Initialize price range when products load
+  useEffect(() => {
+    setPriceRange([priceExtents.min, priceExtents.max]);
+  }, [priceExtents.min, priceExtents.max]);
+
+  const isPriceFiltered = priceRange[0] > priceExtents.min || priceRange[1] < priceExtents.max;
 
   const filtered = useMemo(() => {
     let result = [...products];
     if (searchQuery) result = result.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase()));
     
+    // Price range filter
+    result = result.filter(p => p.basePrice >= priceRange[0] && p.basePrice <= priceRange[1]);
+
     const normalize = (value: unknown) => String(value ?? "").trim().toLowerCase();
     for (const [filterType, filterValue] of Object.entries(selectedFilters)) {
       if (!filterValue) continue;
