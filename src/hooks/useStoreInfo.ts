@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+export interface SocialLink {
+  platform: string;
+  url: string;
+}
+
 export interface StoreInfo {
   storeName: string;
   phone: string;
@@ -12,6 +17,7 @@ export interface StoreInfo {
   pincode: string;
   mapUrl: string;
   openingHours: string;
+  socialLinks: SocialLink[];
 }
 
 export const DEFAULT_STORE_INFO: StoreInfo = {
@@ -25,6 +31,7 @@ export const DEFAULT_STORE_INFO: StoreInfo = {
   pincode: "",
   mapUrl: "",
   openingHours: "",
+  socialLinks: [],
 };
 
 export function useStoreInfo() {

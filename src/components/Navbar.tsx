@@ -10,6 +10,7 @@ const navLinks = [
   { label: "Home", path: "/" },
   { label: "Shop", path: "/shop" },
   { label: "Location", path: "/location" },
+  { label: "Social", path: "/social" },
 ];
 
 export default function Navbar() {
