@@ -44,7 +44,6 @@ export default function AdminUsers() {
     const profiles = profilesRes.data || [];
     const addresses = addressesRes.data || [];
     const orders = ordersRes.data || [];
-    const roles = rolesRes.data || [];
     const tags = tagsRes.data || [];
 
     const uniqueTags = [...new Set(tags.map((t: any) => t.tag))];
