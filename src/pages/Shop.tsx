@@ -76,14 +76,14 @@ export default function Shop() {
     setSelectedFilters(prev => ({ ...prev, [type]: prev[type] === value ? "" : value }));
   };
 
-  const FilterSection = ({ title, options, selected, onSelect }: { title: string; options: string[]; selected: string; onSelect: (v: string) => void }) => (
+  const FilterSectionUI = ({ title, options, selected, onSelect }: { title: string; options: string[]; selected: string; onSelect: (v: string) => void }) => (
     <div className="mb-6">
       <h4 className="text-sm font-semibold mb-3">{title}</h4>
       <div className="flex flex-wrap gap-2">
         {options.map((opt) => (
           <button
             key={opt}
-            onClick={() => onSelect(selected === opt ? "" : opt)}
+            onClick={() => onSelect(opt)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
               selected === opt
                 ? "bg-primary text-primary-foreground"
