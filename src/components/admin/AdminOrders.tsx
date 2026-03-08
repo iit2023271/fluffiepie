@@ -275,9 +275,9 @@ export default function AdminOrders() {
 
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    orders.forEach(o => { counts[o.status] = (counts[o.status] || 0) + 1; });
+    baseFiltered.forEach(o => { counts[o.status] = (counts[o.status] || 0) + 1; });
     return counts;
-  }, [orders]);
+  }, [baseFiltered]);
 
   const hasDateFilter = dateFrom || dateTo;
   const clearDateFilter = () => { setDateFrom(undefined); setDateTo(undefined); };
