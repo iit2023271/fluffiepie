@@ -587,6 +587,59 @@ export default function AdminUsers() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Email Message Dialog */}
+      <Dialog open={emailDialog.open} onOpenChange={(open) => setEmailDialog(prev => ({ ...prev, open }))}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Mail className="w-5 h-5 text-primary" /> Send Email to {emailDialog.name || "Customer"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2">Quick Templates</p>
+              <div className="flex flex-wrap gap-1.5">
+                {emailTemplates.map((t) => (
+                  <button
+                    key={t.label}
+                    onClick={() => {
+                      setEmailSubject(t.subject);
+                      setEmailBody(t.body.replace(/{name}/g, emailDialog.name || "there"));
+                    }}
+                    className="px-2.5 py-1.5 rounded-lg text-xs border border-border hover:bg-accent/50 hover:border-primary/30 transition-colors"
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-1.5">Subject</p>
+              <input
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+                placeholder="Email subject..."
+                className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-primary bg-background"
+              />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-1.5">Body</p>
+              <Textarea
+                value={emailBody}
+                onChange={(e) => setEmailBody(e.target.value)}
+                rows={6}
+                placeholder="Type your email..."
+                className="text-sm"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] text-muted-foreground">✉️ {emailDialog.email || "No email"}</p>
+              <Button onClick={sendEmail} className="gap-1.5" disabled={!emailSubject.trim() || !emailBody.trim()}>
+                <Send className="w-4 h-4" /> Open in Email
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
