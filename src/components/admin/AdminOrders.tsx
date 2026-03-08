@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parse, formatDistanceToNow, startOfDay, endOfDay, isToday, isTomorrow, isYesterday } from "date-fns";
-import { Search, MessageSquare, Send, Download, ChevronDown, ChevronUp, Trash2, Calendar as CalendarIcon, X, Clock, MapPin, Phone, Package, Truck, CheckCircle2, Timer, Copy, Undo2 } from "lucide-react";
+import { Search, Send, Download, ChevronDown, ChevronUp, Trash2, Calendar as CalendarIcon, X, Clock, Package, CheckCircle2, Timer, Copy, Undo2 } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -248,9 +248,11 @@ export default function AdminOrders() {
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
+  // Only select orders that can still be acted upon (exclude delivered/cancelled)
+  const selectableOnPage = paginated.filter(o => o.status !== "delivered" && o.status !== "cancelled");
   const toggleSelectAll = () => {
-    if (selectedOrders.size === paginated.length) setSelectedOrders(new Set());
-    else setSelectedOrders(new Set(paginated.map(o => o.id)));
+    if (selectedOrders.size === selectableOnPage.length && selectableOnPage.length > 0) setSelectedOrders(new Set());
+    else setSelectedOrders(new Set(selectableOnPage.map(o => o.id)));
   };
 
   const statusCounts = useMemo(() => {
@@ -440,12 +442,16 @@ export default function AdminOrders() {
         <div className="mb-4 p-4 rounded-2xl bg-primary/5 border border-primary/20">
           <p className="text-sm font-medium mb-3">{selectedOrders.size} order{selectedOrders.size > 1 ? "s" : ""} selected</p>
           <div className="flex flex-wrap gap-2">
-            {statusOptions.map(s => (
+            {statusOptions.filter(s => s !== "delivered" && s !== "cancelled").map(s => (
               <button key={s} onClick={() => setBulkConfirm({ open: true, status: s })}
                 className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all hover:shadow-sm ${STATUS_CONFIG[s].bgColor} ${STATUS_CONFIG[s].color}`}>
                 {STATUS_CONFIG[s].emoji} {STATUS_CONFIG[s].label}
               </button>
             ))}
+            <button key="cancelled" onClick={() => setBulkConfirm({ open: true, status: "cancelled" })}
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all hover:shadow-sm ${STATUS_CONFIG["cancelled"].bgColor} ${STATUS_CONFIG["cancelled"].color}`}>
+              {STATUS_CONFIG["cancelled"].emoji} Cancel
+            </button>
             <button onClick={() => setSelectedOrders(new Set())} className="text-xs text-muted-foreground hover:text-foreground ml-auto px-3 py-1.5">
               ✕ Clear
             </button>
@@ -457,10 +463,10 @@ export default function AdminOrders() {
         <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-32 bg-secondary rounded-2xl animate-pulse" />)}</div>
       ) : (
         <div className="space-y-3">
-          {paginated.length > 0 && (
+          {selectableOnPage.length > 0 && (
             <div className="flex items-center gap-2 px-2">
-              <input type="checkbox" checked={selectedOrders.size === paginated.length && paginated.length > 0} onChange={toggleSelectAll} className="rounded" />
-              <span className="text-xs text-muted-foreground">Select all on page</span>
+              <input type="checkbox" checked={selectedOrders.size === selectableOnPage.length && selectableOnPage.length > 0} onChange={toggleSelectAll} className="rounded" />
+              <span className="text-xs text-muted-foreground">Select all actionable ({selectableOnPage.length})</span>
             </div>
           )}
 
@@ -470,188 +476,130 @@ export default function AdminOrders() {
             const notes = orderNotes[order.id] || [];
             const statusCfg = STATUS_CONFIG[order.status] || { label: order.status, color: "text-muted-foreground", bgColor: "bg-secondary border-border", emoji: "📦", icon: "📦" };
             const orderDate = new Date(order.created_at);
-            const updatedDate = new Date(order.updated_at);
-            const deliveryInfo = parseDeliveryInfo(order.delivery_slot);
             const nextStatus = getNextStatus(order.status);
             const itemCount = Array.isArray(order.items) ? (order.items as any[]).reduce((s, i) => s + (i.quantity || 1), 0) : 0;
+            const isFinal = order.status === "delivered" || order.status === "cancelled";
             const currentStepIdx = STATUS_STEP_ORDER.indexOf(order.status);
-            const isCancelled = order.status === "cancelled";
 
             return (
-              <div key={order.id} className={`bg-card rounded-2xl overflow-hidden border transition-all hover:shadow-md ${isCancelled ? "border-red-200 opacity-75" : "border-border"}`}>
-                {/* Main order card */}
-                <div className="p-4 md:p-5">
-                  <div className="flex items-start gap-3">
-                    <input type="checkbox" checked={selectedOrders.has(order.id)} onChange={() => toggleSelect(order.id)} className="rounded mt-1.5" />
+              <div key={order.id} className={`bg-card rounded-2xl overflow-hidden border transition-all ${isFinal ? "opacity-70" : "hover:shadow-md"} ${order.status === "cancelled" ? "border-red-200" : "border-border"}`}>
+                <div className="p-3 md:p-4">
+                  {/* Row 1: Checkbox + ID + Status + Time */}
+                  <div className="flex items-center gap-2 mb-2">
+                    {!isFinal && (
+                      <input type="checkbox" checked={selectedOrders.has(order.id)} onChange={() => toggleSelect(order.id)} className="rounded shrink-0" />
+                    )}
+                    <button onClick={() => copyOrderId(order.id)} className="flex items-center gap-1 text-xs font-bold font-mono hover:text-primary transition-colors" title="Copy ID">
+                      #{order.id.slice(0, 8).toUpperCase()}
+                      <Copy className="w-2.5 h-2.5 opacity-40" />
+                    </button>
+                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border ${statusCfg.bgColor} ${statusCfg.color}`}>
+                      {statusCfg.emoji} {statusCfg.label}
+                    </span>
+                    {isFinal && <span className="text-[10px] text-muted-foreground ml-auto">🔒 Final</span>}
+                    <span className="text-[10px] text-muted-foreground ml-auto" title={format(orderDate, "dd MMM yyyy, hh:mm a")}>
+                      {getTimeAgo(orderDate)}
+                    </span>
+                  </div>
 
-                    <div className="flex-1 min-w-0">
-                      {/* Top row: ID + Status + Time */}
-                      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => copyOrderId(order.id)} className="flex items-center gap-1 text-sm font-bold font-mono hover:text-primary transition-colors" title="Click to copy">
-                            #{order.id.slice(0, 8).toUpperCase()}
-                            <Copy className="w-3 h-3 opacity-40" />
-                          </button>
-                          <span className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border ${statusCfg.bgColor} ${statusCfg.color}`}>
-                            {statusCfg.emoji} {statusCfg.label}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <Clock className="w-3 h-3" />
-                          <span title={format(orderDate, "dd MMM yyyy, hh:mm:ss a")}>{getTimeAgo(orderDate)}</span>
-                        </div>
+                  {/* Progress bar — only for active orders */}
+                  {!isFinal && order.status !== "cancelled" && (
+                    <div className="flex items-center gap-0.5 mb-2">
+                      {STATUS_STEP_ORDER.map((step, idx) => (
+                        <div key={step} className={`h-1 flex-1 rounded-full ${idx <= currentStepIdx ? "bg-primary" : "bg-border"}`} />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Row 2: Customer name + phone + total */}
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary shrink-0">
+                        {(addr?.name || "?")[0].toUpperCase()}
                       </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold truncate leading-tight">{addr?.name || "Unknown"}</p>
+                        <p className="text-[10px] text-muted-foreground">{addr?.phone || "—"}</p>
+                      </div>
+                    </div>
+                    <span className="text-base font-bold shrink-0">₹{order.total?.toLocaleString()}</span>
+                  </div>
 
-                      {/* Status Progress Bar (not for cancelled) */}
-                      {!isCancelled && (
-                        <div className="flex items-center gap-1 mb-4">
-                          {STATUS_STEP_ORDER.map((step, idx) => {
-                            const isCompleted = idx <= currentStepIdx;
-                            const isCurrent = idx === currentStepIdx;
-                            return (
-                              <div key={step} className="flex items-center flex-1">
-                                <div className={`h-1.5 w-full rounded-full transition-all ${isCompleted ? "bg-primary" : "bg-border"} ${isCurrent ? "bg-primary shadow-sm" : ""}`} />
-                              </div>
-                            );
-                          })}
-                        </div>
+                  {/* Row 3: Items summary (1 line) */}
+                  <p className="text-[11px] text-muted-foreground truncate mb-2">
+                    {itemCount} item{itemCount !== 1 ? "s" : ""}: {(order.items as any[])?.slice(0, 2).map((i: any) => i.name).join(", ")}
+                    {(order.items as any[])?.length > 2 ? ` +${(order.items as any[]).length - 2} more` : ""}
+                  </p>
+
+                  {/* Row 4: Delivery slot (if urgent) + Actions */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      {parseDeliveryInfo(order.delivery_slot).isUrgent && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-destructive/10 text-destructive font-semibold border border-destructive/20 animate-pulse">
+                          🔴 URGENT
+                        </span>
+                      )}
+                      {order.discount > 0 && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600 font-medium">
+                          -₹{order.discount}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {/* Actions only for non-final orders */}
+                      {!isFinal && (
+                        <>
+                          {getPrevStatus(order.status) && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-[10px] h-7 w-7 p-0 rounded-lg text-muted-foreground hover:text-amber-700"
+                              onClick={() => setUndoConfirm({ open: true, orderId: order.id, prevStatus: getPrevStatus(order.status)! })}
+                              title={`Undo to ${STATUS_CONFIG[getPrevStatus(order.status)!]?.label}`}
+                            >
+                              <Undo2 className="w-3.5 h-3.5" />
+                            </Button>
+                          )}
+                          {nextStatus && (
+                            <Button
+                              size="sm"
+                              className="text-[10px] h-7 gap-1 rounded-lg px-2"
+                              onClick={() => handleStatusChange(order.id, nextStatus)}
+                            >
+                              {STATUS_CONFIG[nextStatus].emoji} {STATUS_CONFIG[nextStatus].label}
+                            </Button>
+                          )}
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" size="sm" className="h-7 w-7 p-0 rounded-lg">
+                                <ChevronDown className="w-3 h-3" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-44 p-1" align="end">
+                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold px-2 py-1">Change Status</p>
+                              {statusOptions.map(s => (
+                                <button
+                                  key={s}
+                                  onClick={() => handleStatusChange(order.id, s)}
+                                  disabled={order.status === s}
+                                  className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${order.status === s ? "opacity-40 cursor-not-allowed" : "hover:bg-secondary"}`}
+                                >
+                                  <span>{STATUS_CONFIG[s].emoji}</span>
+                                  <span>{STATUS_CONFIG[s].label}</span>
+                                  {order.status === s && <CheckCircle2 className="w-3 h-3 ml-auto text-primary" />}
+                                </button>
+                              ))}
+                            </PopoverContent>
+                          </Popover>
+                        </>
                       )}
 
-                      {/* Customer + Delivery Info Grid */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                        {/* Customer */}
-                        <div className="flex items-start gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
-                            {(addr?.name || "?")[0].toUpperCase()}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-sm font-semibold truncate">{addr?.name || "Unknown"}</p>
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Phone className="w-3 h-3" />
-                              <span>{addr?.phone || "—"}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Delivery Address */}
-                        <div className="flex items-start gap-2">
-                          <MapPin className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-                          <div className="min-w-0">
-                            <p className="text-xs text-muted-foreground truncate">
-                              {addr?.address_line ? `${addr.address_line}, ` : ""}{addr?.city || ""} {addr?.pincode || ""}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Delivery Slot */}
-                        <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium ${deliveryInfo.isUrgent ? "bg-red-50 text-red-600 border border-red-200" : "bg-muted/50 text-muted-foreground"}`}>
-                          <Truck className="w-3.5 h-3.5 shrink-0" />
-                          <span className="truncate">{deliveryInfo.label}</span>
-                          {deliveryInfo.isUrgent && <span className="ml-auto text-[10px] font-bold uppercase tracking-wider animate-pulse">URGENT</span>}
-                        </div>
-                      </div>
-
-                      {/* Items Summary (compact) */}
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="flex-1 flex items-center gap-2 text-xs text-muted-foreground overflow-hidden">
-                          <Package className="w-3.5 h-3.5 shrink-0" />
-                          <span className="truncate">
-                            {(order.items as any[])?.slice(0, 3).map((item: any) => `${item.name} ×${item.quantity}`).join(", ")}
-                            {(order.items as any[])?.length > 3 ? ` +${(order.items as any[]).length - 3} more` : ""}
-                          </span>
-                        </div>
-                        <span className="text-xs text-muted-foreground shrink-0">{itemCount} item{itemCount !== 1 ? "s" : ""}</span>
-                      </div>
-
-                      {/* Bottom Row: Price + Actions */}
-                      <div className="flex items-center justify-between gap-3 pt-3 border-t border-border">
-                        <div className="flex items-center gap-3">
-                          <span className="text-lg font-bold">₹{order.total?.toLocaleString()}</span>
-                          {order.discount > 0 && (
-                            <span className="text-xs px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-600 font-medium border border-emerald-200">
-                              -₹{order.discount} off
-                            </span>
-                          )}
-                          {order.coupon_code && (
-                            <span className="text-xs px-2 py-0.5 rounded-lg bg-purple-50 text-purple-600 font-mono font-medium border border-purple-200">
-                              {order.coupon_code}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {/* No status change actions for delivered or cancelled orders */}
-                          {order.status !== "delivered" && order.status !== "cancelled" && (
-                            <>
-                              {/* Undo / Go back button */}
-                              {getPrevStatus(order.status) && !nextStatus && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-xs h-8 gap-1.5 rounded-xl border-amber-300 text-amber-700 hover:bg-amber-50"
-                                  onClick={() => setUndoConfirm({ open: true, orderId: order.id, prevStatus: getPrevStatus(order.status)! })}
-                                >
-                                  <Undo2 className="w-3.5 h-3.5" /> Undo to {STATUS_CONFIG[getPrevStatus(order.status)!]?.label}
-                                </Button>
-                              )}
-
-                              {/* Quick next-step button */}
-                              {nextStatus && (
-                                <>
-                                  {getPrevStatus(order.status) && (
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="text-xs h-8 px-2 rounded-xl text-muted-foreground hover:text-amber-700"
-                                      onClick={() => setUndoConfirm({ open: true, orderId: order.id, prevStatus: getPrevStatus(order.status)! })}
-                                      title={`Undo to ${STATUS_CONFIG[getPrevStatus(order.status)!]?.label}`}
-                                    >
-                                      <Undo2 className="w-3.5 h-3.5" />
-                                    </Button>
-                                  )}
-                                  <Button
-                                    size="sm"
-                                    className="text-xs h-8 gap-1.5 rounded-xl"
-                                    onClick={() => handleStatusChange(order.id, nextStatus)}
-                                  >
-                                    {STATUS_CONFIG[nextStatus].emoji} Mark {STATUS_CONFIG[nextStatus].label}
-                                  </Button>
-                                </>
-                              )}
-
-                              {/* Status dropdown for manual selection */}
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <Button variant="outline" size="sm" className="text-xs h-8 px-2.5 rounded-xl">
-                                    <ChevronDown className="w-3.5 h-3.5" />
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-48 p-1.5" align="end">
-                                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold px-2 py-1.5">Change Status</p>
-                                  {statusOptions.map(s => (
-                                    <button
-                                      key={s}
-                                      onClick={() => { handleStatusChange(order.id, s); }}
-                                      disabled={order.status === s}
-                                      className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-medium transition-colors ${order.status === s ? "opacity-40 cursor-not-allowed" : "hover:bg-secondary"}`}
-                                    >
-                                      <span>{STATUS_CONFIG[s].emoji}</span>
-                                      <span>{STATUS_CONFIG[s].label}</span>
-                                      {order.status === s && <CheckCircle2 className="w-3 h-3 ml-auto text-primary" />}
-                                    </button>
-                                  ))}
-                                </PopoverContent>
-                              </Popover>
-                            </>
-                          )}
-
-                          {/* Notes toggle */}
-                          <Button variant="ghost" size="sm" className="text-xs h-8 gap-1 rounded-xl px-2.5" onClick={() => toggleExpand(order.id)}>
-                            <MessageSquare className="w-3.5 h-3.5" />
-                            {notes.length > 0 && <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-bold">{notes.length}</span>}
-                            {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                          </Button>
-                        </div>
-                      </div>
+                      {/* Expand for details/notes */}
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-lg" onClick={() => toggleExpand(order.id)}>
+                        {notes.length > 0 && <span className="absolute -top-1 -right-1 text-[8px] bg-primary text-primary-foreground w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">{notes.length}</span>}
+                        {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -704,7 +652,7 @@ export default function AdminOrders() {
                       {order.updated_at !== order.created_at && (
                         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                           <CheckCircle2 className="w-3 h-3" />
-                          <span>Last updated {getRelativeDate(updatedDate)}</span>
+                          <span>Last updated {getRelativeDate(new Date(order.updated_at))}</span>
                         </div>
                       )}
                     </div>
@@ -787,7 +735,7 @@ export default function AdminOrders() {
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4 text-2xl">📋</div>
               <p className="text-lg font-semibold mb-1">No orders found</p>
               <p className="text-sm text-muted-foreground">
-                {search || statusFilter || hasDateFilter ? "Try adjusting your filters." : "Orders will appear here when customers place them."}
+                {search || statusFilter || hasDateFilter ? "Try adjusting your filters." : !showAllOrders ? "No orders today. Tap \"All Orders\" to see past orders." : "Orders will appear here when customers place them."}
               </p>
             </div>
           )}
