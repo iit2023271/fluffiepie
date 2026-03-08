@@ -82,24 +82,12 @@ export default function AdminUsers() {
     setEmailBody(t.body.replace(/{name}/g, name || "there"));
   };
 
-  const [sendingEmail, setSendingEmail] = useState(false);
-
-  const sendEmail = async () => {
+  const sendEmail = () => {
     if (!emailDialog.email) { toast.error("No email available"); return; }
-    setSendingEmail(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("send-customer-email", {
-        body: { to: emailDialog.email, subject: emailSubject, body: emailBody, storeName: storeInfo.storeName },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      toast.success("Email sent successfully!");
-      setEmailDialog({ open: false, email: "", name: "" });
-    } catch (err: any) {
-      toast.error(err.message || "Failed to send email");
-    } finally {
-      setSendingEmail(false);
-    }
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(emailDialog.email)}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+    window.open(gmailUrl, "_blank");
+    setEmailDialog({ open: false, email: "", name: "" });
+    toast.success("Gmail opened!");
   };
 
   useEffect(() => { loadUsers(); }, []);
