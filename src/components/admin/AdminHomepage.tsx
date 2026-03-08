@@ -704,20 +704,57 @@ export default function AdminHomepage() {
                   <div><Label className="text-xs">Section Subtitle</Label><Input value={config.trending.subtitle} onChange={e => updateTrending("subtitle", e.target.value)} className="mt-1" /></div>
                   <div><Label className="text-xs">Products to Show</Label><Input type="number" min={2} max={12} value={config.trending.count} onChange={e => updateTrending("count", parseInt(e.target.value) || 4)} className="mt-1" /></div>
                 </div>
-                <div className="p-3 rounded-xl bg-muted/50 border">
-                  <Label className="text-xs">🔲 Grid Columns</Label>
-                  <Select value={String(config.trending.columns || 4)} onValueChange={v => updateTrending("columns", parseInt(v))}>
-                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="2">2 Columns</SelectItem>
-                      <SelectItem value="3">3 Columns</SelectItem>
-                      <SelectItem value="4">4 Columns (Default)</SelectItem>
-                    </SelectContent>
-                  </Select>
+
+                {/* Filter By */}
+                <div className="p-3 rounded-xl bg-muted/50 border space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs">🏷️ Show Products By</Label>
+                      <Select value={config.trending.filterBy || "bestseller"} onValueChange={v => updateTrending("filterBy", v)}>
+                        <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="bestseller">Bestsellers</SelectItem>
+                          <SelectItem value="new">New Arrivals</SelectItem>
+                          <SelectItem value="tag">By Product Tag</SelectItem>
+                          <SelectItem value="all">All Products (by reviews)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {config.trending.filterBy === "tag" && (
+                      <div>
+                        <Label className="text-xs">🔖 Select Tag</Label>
+                        <Select value={config.trending.filterTag || ""} onValueChange={v => updateTrending("filterTag", v)}>
+                          <SelectTrigger className="mt-1"><SelectValue placeholder="Choose a tag..." /></SelectTrigger>
+                          <SelectContent>
+                            {productTags.map(tag => (
+                              <SelectItem key={tag.name} value={tag.name}>{tag.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {productTags.length === 0 && (
+                          <p className="text-[10px] text-muted-foreground mt-1">No product tags configured. Add them in Settings → Config.</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <Label className="text-xs">🔲 Grid Columns</Label>
+                    <Select value={String(config.trending.columns || 4)} onValueChange={v => updateTrending("columns", parseInt(v))}>
+                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="2">2 Columns</SelectItem>
+                        <SelectItem value="3">3 Columns</SelectItem>
+                        <SelectItem value="4">4 Columns (Default)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
+
                 {/* Preview */}
                 <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview ({config.trending.count} products in {config.trending.columns || 4} cols)</p>
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                    👁️ Preview — {config.trending.filterBy === "tag" ? `Tag: ${config.trending.filterTag || "none"}` : config.trending.filterBy || "bestseller"} · {config.trending.count} products · {config.trending.columns || 4} cols
+                  </p>
                   <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${config.trending.columns || 4}, 1fr)` }}>
                     {Array.from({ length: Math.min(config.trending.count, 8) }).map((_, i) => (
                       <div key={i} className="aspect-square rounded bg-muted" />
