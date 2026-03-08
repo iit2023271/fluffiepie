@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronLeft, Tag, MapPin } from "lucide-react";
 import { toast } from "sonner";
+import SavedAddresses from "@/components/SavedAddresses";
 
 export default function Checkout() {
   const { state, totalPrice, dispatch } = useCart();
