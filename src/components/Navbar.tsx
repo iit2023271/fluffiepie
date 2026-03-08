@@ -69,24 +69,6 @@ function Navbar() {
         <div className="flex items-center gap-1">
           <motion.button
             whileTap={{ scale: 0.85 }}
-            onClick={toggleDarkMode}
-            className="p-2.5 rounded-full hover:bg-secondary transition-colors"
-            aria-label="Toggle dark mode"
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              {isDark ? (
-                <motion.div key="sun" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
-                  <Sun className="w-5 h-5 text-accent" />
-                </motion.div>
-              ) : (
-                <motion.div key="moon" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
-                  <Moon className="w-5 h-5 text-muted-foreground" />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.85 }}
             onClick={() => setSearchOpen(true)}
             className="p-2.5 rounded-full hover:bg-secondary transition-colors"
             aria-label="Search"
