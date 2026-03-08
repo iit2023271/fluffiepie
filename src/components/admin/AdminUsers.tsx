@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { ChevronDown, ChevronUp, MapPin, ShoppingBag, User, Search, Tag, X, Download, Clock, Truck, CheckCircle2, Shield, ShieldOff, MessageCircle, Send } from "lucide-react";
+import { ChevronDown, ChevronUp, MapPin, ShoppingBag, User, Search, Tag, X, Download, Clock, Truck, CheckCircle2, Shield, ShieldOff, MessageCircle, Send, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/components/Pagination";
@@ -38,6 +38,9 @@ export default function AdminUsers() {
   const [adminConfirm, setAdminConfirm] = useState<{ open: boolean; userId: string; isAdmin: boolean; name: string }>({ open: false, userId: "", isAdmin: false, name: "" });
   const [waDialog, setWaDialog] = useState<{ open: boolean; phone: string; name: string }>({ open: false, phone: "", name: "" });
   const [waMessage, setWaMessage] = useState("");
+  const [emailDialog, setEmailDialog] = useState<{ open: boolean; email: string; name: string }>({ open: false, email: "", name: "" });
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
   const { storeInfo } = useStoreInfo();
 
   const waTemplates = [
@@ -46,6 +49,14 @@ export default function AdminUsers() {
     { label: "💝 Thank You", text: `Hi {name}! Thank you so much for your order from ${storeInfo.storeName}! We hope you loved it. Come back soon for more treats! ❤️🍰` },
     { label: "🎂 Festival Offer", text: `Hi {name}! 🎊 Celebrate this festive season with ${storeInfo.storeName}! Get *20% off* on all cakes. Limited time offer! 🎉` },
     { label: "⭐ Feedback", text: `Hi {name}! We'd love to hear your feedback on your recent order from ${storeInfo.storeName}. Your opinion matters to us! 🙏` },
+  ];
+
+  const emailTemplates = [
+    { label: "🎁 Coupon", subject: `Exclusive offer from ${storeInfo.storeName}!`, body: `Hi {name},\n\nWe have a special coupon just for you! Use code SPECIAL10 to get 10% off on your next order.\n\nVisit us today!\n\nBest regards,\n${storeInfo.storeName}` },
+    { label: "🆕 New Arrival", subject: `New cakes at ${storeInfo.storeName}!`, body: `Hi {name},\n\nWe've added some delicious new cakes to our menu! Check them out and treat yourself.\n\nBest regards,\n${storeInfo.storeName}` },
+    { label: "💝 Thank You", subject: `Thank you from ${storeInfo.storeName}!`, body: `Hi {name},\n\nThank you so much for your recent order! We hope you loved it.\n\nCome back soon for more treats!\n\nBest regards,\n${storeInfo.storeName}` },
+    { label: "🎂 Festival", subject: `Festive offers at ${storeInfo.storeName}!`, body: `Hi {name},\n\nCelebrate this festive season with us! Get 20% off on all cakes. Limited time offer!\n\nBest regards,\n${storeInfo.storeName}` },
+    { label: "⭐ Feedback", subject: `We'd love your feedback - ${storeInfo.storeName}`, body: `Hi {name},\n\nWe'd love to hear your feedback on your recent order. Your opinion helps us improve!\n\nBest regards,\n${storeInfo.storeName}` },
   ];
 
   const openWhatsApp = (phone: string, name: string) => {
@@ -61,6 +72,22 @@ export default function AdminUsers() {
     window.open(url, "_blank");
     setWaDialog({ open: false, phone: "", name: "" });
     toast.success("WhatsApp opened!");
+  };
+
+  const openEmail = (email: string, name: string) => {
+    if (!email) { toast.error("No email available for this customer"); return; }
+    setEmailDialog({ open: true, email, name });
+    const t = emailTemplates[0];
+    setEmailSubject(t.subject);
+    setEmailBody(t.body.replace(/{name}/g, name || "there"));
+  };
+
+  const sendEmail = () => {
+    if (!emailDialog.email) { toast.error("No email available"); return; }
+    const mailto = `mailto:${emailDialog.email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+    window.open(mailto, "_blank");
+    setEmailDialog({ open: false, email: "", name: "" });
+    toast.success("Email client opened!");
   };
 
   useEffect(() => { loadUsers(); }, []);
@@ -159,7 +186,8 @@ export default function AdminUsers() {
       const q = search.toLowerCase();
       result = result.filter((u) =>
         (u.profile.full_name || "").toLowerCase().includes(q) ||
-        (u.profile.phone || "").includes(q)
+        (u.profile.phone || "").includes(q) ||
+        (u.profile.email || "").toLowerCase().includes(q)
       );
     }
     
@@ -301,6 +329,14 @@ export default function AdminUsers() {
                           </Button>
                           <Button
                             size="sm"
+                            variant="outline"
+                            className="text-xs h-7 gap-1.5"
+                            onClick={() => openEmail(u.profile.email || "", u.profile.full_name || "")}
+                          >
+                            <Mail className="w-3 h-3" /> Email
+                          </Button>
+                          <Button
+                            size="sm"
                             variant={u.isAdmin ? "destructive" : "outline"}
                             className="text-xs h-7 gap-1.5"
                             onClick={() => setAdminConfirm({ open: true, userId: u.profile.user_id, isAdmin: u.isAdmin, name: u.profile.full_name || "this user" })}
@@ -315,16 +351,16 @@ export default function AdminUsers() {
                           <p className="text-sm font-medium">{u.profile.phone || "—"}</p>
                         </div>
                         <div className="bg-card rounded-lg p-3 border border-border">
+                          <p className="text-xs text-muted-foreground">Email</p>
+                          <p className="text-sm font-medium truncate">{u.profile.email || "—"}</p>
+                        </div>
+                        <div className="bg-card rounded-lg p-3 border border-border">
                           <p className="text-xs text-muted-foreground">Total Spent</p>
                           <p className="text-sm font-medium">₹{totalSpent.toLocaleString()}</p>
                         </div>
                         <div className="bg-card rounded-lg p-3 border border-border">
                           <p className="text-xs text-muted-foreground">Avg Order</p>
                           <p className="text-sm font-medium">₹{avgOrder.toLocaleString()}</p>
-                        </div>
-                        <div className="bg-card rounded-lg p-3 border border-border">
-                          <p className="text-xs text-muted-foreground">Last Order</p>
-                          <p className="text-sm font-medium">{u.orders.length > 0 ? format(new Date(u.orders[0].created_at), "dd MMM") : "—"}</p>
                         </div>
                       </div>
                     </div>
@@ -547,6 +583,59 @@ export default function AdminUsers() {
               <p className="text-[11px] text-muted-foreground">📱 {waDialog.phone || "No phone"}</p>
               <Button onClick={sendWhatsApp} className="gap-1.5" disabled={!waMessage.trim()}>
                 <Send className="w-4 h-4" /> Send on WhatsApp
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Email Message Dialog */}
+      <Dialog open={emailDialog.open} onOpenChange={(open) => setEmailDialog(prev => ({ ...prev, open }))}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Mail className="w-5 h-5 text-primary" /> Send Email to {emailDialog.name || "Customer"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2">Quick Templates</p>
+              <div className="flex flex-wrap gap-1.5">
+                {emailTemplates.map((t) => (
+                  <button
+                    key={t.label}
+                    onClick={() => {
+                      setEmailSubject(t.subject);
+                      setEmailBody(t.body.replace(/{name}/g, emailDialog.name || "there"));
+                    }}
+                    className="px-2.5 py-1.5 rounded-lg text-xs border border-border hover:bg-accent/50 hover:border-primary/30 transition-colors"
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-1.5">Subject</p>
+              <input
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+                placeholder="Email subject..."
+                className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-primary bg-background"
+              />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-1.5">Body</p>
+              <Textarea
+                value={emailBody}
+                onChange={(e) => setEmailBody(e.target.value)}
+                rows={6}
+                placeholder="Type your email..."
+                className="text-sm"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] text-muted-foreground">✉️ {emailDialog.email || "No email"}</p>
+              <Button onClick={sendEmail} className="gap-1.5" disabled={!emailSubject.trim() || !emailBody.trim()}>
+                <Send className="w-4 h-4" /> Open in Email
               </Button>
             </div>
           </div>
