@@ -44,13 +44,15 @@ export default function AdminOrders() {
   };
 
   const filtered = useMemo(() => {
-    setCurrentPage(1);
     return orders.filter((o) => {
       const matchSearch = o.id.toLowerCase().includes(search.toLowerCase());
       const matchStatus = !statusFilter || o.status === statusFilter;
       return matchSearch && matchStatus;
     });
   }, [orders, search, statusFilter]);
+
+  // Reset page when filters change
+  useEffect(() => { setCurrentPage(1); }, [search, statusFilter]);
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
