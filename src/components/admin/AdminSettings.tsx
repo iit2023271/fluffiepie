@@ -445,7 +445,7 @@ export default function AdminSettings() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-display font-bold">Settings</h1>
         <button onClick={loadAll} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Refresh">
-          <RefreshCw className={`w-4 h-4 ${configLoading ? "animate-spin" : ""}`} />
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
         </button>
       </div>
 
