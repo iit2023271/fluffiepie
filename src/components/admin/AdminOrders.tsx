@@ -309,7 +309,7 @@ export default function AdminOrders() {
 
   // Stats derived from the currently filtered order set
   const orderStats = useMemo(() => {
-    const revenue = filtered.filter(o => o.status !== "cancelled").reduce((s, o) => s + (o.total || 0), 0);
+    const revenue = filtered.filter(o => o.status === "delivered").reduce((s, o) => s + (o.total || 0), 0);
     const pending = filtered.filter(o => ["placed", "confirmed"].includes(o.status));
     const delivered = filtered.filter(o => o.status === "delivered");
     return { totalCount: filtered.length, revenue, pendingCount: pending.length, deliveredCount: delivered.length };
