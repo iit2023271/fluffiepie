@@ -106,6 +106,14 @@ export default function AdminSettings() {
         emailConfigs.forEach(c => { settings[c.value] = c.is_active; });
         setEmailSettings(prev => ({ ...prev, ...settings }));
       }
+      // Load store info
+      const storeInfoRow = (configRes.data as ConfigItem[]).find(c => c.config_type === "store_info");
+      if (storeInfoRow) {
+        try {
+          setStoreInfoForm({ ...DEFAULT_STORE_INFO, ...JSON.parse(storeInfoRow.value) });
+          setStoreInfoId(storeInfoRow.id);
+        } catch { /* use defaults */ }
+      }
     }
     if (couponRes.data) setCoupons(couponRes.data as Coupon[]);
     if (bannerRes.data) setBanners(bannerRes.data as Banner[]);
