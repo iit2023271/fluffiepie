@@ -119,7 +119,6 @@ function DraggableImageList({ images, pendingFiles, onReorder, onRemoveImage, on
   );
 }
 
-type Product = Tables<"products">;
 
 const emptyProduct = {
   name: "", slug: "", description: "", category: "", occasion: [] as string[],
