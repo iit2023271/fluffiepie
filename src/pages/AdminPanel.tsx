@@ -21,6 +21,7 @@ const tabs = [
   { key: "orders", label: "Orders", icon: ShoppingCart },
   { key: "kitchen", label: "Kitchen", icon: ChefHat },
   { key: "users", label: "Customers", icon: Users },
+  { key: "reviews", label: "Reviews", icon: MessageSquare },
   { key: "settings", label: "Settings", icon: Settings },
 ] as const;
 
