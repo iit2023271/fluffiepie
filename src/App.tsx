@@ -22,6 +22,7 @@ const AdminPanel = lazy(() => import("./pages/AdminPanel"));
 const Location = lazy(() => import("./pages/Location"));
 const Social = lazy(() => import("./pages/Social"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Install = lazy(() => import("./pages/Install"));
 
 const queryClient = new QueryClient();
 
