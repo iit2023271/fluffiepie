@@ -76,6 +76,9 @@ export default function AdminUsers() {
     return result;
   }, [users, search, roleFilter, sortBy]);
 
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
   const toggleExpand = (userId: string) => {
     setExpandedUser(expandedUser === userId ? null : userId);
   };

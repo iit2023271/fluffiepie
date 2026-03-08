@@ -159,6 +159,9 @@ export default function AdminProducts() {
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  return (
+    <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-display font-bold">Products</h1>
         <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90">
