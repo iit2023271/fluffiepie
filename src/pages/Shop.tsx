@@ -16,9 +16,11 @@ export default function Shop() {
   const { filterSections: allFilters } = useStoreConfig();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedOccasion, setSelectedOccasion] = useState(initialOccasion);
-  const [selectedFlavour, setSelectedFlavour] = useState("");
+  const [selectedFilters, setSelectedFilters] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {};
+    if (initialOccasion) init["occasion"] = initialOccasion;
+    return init;
+  });
   const [sortBy, setSortBy] = useState("popularity");
   const [showFilters, setShowFilters] = useState(false);
 
