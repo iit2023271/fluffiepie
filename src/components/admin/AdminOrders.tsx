@@ -442,12 +442,16 @@ export default function AdminOrders() {
         <div className="mb-4 p-4 rounded-2xl bg-primary/5 border border-primary/20">
           <p className="text-sm font-medium mb-3">{selectedOrders.size} order{selectedOrders.size > 1 ? "s" : ""} selected</p>
           <div className="flex flex-wrap gap-2">
-            {statusOptions.map(s => (
+            {statusOptions.filter(s => s !== "delivered" && s !== "cancelled").map(s => (
               <button key={s} onClick={() => setBulkConfirm({ open: true, status: s })}
                 className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all hover:shadow-sm ${STATUS_CONFIG[s].bgColor} ${STATUS_CONFIG[s].color}`}>
                 {STATUS_CONFIG[s].emoji} {STATUS_CONFIG[s].label}
               </button>
             ))}
+            <button key="cancelled" onClick={() => setBulkConfirm({ open: true, status: "cancelled" })}
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all hover:shadow-sm ${STATUS_CONFIG["cancelled"].bgColor} ${STATUS_CONFIG["cancelled"].color}`}>
+              {STATUS_CONFIG["cancelled"].emoji} Cancel
+            </button>
             <button onClick={() => setSelectedOrders(new Set())} className="text-xs text-muted-foreground hover:text-foreground ml-auto px-3 py-1.5">
               ✕ Clear
             </button>
