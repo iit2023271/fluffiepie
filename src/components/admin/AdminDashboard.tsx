@@ -381,8 +381,8 @@ export default function AdminDashboard() {
                 </span>
               )}
             </div>
-            <p className="text-xl md:text-2xl font-bold truncate">{stat.value}</p>
-            <p className="text-[10px] md:text-xs text-muted-foreground mt-1 truncate">{stat.sub}</p>
+            <p className="text-lg md:text-2xl font-bold break-all leading-tight">{stat.value}</p>
+            <p className="text-[10px] md:text-xs text-muted-foreground mt-1 leading-tight">{stat.sub}</p>
           </div>
         ))}
       </div>
