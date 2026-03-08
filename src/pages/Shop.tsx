@@ -463,16 +463,6 @@ export default function Shop() {
           </button>
         )}
 
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          className="ml-auto px-3 py-2 rounded-xl border border-border text-sm bg-background"
-        >
-          <option value="popularity">Most Popular</option>
-          <option value="price-low">Price: Low to High</option>
-          <option value="price-high">Price: High to Low</option>
-          <option value="rating">Highest Rated</option>
-        </select>
       </div>
 
       {/* Product grid — full width now */}
