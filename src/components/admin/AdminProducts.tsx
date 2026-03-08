@@ -63,9 +63,9 @@ export default function AdminProducts() {
       name: product.name,
       slug: product.slug,
       description: product.description,
-      category: product.category,
+      category: product.category || "",
       occasion: product.occasion || [],
-      flavour: product.flavour,
+      flavour: product.flavour || "",
       base_price: product.base_price,
       weights: (product.weights as any) || [{ label: "500g", price: 0 }],
       is_new: product.is_new,
@@ -75,6 +75,7 @@ export default function AdminProducts() {
       stock_quantity: (product as any).stock_quantity ?? 100,
       low_stock_threshold: (product as any).low_stock_threshold ?? 10,
       sku: (product as any).sku || "",
+      custom_attributes: ((product as any).custom_attributes as Record<string, string | string[]>) || {},
     });
     setImageFile(null);
     setShowForm(true);
