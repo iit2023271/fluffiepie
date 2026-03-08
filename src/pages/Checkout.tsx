@@ -13,6 +13,7 @@ import SavedAddresses from "@/components/SavedAddresses";
 import { useDeliveryConfig } from "@/hooks/useDeliveryConfig";
 
 export default function Checkout() {
+  const { config: deliveryConfig } = useDeliveryConfig();
   const { state, totalPrice, dispatch } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
