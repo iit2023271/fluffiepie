@@ -108,9 +108,7 @@ export default function AdminUsers() {
         (u.profile.phone || "").includes(q)
       );
     }
-    if (roleFilter) {
-      result = result.filter((u) => roleFilter === "no_role" ? u.roles.length === 0 : u.roles.some((r) => r.role === roleFilter));
-    }
+    
     if (tagFilter) {
       result = result.filter(u => u.tags.includes(tagFilter));
     }
