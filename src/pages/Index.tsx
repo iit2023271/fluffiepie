@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowRight, Truck, Palette, Gift, Star } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, Truck, Palette, Gift, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 import heroCake from "@/assets/hero-cake.jpg";
 import catBirthday from "@/assets/category-birthday.jpg";
@@ -29,12 +31,150 @@ const testimonials = [
   { name: "Anita K.", rating: 5, text: "Their red velvet is to die for. Fast delivery and beautifully packaged.", avatar: "AK" },
 ];
 
+interface Banner {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  image_url: string | null;
+  link_url: string | null;
+  is_active: boolean;
+  sort_order: number;
+}
+
+function HeroBannerCarousel() {
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [current, setCurrent] = useState(0);
+  const [direction, setDirection] = useState(1);
+
+  useEffect(() => {
+    supabase
+      .from("banners")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .then(({ data }) => {
+        if (data && data.length > 0) setBanners(data as Banner[]);
+      });
+  }, []);
+
+  const next = useCallback(() => {
+    if (banners.length <= 1) return;
+    setDirection(1);
+    setCurrent((c) => (c + 1) % banners.length);
+  }, [banners.length]);
+
+  const prev = useCallback(() => {
+    if (banners.length <= 1) return;
+    setDirection(-1);
+    setCurrent((c) => (c - 1 + banners.length) % banners.length);
+  }, [banners.length]);
+
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    const timer = setInterval(next, 5000);
+    return () => clearInterval(timer);
+  }, [next, banners.length]);
+
+  if (banners.length === 0) return null;
+
+  const banner = banners[current];
+  const variants = {
+    enter: (d: number) => ({ x: d > 0 ? "100%" : "-100%", opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (d: number) => ({ x: d > 0 ? "-100%" : "100%", opacity: 0 }),
+  };
+
+  return (
+    <div className="relative w-full overflow-hidden rounded-3xl bg-muted shadow-elevated">
+      <div className="relative aspect-[21/9] md:aspect-[3/1] w-full">
+        <AnimatePresence custom={direction} mode="wait">
+          <motion.div
+            key={banner.id}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="absolute inset-0"
+          >
+            {banner.image_url ? (
+              <img src={banner.image_url} alt={banner.title} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-r from-primary/20 to-accent/20" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-foreground/20 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-2xl md:text-4xl font-display font-bold text-background mb-2"
+              >
+                {banner.title}
+              </motion.h2>
+              {banner.subtitle && (
+                <motion.p
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.35 }}
+                  className="text-sm md:text-lg text-background/80 max-w-lg"
+                >
+                  {banner.subtitle}
+                </motion.p>
+              )}
+              {banner.link_url && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+                  <Link
+                    to={banner.link_url}
+                    className="inline-flex items-center gap-2 mt-4 px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+                  >
+                    Shop Now <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </motion.div>
+              )}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        {banners.length > 1 && (
+          <>
+            <button onClick={prev} className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/70 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors z-10">
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button onClick={next} className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/70 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors z-10">
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </>
+        )}
+      </div>
+
+      {banners.length > 1 && (
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+          {banners.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
+              className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-background w-6" : "bg-background/50"}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Index() {
   const { data: allProducts = [] } = useProducts();
   const featured = allProducts.filter((p) => p.isBestseller || p.isNew).slice(0, 4);
 
   return (
     <div>
+      {/* Banner Carousel */}
+      <section className="container mx-auto px-4 pt-6 pb-2">
+        <HeroBannerCarousel />
+      </section>
+
       {/* Hero */}
       <section className="relative overflow-hidden bg-cream">
         <div className="container mx-auto px-4 py-16 md:py-24">
@@ -79,7 +219,6 @@ export default function Index() {
               <div className="relative rounded-3xl overflow-hidden shadow-elevated">
                 <img src={heroCake} alt="Premium chocolate cake with berries and gold leaf" className="w-full" />
               </div>
-              {/* Floating badge */}
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 3, repeat: Infinity }}
