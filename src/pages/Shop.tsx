@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
+import { useSEO } from "@/hooks/useSEO";
 import { useSearchParams } from "react-router-dom";
 import { SlidersHorizontal, X, Search, Sparkles, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,6 +24,11 @@ const ITEMS_PER_PAGE = 12;
 
 export default function Shop() {
   const [searchParams] = useSearchParams();
+
+  useSEO({
+    title: "Shop All Cakes",
+    description: "Browse our full collection of handcrafted cakes. Filter by occasion, flavour, and more. Fresh delivery to your doorstep.",
+  });
   const initialOccasion = searchParams.get("occasion") || "";
   const initialCategory = searchParams.get("category") || "";
   const initialFlavour = searchParams.get("flavour") || "";

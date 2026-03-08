@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useSEO } from "@/hooks/useSEO";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Star, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
@@ -158,6 +159,12 @@ function HeroBannerCarousel() {
 export default function Index() {
   const { config, loading: configLoading } = useHomepageConfig();
   const { data: allProducts = [] } = useProducts();
+
+  useSEO({
+    title: undefined,
+    description: "Craving cake? Discover fresh, handcrafted cakes for every celebration. Customize your favorite flavors and get them delivered fresh to your doorstep.",
+    type: "website",
+  });
   const featured = useMemo(() => {
     const filterBy = config.trending.filterBy || "all";
     let pool = [...allProducts];

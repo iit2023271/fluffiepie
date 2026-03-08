@@ -1,4 +1,5 @@
 import { Phone, Mail, MapPin, Clock, MessageCircle, Send, LogIn } from "lucide-react";
+import { useSEO } from "@/hooks/useSEO";
 import { useStoreInfo } from "@/hooks/useStoreInfo";
 import { motion } from "framer-motion";
 import { useState } from "react";
@@ -19,6 +20,11 @@ const item = {
 export default function Contact() {
   const { user } = useAuth();
   const { storeInfo, loading } = useStoreInfo();
+
+  useSEO({
+    title: "Contact Us",
+    description: "Get in touch with FluffiePie. Reach us by phone, email, or visit our store. We'd love to hear from you!",
+  });
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
