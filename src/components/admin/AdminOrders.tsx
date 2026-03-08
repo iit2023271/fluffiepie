@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format, formatDistanceToNow, startOfDay, endOfDay, isToday, isTomorrow, isYesterday } from "date-fns";
+import { format, parse, formatDistanceToNow, startOfDay, endOfDay, isToday, isTomorrow, isYesterday } from "date-fns";
 import { Search, MessageSquare, Send, Download, ChevronDown, ChevronUp, Trash2, Calendar as CalendarIcon, X, Clock, MapPin, Phone, Package, Truck, CheckCircle2, Timer, Copy, Undo2 } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { useAuth } from "@/context/AuthContext";
@@ -39,9 +39,17 @@ function getTimeAgo(date: Date): string {
 
 function parseDeliveryInfo(slot: string | null): { label: string; isUrgent: boolean } {
   if (!slot) return { label: "Not specified", isUrgent: false };
+  // Check if delivery is today
   const lower = slot.toLowerCase();
   const isUrgent = lower.includes("today") || lower.includes("express") || lower.includes("asap");
-  return { label: slot, isUrgent };
+  // For new format "dd MMM yyyy, time", check if date matches today
+  let urgentByDate = false;
+  try {
+    const datePart = slot.split(",")[0].trim();
+    const parsed = parse(datePart, "dd MMM yyyy", new Date());
+    if (!isNaN(parsed.getTime()) && isToday(parsed)) urgentByDate = true;
+  } catch {}
+  return { label: slot, isUrgent: isUrgent || urgentByDate };
 }
 
 export default function AdminOrders() {
