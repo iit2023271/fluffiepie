@@ -43,6 +43,7 @@ const App = () => (
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/admin" element={<AdminPanel />} />
+                <Route path="/location" element={<Location />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
