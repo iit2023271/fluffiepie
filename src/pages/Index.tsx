@@ -463,23 +463,18 @@ export default function Index() {
         );
       }
 
-      case "feature_grid":
+      case "feature_grid": {
+        const fgCols = data.gridColumns || 4;
         return (
           <section key={section.id} className="container mx-auto px-4 py-16">
             <div className="text-center mb-12">
               {data.gridTitle && <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{data.gridTitle}</h2>}
               {data.gridSubtitle && <p className="text-muted-foreground">{data.gridSubtitle}</p>}
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="grid gap-6" style={{ gridTemplateColumns: `repeat(${Math.min(fgCols, 2)}, 1fr)` }} data-desktop-cols={`fg${fgCols}`}>
+              <style>{`@media(min-width:768px){[data-desktop-cols="fg${fgCols}"]{grid-template-columns:repeat(${fgCols},1fr)!important}}`}</style>
               {(data.features || []).map((f, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className="text-center p-6 rounded-2xl bg-card shadow-soft hover:shadow-card transition-shadow"
-                >
+                <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="text-center p-6 rounded-2xl bg-card shadow-soft hover:shadow-card transition-shadow">
                   <div className="text-3xl mb-3">{f.emoji}</div>
                   <h3 className="text-sm font-display font-semibold mb-1">{f.title}</h3>
                   <p className="text-xs text-muted-foreground">{f.desc}</p>
@@ -488,6 +483,7 @@ export default function Index() {
             </div>
           </section>
         );
+      }
 
       case "faq":
         return (
