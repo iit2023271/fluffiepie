@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart, Search, Heart, User, Menu, X, LogOut } from "lucide-react";
+import { ShoppingCart, Search, User, Menu, X, LogOut, Shield } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
@@ -17,6 +18,14 @@ export default function Navbar() {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => {
+      setIsAdmin(!!data);
+    });
+  }, [user]);
 
   return (
     <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
@@ -60,9 +69,16 @@ export default function Navbar() {
           </button>
 
           {user ? (
-            <Link to="/dashboard" className="p-2 rounded-full hover:bg-secondary transition-colors hidden md:flex" aria-label="Dashboard">
-              <User className="w-5 h-5 text-primary" />
-            </Link>
+            <div className="hidden md:flex items-center gap-2">
+              {isAdmin && (
+                <Link to="/admin" className="p-2 rounded-full hover:bg-secondary transition-colors" aria-label="Admin Panel">
+                  <Shield className="w-5 h-5 text-accent" />
+                </Link>
+              )}
+              <Link to="/dashboard" className="p-2 rounded-full hover:bg-secondary transition-colors" aria-label="Dashboard">
+                <User className="w-5 h-5 text-primary" />
+              </Link>
+            </div>
           ) : (
             <Link
               to="/login"
@@ -106,6 +122,11 @@ export default function Navbar() {
                   <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2 px-3 rounded-lg hover:bg-secondary transition-colors">
                     My Account
                   </Link>
+                  {isAdmin && (
+                    <Link to="/admin" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2 px-3 rounded-lg hover:bg-secondary transition-colors flex items-center gap-2 text-accent">
+                      <Shield className="w-4 h-4" /> Admin Panel
+                    </Link>
+                  )}
                   <button onClick={() => { signOut(); setMobileOpen(false); }} className="text-sm font-medium py-2 px-3 rounded-lg hover:bg-secondary transition-colors text-left flex items-center gap-2 text-destructive">
                     <LogOut className="w-4 h-4" /> Sign Out
                   </button>
