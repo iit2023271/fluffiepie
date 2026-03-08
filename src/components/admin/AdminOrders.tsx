@@ -362,24 +362,56 @@ export default function AdminOrders() {
         </div>
       </div>
 
-      {/* Today / All Orders Toggle */}
-      <div className="flex items-center gap-2 mb-4">
+      {/* Today / All Orders Toggle + Date Range */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         <Button
-          variant={showAllOrders ? "outline" : "default"}
+          variant={!showAllOrders && !hasDateFilter ? "default" : "outline"}
           size="sm"
           className="text-xs rounded-xl"
-          onClick={() => setShowAllOrders(false)}
+          onClick={() => { setShowAllOrders(false); clearDateFilter(); }}
         >
-          📅 Today's Orders
+          📅 Today
         </Button>
         <Button
-          variant={showAllOrders ? "default" : "outline"}
+          variant={showAllOrders && !hasDateFilter ? "default" : "outline"}
           size="sm"
           className="text-xs rounded-xl"
-          onClick={() => setShowAllOrders(true)}
+          onClick={() => { setShowAllOrders(true); clearDateFilter(); }}
         >
           📋 All Orders
         </Button>
+
+        <div className="h-5 w-px bg-border mx-1" />
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant={dateFrom ? "default" : "outline"} size="sm" className={cn("gap-1.5 text-xs rounded-xl", !dateFrom && "text-muted-foreground")}>
+              <CalendarIcon className="w-3.5 h-3.5" />
+              {dateFrom ? format(dateFrom, "dd MMM") : "From"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={dateFrom} onSelect={(d) => { setDateFrom(d); setShowAllOrders(true); }} initialFocus className={cn("p-3 pointer-events-auto")} />
+          </PopoverContent>
+        </Popover>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant={dateTo ? "default" : "outline"} size="sm" className={cn("gap-1.5 text-xs rounded-xl", !dateTo && "text-muted-foreground")}>
+              <CalendarIcon className="w-3.5 h-3.5" />
+              {dateTo ? format(dateTo, "dd MMM") : "To"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={dateTo} onSelect={(d) => { setDateTo(d); setShowAllOrders(true); }} initialFocus className={cn("p-3 pointer-events-auto")} />
+          </PopoverContent>
+        </Popover>
+
+        {hasDateFilter && (
+          <Button variant="ghost" size="sm" className="text-xs gap-1 text-muted-foreground rounded-xl h-8" onClick={() => { clearDateFilter(); setShowAllOrders(false); }}>
+            <X className="w-3.5 h-3.5" /> Clear
+          </Button>
+        )}
       </div>
 
       {/* Status Filter Pills */}
@@ -401,49 +433,13 @@ export default function AdminOrders() {
         })}
       </div>
 
-      {/* Search + Date Filter */}
-      <div className="flex flex-wrap gap-3 mb-4 items-end">
-        <div className="relative flex-1 min-w-[200px] max-w-md">
+      {/* Search */}
+      <div className="mb-4">
+        <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input placeholder="Search by order ID, name, or phone..." value={search} onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background" />
         </div>
-
-        <div className="flex flex-col gap-1">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">From</span>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className={cn("gap-2 text-xs min-w-[140px] justify-start", !dateFrom && "text-muted-foreground")}>
-                <CalendarIcon className="w-3.5 h-3.5" />
-                {dateFrom ? format(dateFrom, "dd MMM yyyy") : "Start date"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">To</span>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className={cn("gap-2 text-xs min-w-[140px] justify-start", !dateTo && "text-muted-foreground")}>
-                <CalendarIcon className="w-3.5 h-3.5" />
-                {dateTo ? format(dateTo, "dd MMM yyyy") : "End date"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className={cn("p-3 pointer-events-auto")} />
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        {hasDateFilter && (
-          <Button variant="ghost" size="sm" className="text-xs gap-1 text-muted-foreground h-9 self-end" onClick={clearDateFilter}>
-            <X className="w-3.5 h-3.5" /> Clear
-          </Button>
-        )}
       </div>
 
       {/* Active filters summary */}
