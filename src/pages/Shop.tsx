@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { SlidersHorizontal, X, Search, Sparkles, Check, IndianRupee } from "lucide-react";
+import { SlidersHorizontal, X, Search, Sparkles, Check, IndianRupee, Tag, Percent } from "lucide-react";
 import { useStoreConfig } from "@/hooks/useStoreConfig";
 import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
