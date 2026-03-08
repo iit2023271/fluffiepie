@@ -15,6 +15,7 @@ export default function Shop() {
   const initialOccasion = searchParams.get("occasion") || "";
   const { data: products = [] } = useProducts();
   const { filterSections: allFilters } = useStoreConfig();
+  const { isWishlisted, toggle: toggleWishlist } = useWishlist();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string>>(() => {
