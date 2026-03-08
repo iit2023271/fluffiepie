@@ -38,6 +38,7 @@ export default function AdminHomepage() {
   const [existingId, setExistingId] = useState<string | null>(null);
   const [showAddSection, setShowAddSection] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; sectionId: string; label: string }>({ open: false, sectionId: "", label: "" });
+  const [heroCropState, setHeroCropState] = useState<{ open: boolean; src: string }>({ open: false, src: "" });
 
   useEffect(() => { loadConfig(); }, []);
 
