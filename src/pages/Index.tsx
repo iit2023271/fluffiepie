@@ -260,6 +260,7 @@ export default function Index() {
       const overlayStyle = config.categories.overlayStyle || "gradient";
       const overlayCls = overlayStyle === "solid" ? "bg-foreground/50" : overlayStyle === "none" ? "" : "bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent group-hover:from-foreground/80 transition-all duration-500";
       const filterType = config.categories.filterType || "occasion";
+      const maxItems = config.categories.maxItems || 0;
 
       // Build display items
       let displayItems: { name: string; image: string; link: string }[];
@@ -278,6 +279,8 @@ export default function Index() {
           link: `/shop?${paramKey}=${encodeURIComponent(name)}`,
         }));
       }
+
+      if (maxItems > 0) displayItems = displayItems.slice(0, maxItems);
 
       return (
         <section key="categories" className="container mx-auto px-4 py-16">
