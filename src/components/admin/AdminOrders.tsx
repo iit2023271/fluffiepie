@@ -341,11 +341,31 @@ export default function AdminOrders() {
         </div>
       </div>
 
+      {/* Today / All Orders Toggle */}
+      <div className="flex items-center gap-2 mb-4">
+        <Button
+          variant={showAllOrders ? "outline" : "default"}
+          size="sm"
+          className="text-xs rounded-xl"
+          onClick={() => setShowAllOrders(false)}
+        >
+          📅 Today's Orders
+        </Button>
+        <Button
+          variant={showAllOrders ? "default" : "outline"}
+          size="sm"
+          className="text-xs rounded-xl"
+          onClick={() => setShowAllOrders(true)}
+        >
+          📋 All Orders
+        </Button>
+      </div>
+
       {/* Status Filter Pills */}
       <div className="flex flex-wrap gap-2 mb-4">
         <button onClick={() => setStatusFilter("")}
           className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${!statusFilter ? "bg-foreground text-background shadow-md" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"}`}>
-          All Orders ({orders.length})
+          All Statuses ({filtered.length})
         </button>
         {statusOptions.map(s => {
           const cfg = STATUS_CONFIG[s];
