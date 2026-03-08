@@ -37,6 +37,7 @@ export function useProducts() {
           weights: (p.weights as any) || [],
           isNew: p.is_new,
           isBestseller: p.is_bestseller,
+          custom_attributes: (p as any).custom_attributes || {},
         };
       });
     },
@@ -78,6 +79,7 @@ export function useProduct(slug: string | undefined) {
         weights: (data.weights as any) || [],
         isNew: data.is_new,
         isBestseller: data.is_bestseller,
+        custom_attributes: (data as any).custom_attributes || {},
       };
     },
     enabled: !!slug,
