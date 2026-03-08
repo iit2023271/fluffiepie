@@ -122,7 +122,7 @@ function DraggableImageList({ images, pendingFiles, onReorder, onRemoveImage, on
 
 const emptyProduct = {
   name: "", slug: "", description: "", category: "", occasion: [] as string[],
-  flavour: "", base_price: 0, weights: [{ label: "500g", price: 0 }] as { label: string; price: number }[],
+  flavour: "", base_price: 0, original_price: null as number | null, weights: [{ label: "500g", price: 0 }] as { label: string; price: number }[],
   is_new: false, is_bestseller: false, is_active: true, image_url: null as string | null,
   images: [] as string[], tags: [] as string[],
   stock_quantity: 100, low_stock_threshold: 10, sku: "",
@@ -178,6 +178,7 @@ export default function AdminProducts() {
       occasion: product.occasion || [],
       flavour: product.flavour || "",
       base_price: product.base_price,
+      original_price: (product as any).original_price || null,
       weights: (product.weights as any) || [{ label: "500g", price: 0 }],
       is_new: product.is_new,
       is_bestseller: product.is_bestseller,
@@ -239,7 +240,7 @@ export default function AdminProducts() {
 
     const payload: any = {
       name: form.name, slug: form.slug, description: form.description, category: form.category || "",
-      occasion: form.occasion, flavour: form.flavour || "", base_price: form.base_price,
+      occasion: form.occasion, flavour: form.flavour || "", base_price: form.base_price, original_price: form.original_price || null,
       weights: form.weights as any, is_new: form.is_new, is_bestseller: form.is_bestseller,
       is_active: form.is_active, image_url: imageUrl, images: allImages,
       stock_quantity: form.stock_quantity, low_stock_threshold: form.low_stock_threshold,
@@ -470,6 +471,12 @@ export default function AdminProducts() {
                   <input type="number" value={form.base_price} onChange={(e) => setForm({ ...form, base_price: parseInt(e.target.value) || 0 })}
                     className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
                 </div>
+                <div>
+                  <label className="text-xs font-medium mb-1 block">Original Price (₹) <span className="text-muted-foreground font-normal">— optional, shown as strikethrough</span></label>
+                  <input type="number" value={form.original_price || ""} onChange={(e) => setForm({ ...form, original_price: e.target.value ? parseInt(e.target.value) : null })}
+                    placeholder="Leave empty for no discount"
+                    className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
+                </div>
               </div>
 
               {/* SKU & Stock */}
@@ -630,7 +637,12 @@ export default function AdminProducts() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-sm text-muted-foreground hidden md:table-cell">{product.category}</td>
-                      <td className="px-4 py-3 text-sm font-medium">₹{product.base_price}</td>
+                      <td className="px-4 py-3 text-sm font-medium">
+                        ₹{product.base_price}
+                        {(product as any).original_price && (product as any).original_price > product.base_price && (
+                          <span className="ml-1.5 text-xs text-muted-foreground line-through">₹{(product as any).original_price}</span>
+                        )}
+                      </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <input type="number" value={stock} onChange={(e) => updateStock(product.id, parseInt(e.target.value) || 0)}

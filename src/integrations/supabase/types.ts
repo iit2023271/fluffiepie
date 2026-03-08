@@ -270,6 +270,7 @@ export type Database = {
           low_stock_threshold: number
           name: string
           occasion: string[]
+          original_price: number | null
           rating: number
           review_count: number
           sku: string | null
@@ -295,6 +296,7 @@ export type Database = {
           low_stock_threshold?: number
           name: string
           occasion?: string[]
+          original_price?: number | null
           rating?: number
           review_count?: number
           sku?: string | null
@@ -320,6 +322,7 @@ export type Database = {
           low_stock_threshold?: number
           name?: string
           occasion?: string[]
+          original_price?: number | null
           rating?: number
           review_count?: number
           sku?: string | null

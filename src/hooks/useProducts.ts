@@ -33,6 +33,7 @@ export function useProducts() {
           image: p.image_url || mock?.image || "",
           images: (p as any).images || [],
           basePrice: p.base_price,
+          originalPrice: (p as any).original_price || null,
           rating: Number(p.rating),
           reviewCount: p.review_count,
           weights: (p.weights as any) || [],

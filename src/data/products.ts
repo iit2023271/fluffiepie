@@ -18,6 +18,7 @@ export interface Product {
   image: string;
   images?: string[];
   basePrice: number;
+  originalPrice?: number | null;
   rating: number;
   reviewCount: number;
   weights: { label: string; price: number }[];
