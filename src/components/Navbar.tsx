@@ -15,7 +15,7 @@ const navLinks = [
   { label: "Contact", path: "/contact" },
 ];
 
-export default function Navbar() {
+function Navbar() {
   const { totalItems, dispatch } = useCart();
   const { user, signOut } = useAuth();
   const location = useLocation();
