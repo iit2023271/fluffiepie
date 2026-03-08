@@ -117,7 +117,12 @@ export default function Location() {
 
           {/* Map Embed */}
           {storeInfo.mapUrl && (
-            <div className="mt-8 rounded-2xl overflow-hidden border border-border shadow-soft">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, type: "spring", stiffness: 120 }}
+              className="mt-8 rounded-2xl overflow-hidden border border-border shadow-soft"
+            >
               <iframe
                 src={storeInfo.mapUrl}
                 width="100%"
@@ -128,7 +133,7 @@ export default function Location() {
                 referrerPolicy="no-referrer-when-downgrade"
                 title="Store Location"
               />
-            </div>
+            </motion.div>
           )}
 
           {!hasAddress && !hasContact && (
