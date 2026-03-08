@@ -188,7 +188,7 @@ export default function AdminReviews() {
         onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
         title="Delete Review"
         description={`Delete the review by "${deleteTarget?.user_name}" on "${deleteTarget?.product_name}"? This cannot be undone.`}
-        confirmText="Delete"
+        confirmLabel="Delete"
         onConfirm={handleDelete}
         variant="destructive"
       />
