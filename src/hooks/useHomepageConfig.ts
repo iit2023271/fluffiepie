@@ -246,6 +246,28 @@ export function getDefaultCustomData(type: CustomSectionType): CustomSectionData
   }
 }
 
+export function normalizeHomepageSections(sections?: HomepageSection[]): HomepageSection[] {
+  const base = sections?.length ? sections : DEFAULT_HOMEPAGE_CONFIG.sections;
+  const normalized: HomepageSection[] = [];
+  const seen = new Set<string>();
+
+  for (const section of base) {
+    if (!seen.has(section.id)) {
+      normalized.push(section);
+      seen.add(section.id);
+    }
+  }
+
+  for (const section of DEFAULT_HOMEPAGE_CONFIG.sections) {
+    if (!seen.has(section.id)) {
+      normalized.push(section);
+      seen.add(section.id);
+    }
+  }
+
+  return normalized;
+}
+
 export function useHomepageConfig() {
   const [config, setConfig] = useState<HomepageConfig>(DEFAULT_HOMEPAGE_CONFIG);
   const [loading, setLoading] = useState(true);
@@ -271,7 +293,7 @@ export function useHomepageConfig() {
             reviews: { ...DEFAULT_HOMEPAGE_CONFIG.reviews, ...(parsed.reviews || {}) },
             sectionNav: { ...DEFAULT_HOMEPAGE_CONFIG.sectionNav, ...(parsed.sectionNav || {}), items: parsed.sectionNav?.items || DEFAULT_HOMEPAGE_CONFIG.sectionNav.items },
             footer: { ...DEFAULT_HOMEPAGE_CONFIG.footer, ...(parsed.footer || {}), columns: parsed.footer?.columns || DEFAULT_HOMEPAGE_CONFIG.footer.columns },
-            sections: parsed.sections || DEFAULT_HOMEPAGE_CONFIG.sections,
+            sections: normalizeHomepageSections(parsed.sections),
           });
         } catch { /* use defaults */ }
       }
