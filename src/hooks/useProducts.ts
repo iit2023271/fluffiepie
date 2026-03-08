@@ -79,6 +79,7 @@ export function useProduct(slug: string | undefined) {
         weights: (data.weights as any) || [],
         isNew: data.is_new,
         isBestseller: data.is_bestseller,
+        custom_attributes: (data as any).custom_attributes || {},
       };
     },
     enabled: !!slug,
