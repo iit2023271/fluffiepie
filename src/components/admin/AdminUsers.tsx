@@ -350,16 +350,16 @@ export default function AdminUsers() {
                           <p className="text-sm font-medium">{u.profile.phone || "—"}</p>
                         </div>
                         <div className="bg-card rounded-lg p-3 border border-border">
+                          <p className="text-xs text-muted-foreground">Email</p>
+                          <p className="text-sm font-medium truncate">{u.profile.email || "—"}</p>
+                        </div>
+                        <div className="bg-card rounded-lg p-3 border border-border">
                           <p className="text-xs text-muted-foreground">Total Spent</p>
                           <p className="text-sm font-medium">₹{totalSpent.toLocaleString()}</p>
                         </div>
                         <div className="bg-card rounded-lg p-3 border border-border">
                           <p className="text-xs text-muted-foreground">Avg Order</p>
                           <p className="text-sm font-medium">₹{avgOrder.toLocaleString()}</p>
-                        </div>
-                        <div className="bg-card rounded-lg p-3 border border-border">
-                          <p className="text-xs text-muted-foreground">Last Order</p>
-                          <p className="text-sm font-medium">{u.orders.length > 0 ? format(new Date(u.orders[0].created_at), "dd MMM") : "—"}</p>
                         </div>
                       </div>
                     </div>
