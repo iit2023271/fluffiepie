@@ -159,10 +159,10 @@ export default function Shop() {
 
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-6 gap-3">
-        {/* Mobile filter sheet trigger */}
+        {/* Filter sheet trigger — visible on ALL screen sizes */}
         <Sheet>
           <SheetTrigger asChild>
-            <button className="md:hidden flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border text-sm font-medium bg-card hover:bg-secondary transition-colors">
+            <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border text-sm font-medium bg-card hover:bg-secondary transition-colors">
               <SlidersHorizontal className="w-4 h-4" />
               Filters
               {activeFilterCount > 0 && (
@@ -213,9 +213,9 @@ export default function Shop() {
           </SheetContent>
         </Sheet>
 
-        {/* Active filter pills on mobile */}
+        {/* Active filter pills */}
         {hasFilters && (
-          <div className="md:hidden flex items-center gap-2 overflow-x-auto scrollbar-hide flex-1">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide flex-1">
             {Object.entries(selectedFilters).map(([type, value]) =>
               value ? (
                 <button
@@ -231,8 +231,8 @@ export default function Shop() {
         )}
 
         {hasFilters && (
-          <button onClick={clearFilters} className="hidden md:flex items-center gap-1 text-sm text-primary hover:underline">
-            <X className="w-3 h-3" /> Clear filters
+          <button onClick={clearFilters} className="flex items-center gap-1 text-sm text-primary hover:underline whitespace-nowrap">
+            <X className="w-3 h-3" /> Clear
           </button>
         )}
 
@@ -248,35 +248,26 @@ export default function Shop() {
         </select>
       </div>
 
-      <div className="flex gap-8">
-        {/* Desktop sidebar filters */}
-        <aside className="hidden md:block w-56 flex-shrink-0">
-          {allFilters.map(f => (
-            <DesktopFilterSection key={f.type} title={f.label} options={f.values} selected={selectedFilters[f.type] || ""} onSelect={(v) => selectFilter(f.type, v)} />
+      {/* Product grid — full width now */}
+      <div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          {paginatedProducts.map((product, i) => (
+            <ProductCard key={product.id} product={product} index={i} isWishlisted={isWishlisted(product.id)} onToggleWishlist={toggleWishlist} />
           ))}
-        </aside>
-
-        {/* Product grid */}
-        <div className="flex-1">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-            {paginatedProducts.map((product, i) => (
-              <ProductCard key={product.id} product={product} index={i} isWishlisted={isWishlisted(product.id)} onToggleWishlist={toggleWishlist} />
-            ))}
-          </div>
-          {filtered.length === 0 && (
-            <div className="text-center py-20">
-              <p className="text-lg font-display text-muted-foreground">No cakes found matching your filters.</p>
-              <button onClick={clearFilters} className="mt-4 text-primary hover:underline text-sm">Clear all filters</button>
-            </div>
-          )}
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={(p) => { setCurrentPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-            totalItems={filtered.length}
-            itemsPerPage={ITEMS_PER_PAGE}
-          />
         </div>
+        {filtered.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-lg font-display text-muted-foreground">No cakes found matching your filters.</p>
+            <button onClick={clearFilters} className="mt-4 text-primary hover:underline text-sm">Clear all filters</button>
+          </div>
+        )}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(p) => { setCurrentPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+          totalItems={filtered.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+        />
       </div>
     </div>
   );
