@@ -38,6 +38,7 @@ export function useProducts() {
           weights: (p.weights as any) || [],
           isNew: p.is_new,
           isBestseller: p.is_bestseller,
+          tags: (p as any).tags || [],
           custom_attributes: (p as any).custom_attributes || {},
         };
       });

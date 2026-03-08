@@ -124,13 +124,13 @@ const emptyProduct = {
   name: "", slug: "", description: "", category: "", occasion: [] as string[],
   flavour: "", base_price: 0, weights: [{ label: "500g", price: 0 }] as { label: string; price: number }[],
   is_new: false, is_bestseller: false, is_active: true, image_url: null as string | null,
-  images: [] as string[],
+  images: [] as string[], tags: [] as string[],
   stock_quantity: 100, low_stock_threshold: 10, sku: "",
   custom_attributes: {} as Record<string, string | string[]>,
 };
 
 export default function AdminProducts() {
-  const { categories: categoryOptions, flavours: flavourOptions, occasions: occasionOptions, filterSections, customSectionDefs } = useStoreConfig();
+  const { categories: categoryOptions, flavours: flavourOptions, occasions: occasionOptions, productTags: tagOptions, filterSections, customSectionDefs } = useStoreConfig();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -188,6 +188,7 @@ export default function AdminProducts() {
       low_stock_threshold: (product as any).low_stock_threshold ?? 10,
       sku: (product as any).sku || "",
       custom_attributes: ((product as any).custom_attributes as Record<string, string | string[]>) || {},
+      tags: (product as any).tags || [],
     });
     setImageFile(null);
     setPendingAdditionalFiles([]);
@@ -243,6 +244,7 @@ export default function AdminProducts() {
       is_active: form.is_active, image_url: imageUrl, images: allImages,
       stock_quantity: form.stock_quantity, low_stock_threshold: form.low_stock_threshold,
       sku: form.sku || null, custom_attributes: form.custom_attributes,
+      tags: form.tags,
     };
 
     if (editing) {
@@ -555,7 +557,7 @@ export default function AdminProducts() {
                   ))}
                 </div>
               </div>
-              <div className="flex gap-6">
+              <div className="flex gap-6 flex-wrap">
                 {[
                   { key: "is_active", label: "Active" },
                   { key: "is_new", label: "New" },
@@ -567,6 +569,37 @@ export default function AdminProducts() {
                   </label>
                 ))}
               </div>
+              {/* Dynamic Tags */}
+              {tagOptions.length > 0 && (
+                <div>
+                  <label className="text-xs font-medium mb-2 block">Product Tags</label>
+                  <div className="flex flex-wrap gap-2">
+                    {tagOptions.map(tag => {
+                      const isSelected = form.tags.includes(tag);
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => {
+                            setForm(prev => ({
+                              ...prev,
+                              tags: isSelected ? prev.tags.filter(t => t !== tag) : [...prev.tags, tag],
+                            }));
+                          }}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
+                            isSelected
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
+                          }`}
+                        >
+                          {tag}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Manage tags in Settings → Product Tags</p>
+                </div>
+              )}
               <div className="flex gap-3 pt-4">
                 <button onClick={handleSave} disabled={saving}
                   className="flex-1 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 disabled:opacity-50">

@@ -13,7 +13,7 @@ interface ConfigItem {
 export const BUILTIN_FILTER_TYPES = ["category", "flavour", "occasion"];
 
 // Reserved config types that are NOT product filters
-const RESERVED_TYPES = ["homepage_config", "email_notification", "store_info", "filter_section"];
+const RESERVED_TYPES = ["homepage_config", "email_notification", "store_info", "filter_section", "product_tag", "delivery_settings", "active_theme"];
 
 export interface FilterSection {
   type: string;
@@ -46,6 +46,7 @@ export function useStoreConfig() {
   const categories = configItems.filter(d => d.config_type === "category").map(d => d.value);
   const flavours = configItems.filter(d => d.config_type === "flavour").map(d => d.value);
   const occasions = configItems.filter(d => d.config_type === "occasion").map(d => d.value);
+  const productTags = configItems.filter(d => d.config_type === "product_tag").map(d => d.value);
 
   // Custom filter section definitions (stored as filter_section type with JSON value)
   const customSectionDefs = configItems
@@ -80,5 +81,5 @@ export function useStoreConfig() {
     }
   }
 
-  return { categories, flavours, occasions, filterSections, customSectionDefs, loading, reload: load };
+  return { categories, flavours, occasions, productTags, filterSections, customSectionDefs, loading, reload: load };
 }
