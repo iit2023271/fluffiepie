@@ -308,15 +308,15 @@ export default function AdminOrders() {
 
   const [undoConfirm, setUndoConfirm] = useState<{ open: boolean; orderId: string; prevStatus: string }>({ open: false, orderId: "", prevStatus: "" });
 
-  // Stats from ALL orders (not filtered)
+  // Stats derived from the currently filtered order set
   const orderStats = useMemo(() => {
-    const today = orders.filter(o => isToday(new Date(o.created_at)));
-    const todayRevenue = today.filter(o => o.status !== "cancelled").reduce((s, o) => s + (o.total || 0), 0);
-    const pending = orders.filter(o => ["placed", "confirmed"].includes(o.status));
-    const inProgress = orders.filter(o => ["baking", "out_for_delivery"].includes(o.status));
-    const delivered = orders.filter(o => o.status === "delivered");
-    return { todayCount: today.length, todayRevenue, pendingCount: pending.length, inProgressCount: inProgress.length, deliveredCount: delivered.length };
-  }, [orders]);
+    const revenue = filtered.filter(o => o.status !== "cancelled").reduce((s, o) => s + (o.total || 0), 0);
+    const pending = filtered.filter(o => ["placed", "confirmed"].includes(o.status));
+    const delivered = filtered.filter(o => o.status === "delivered");
+    return { totalCount: filtered.length, revenue, pendingCount: pending.length, deliveredCount: delivered.length };
+  }, [filtered]);
+
+  const statsLabel = showAllOrders ? "All" : (dateFrom || dateTo) ? "Filtered" : "Today's";
 
   return (
     <div>
