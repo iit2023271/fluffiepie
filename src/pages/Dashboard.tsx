@@ -4,11 +4,18 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Package, User, LogOut, Clock, CheckCircle, Truck, ChefHat, Search, Shield, Star, MessageSquare, MapPin } from "lucide-react";
+import { Package, User, LogOut, Clock, CheckCircle, Truck, ChefHat, Search, Shield, Star, MessageSquare, MapPin, StickyNote } from "lucide-react";
 import SavedAddresses from "@/components/SavedAddresses";
 import ReviewForm from "@/components/ReviewForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
+
+interface OrderNote {
+  id: string;
+  note: string;
+  note_type: string;
+  created_at: string;
+}
 
 interface Order {
   id: string;
@@ -46,6 +53,7 @@ export default function Dashboard() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [reviewingOrder, setReviewingOrder] = useState<Order | null>(null);
   const [existingReviews, setExistingReviews] = useState<Set<string>>(new Set());
+  const [orderNotes, setOrderNotes] = useState<Record<string, OrderNote[]>>({});
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
@@ -61,9 +69,27 @@ export default function Dashboard() {
       supabase.from("orders").select("*").eq("user_id", user!.id).order("created_at", { ascending: false }),
       supabase.from("profiles").select("full_name, phone").eq("user_id", user!.id).single(),
     ]);
-    if (ordersRes.data) setOrders(ordersRes.data);
+    if (ordersRes.data) {
+      setOrders(ordersRes.data);
+      // Load notes for all orders
+      const orderIds = ordersRes.data.map((o: any) => o.id);
+      if (orderIds.length > 0) {
+        const { data: notes } = await supabase
+          .from("order_notes")
+          .select("id, note, note_type, created_at, order_id")
+          .in("order_id", orderIds)
+          .order("created_at", { ascending: true });
+        if (notes) {
+          const grouped: Record<string, OrderNote[]> = {};
+          notes.forEach((n: any) => {
+            if (!grouped[n.order_id]) grouped[n.order_id] = [];
+            grouped[n.order_id].push(n);
+          });
+          setOrderNotes(grouped);
+        }
+      }
+    }
     if (profileRes.data) setProfile(profileRes.data);
-    // Load existing reviews by this user
     if (user) {
       const { data: reviews } = await supabase
         .from("reviews")
@@ -289,6 +315,26 @@ export default function Dashboard() {
                     {order.status === "cancelled" && (
                       <div className="mb-4 py-2 px-3 bg-destructive/10 rounded-xl text-center">
                         <span className="text-sm font-medium text-destructive">Order Cancelled</span>
+                      </div>
+                    )}
+
+                    {/* Admin Notes for Customer */}
+                    {orderNotes[order.id] && orderNotes[order.id].length > 0 && (
+                      <div className="mb-3 p-3 rounded-xl bg-accent/10 border border-accent/20">
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <StickyNote className="w-3.5 h-3.5 text-accent" />
+                          <span className="text-xs font-semibold text-accent">Notes from Store</span>
+                        </div>
+                        <div className="space-y-1.5">
+                          {orderNotes[order.id].map((note) => (
+                            <div key={note.id} className="text-sm text-foreground">
+                              <p>{note.note}</p>
+                              <p className="text-[10px] text-muted-foreground mt-0.5">
+                                {format(new Date(note.created_at), "dd MMM, hh:mm a")}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
 
