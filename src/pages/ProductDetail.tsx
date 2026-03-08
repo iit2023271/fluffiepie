@@ -4,6 +4,7 @@ import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, ShoppingCart, Heart, Minus, Plus, ChevronLeft, Truck, Shield, Clock, X, ChevronRight, ZoomIn } from "lucide-react";
 import { useProduct, useProducts } from "@/hooks/useProducts";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/context/CartContext";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
