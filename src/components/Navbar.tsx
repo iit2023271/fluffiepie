@@ -5,6 +5,7 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
+import SearchOverlay from "@/components/SearchOverlay";
 
 const navLinks = [
   { label: "Home", path: "/" },
