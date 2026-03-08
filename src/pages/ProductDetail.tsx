@@ -276,9 +276,9 @@ function Lightbox({ images, initialIndex, onClose }: { images: string[]; initial
   }, []);
 
   // Distance between two touch points
-  const getTouchDist = (touches: TouchList) => {
-    const dx = touches[0].clientX - touches[1].clientX;
-    const dy = touches[0].clientY - touches[1].clientY;
+  const getTouchDist = (t0: React.Touch, t1: React.Touch) => {
+    const dx = t0.clientX - t1.clientX;
+    const dy = t0.clientY - t1.clientY;
     return Math.sqrt(dx * dx + dy * dy);
   };
 
