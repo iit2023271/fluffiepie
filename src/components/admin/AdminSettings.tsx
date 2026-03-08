@@ -110,6 +110,12 @@ export default function AdminSettings() {
   const [newTagName, setNewTagName] = useState("");
   const [newTagBg, setNewTagBg] = useState("#c0392b");
   const [newTagText, setNewTagText] = useState("#ffffff");
+  
+  // Editing existing tag state
+  const [editingTagId, setEditingTagId] = useState<string | null>(null);
+  const [editTagName, setEditTagName] = useState("");
+  const [editTagBg, setEditTagBg] = useState("#c0392b");
+  const [editTagText, setEditTagText] = useState("#ffffff");
 
   // Confirm dialog state
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; type: "config" | "coupon" | "banner"; id: string; name: string }>({ open: false, type: "config", id: "", name: "" });
