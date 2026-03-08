@@ -1,12 +1,15 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format } from "date-fns";
-import { Search, MessageSquare, Send, Download, X, ChevronDown, ChevronUp, Trash2, Info } from "lucide-react";
+import { format, startOfDay, endOfDay } from "date-fns";
+import { Search, MessageSquare, Send, Download, ChevronDown, ChevronUp, Trash2, Info, Calendar as CalendarIcon, X } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 const ITEMS_PER_PAGE = 10;
 const statusOptions = ["placed", "confirmed", "baking", "out_for_delivery", "delivered", "cancelled"];
@@ -26,6 +29,8 @@ export default function AdminOrders() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
@@ -49,27 +54,17 @@ export default function AdminOrders() {
   const addNote = async (orderId: string) => {
     if (!newNote.trim() || !user) return;
     const { error } = await supabase.from("order_notes").insert({
-      order_id: orderId,
-      admin_user_id: user.id,
-      note: newNote.trim(),
-      note_type: "general",
+      order_id: orderId, admin_user_id: user.id, note: newNote.trim(), note_type: "general",
     });
     if (error) toast.error("Failed to add note");
-    else {
-      toast.success("Note added");
-      setNewNote("");
-      loadNotes(orderId);
-    }
+    else { toast.success("Note added"); setNewNote(""); loadNotes(orderId); }
   };
 
   const deleteNote = async (noteId: string, orderId: string) => {
     if (!confirm("Delete this note?")) return;
     const { error } = await supabase.from("order_notes").delete().eq("id", noteId);
     if (error) toast.error("Failed to delete note");
-    else {
-      toast.success("Note deleted");
-      loadNotes(orderId);
-    }
+    else { toast.success("Note deleted"); loadNotes(orderId); }
   };
 
   const sendNotification = async (order: any, newStatus: string) => {
@@ -79,9 +74,7 @@ export default function AdminOrders() {
       await supabase.functions.invoke("send-order-notification", {
         body: { orderId: order.id, newStatus, customerName, orderTotal: order.total, items: order.items, userId: order.user_id },
       });
-    } catch (e) {
-      console.error("Notification failed:", e);
-    }
+    } catch (e) { console.error("Notification failed:", e); }
   };
 
   const updateStatus = async (orderId: string, newStatus: string) => {
@@ -89,8 +82,7 @@ export default function AdminOrders() {
     const { error } = await supabase.from("orders").update({ status: newStatus }).eq("id", orderId);
     if (error) toast.error("Failed to update status");
     else {
-      const statusLabel = STATUS_CONFIG[newStatus]?.label || newStatus;
-      toast.success(`Order updated to "${statusLabel}"`);
+      toast.success(`Order updated to "${STATUS_CONFIG[newStatus]?.label || newStatus}"`);
       if (order) sendNotification(order, newStatus);
       loadOrders();
     }
@@ -99,41 +91,24 @@ export default function AdminOrders() {
   const bulkUpdateStatus = async (newStatus: string) => {
     if (selectedOrders.size === 0) return;
     const ids = Array.from(selectedOrders);
-    for (const id of ids) {
-      await supabase.from("orders").update({ status: newStatus }).eq("id", id);
-    }
-    const statusLabel = STATUS_CONFIG[newStatus]?.label || newStatus;
-    toast.success(`${ids.length} order${ids.length > 1 ? "s" : ""} updated to "${statusLabel}"`);
+    for (const id of ids) await supabase.from("orders").update({ status: newStatus }).eq("id", id);
+    toast.success(`${ids.length} order${ids.length > 1 ? "s" : ""} updated to "${STATUS_CONFIG[newStatus]?.label || newStatus}"`);
     setSelectedOrders(new Set());
     loadOrders();
   };
 
   const toggleSelect = (id: string) => {
-    setSelectedOrders(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedOrders.size === paginated.length) setSelectedOrders(new Set());
-    else setSelectedOrders(new Set(paginated.map(o => o.id)));
+    setSelectedOrders(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
   };
 
   const toggleExpand = (id: string) => {
-    if (expandedOrder === id) {
-      setExpandedOrder(null);
-    } else {
-      setExpandedOrder(id);
-      if (!orderNotes[id]) loadNotes(id);
-    }
+    if (expandedOrder === id) { setExpandedOrder(null); }
+    else { setExpandedOrder(id); if (!orderNotes[id]) loadNotes(id); }
   };
 
   const exportCSV = () => {
-    const source = filtered;
     const rows = [["Order ID", "Date", "Status", "Customer", "City", "Phone", "Items", "Total", "Discount", "Coupon"]];
-    source.forEach(o => {
+    filtered.forEach(o => {
       const addr = o.delivery_address as any;
       const items = Array.isArray(o.items) ? o.items.map((i: any) => `${i.name} x${i.quantity}`).join("; ") : "";
       rows.push([o.id.slice(0, 8).toUpperCase(), format(new Date(o.created_at), "yyyy-MM-dd HH:mm"), o.status, addr?.name || "", addr?.city || "", addr?.phone || "", items, String(o.total), String(o.discount || 0), o.coupon_code || ""]);
@@ -141,8 +116,7 @@ export default function AdminOrders() {
     const csv = rows.map(r => r.map(c => `"${c}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = `orders-${format(new Date(), "yyyy-MM-dd")}.csv`; a.click();
+    const a = document.createElement("a"); a.href = url; a.download = `orders-${format(new Date(), "yyyy-MM-dd")}.csv`; a.click();
     URL.revokeObjectURL(url);
     toast.success("Orders downloaded!");
   };
@@ -154,21 +128,31 @@ export default function AdminOrders() {
         (addr?.name || "").toLowerCase().includes(search.toLowerCase()) ||
         (addr?.phone || "").includes(search);
       const matchStatus = !statusFilter || o.status === statusFilter;
-      return matchSearch && matchStatus;
+      const orderDate = new Date(o.created_at);
+      const matchDateFrom = !dateFrom || orderDate >= startOfDay(dateFrom);
+      const matchDateTo = !dateTo || orderDate <= endOfDay(dateTo);
+      return matchSearch && matchStatus && matchDateFrom && matchDateTo;
     });
-  }, [orders, search, statusFilter]);
+  }, [orders, search, statusFilter, dateFrom, dateTo]);
 
-  useEffect(() => { setCurrentPage(1); }, [search, statusFilter]);
+  useEffect(() => { setCurrentPage(1); }, [search, statusFilter, dateFrom, dateTo]);
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
-  // Status summary counts
+  const toggleSelectAll = () => {
+    if (selectedOrders.size === paginated.length) setSelectedOrders(new Set());
+    else setSelectedOrders(new Set(paginated.map(o => o.id)));
+  };
+
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     orders.forEach(o => { counts[o.status] = (counts[o.status] || 0) + 1; });
     return counts;
   }, [orders]);
+
+  const hasDateFilter = dateFrom || dateTo;
+  const clearDateFilter = () => { setDateFrom(undefined); setDateTo(undefined); };
 
   return (
     <div>
@@ -202,28 +186,73 @@ export default function AdminOrders() {
         })}
       </div>
 
-      {/* Search */}
-      <div className="flex flex-wrap gap-3 mb-4">
+      {/* Search + Date Filter */}
+      <div className="flex flex-wrap gap-3 mb-4 items-end">
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input placeholder="🔍 Search by order ID, customer name, or phone..." value={search} onChange={(e) => setSearch(e.target.value)}
+          <input placeholder="🔍 Search by order ID, name, or phone..." value={search} onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
         </div>
+
+        {/* Date From */}
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">From</span>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className={cn("gap-2 text-xs min-w-[140px] justify-start", !dateFrom && "text-muted-foreground")}>
+                <CalendarIcon className="w-3.5 h-3.5" />
+                {dateFrom ? format(dateFrom, "dd MMM yyyy") : "Start date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {/* Date To */}
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">To</span>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className={cn("gap-2 text-xs min-w-[140px] justify-start", !dateTo && "text-muted-foreground")}>
+                <CalendarIcon className="w-3.5 h-3.5" />
+                {dateTo ? format(dateTo, "dd MMM yyyy") : "End date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className={cn("p-3 pointer-events-auto")} />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {hasDateFilter && (
+          <Button variant="ghost" size="sm" className="text-xs gap-1 text-muted-foreground h-9 self-end" onClick={clearDateFilter}>
+            <X className="w-3.5 h-3.5" /> Clear dates
+          </Button>
+        )}
       </div>
+
+      {/* Active filters summary */}
+      {(hasDateFilter || statusFilter || search) && (
+        <div className="mb-4 text-xs text-muted-foreground">
+          Showing <span className="font-semibold text-foreground">{filtered.length}</span> order{filtered.length !== 1 ? "s" : ""}
+          {hasDateFilter && (
+            <span> from <span className="font-medium text-foreground">{dateFrom ? format(dateFrom, "dd MMM") : "start"}</span> to <span className="font-medium text-foreground">{dateTo ? format(dateTo, "dd MMM") : "now"}</span></span>
+          )}
+        </div>
+      )}
 
       {/* Bulk actions */}
       {selectedOrders.size > 0 && (
         <div className="mb-4 p-4 rounded-xl bg-primary/5 border border-primary/20">
           <p className="text-sm font-medium mb-2">✏️ {selectedOrders.size} order{selectedOrders.size > 1 ? "s" : ""} selected — Change status to:</p>
           <div className="flex flex-wrap gap-2">
-            {statusOptions.map(s => {
-              const cfg = STATUS_CONFIG[s];
-              return (
-                <button key={s} onClick={() => bulkUpdateStatus(s)} className="px-3 py-1.5 rounded-lg text-xs bg-secondary hover:bg-primary/10 font-medium">
-                  {cfg.emoji} {cfg.label}
-                </button>
-              );
-            })}
+            {statusOptions.map(s => (
+              <button key={s} onClick={() => bulkUpdateStatus(s)} className="px-3 py-1.5 rounded-lg text-xs bg-secondary hover:bg-primary/10 font-medium">
+                {STATUS_CONFIG[s].emoji} {STATUS_CONFIG[s].label}
+              </button>
+            ))}
             <button onClick={() => setSelectedOrders(new Set())} className="text-xs text-muted-foreground hover:text-foreground ml-auto px-3 py-1.5">
               ✕ Clear selection
             </button>
@@ -235,11 +264,9 @@ export default function AdminOrders() {
         <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-24 bg-secondary rounded-xl animate-pulse" />)}</div>
       ) : (
         <div className="space-y-2">
-          {/* Select all */}
           {paginated.length > 0 && (
             <div className="flex items-center gap-2 px-3">
-              <input type="checkbox" checked={selectedOrders.size === paginated.length && paginated.length > 0}
-                onChange={toggleSelectAll} className="rounded" />
+              <input type="checkbox" checked={selectedOrders.size === paginated.length && paginated.length > 0} onChange={toggleSelectAll} className="rounded" />
               <span className="text-xs text-muted-foreground">Select all on this page</span>
             </div>
           )}
@@ -264,20 +291,19 @@ export default function AdminOrders() {
                             👤 {addr.name} {addr.city ? `· 📍 ${addr.city}` : ""} {addr.phone ? `· 📞 ${addr.phone}` : ""}
                           </p>
                         )}
+                        {order.delivery_slot && (
+                          <p className="text-xs text-muted-foreground mt-0.5">🚚 Delivery: {order.delivery_slot}</p>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <label className="text-[10px] text-muted-foreground mr-1">Status:</label>
                         <select value={order.status} onChange={(e) => updateStatus(order.id, e.target.value)}
                           className={`px-3 py-1.5 rounded-xl text-xs font-medium border-0 cursor-pointer ${statusCfg.color}`}>
-                          {statusOptions.map(s => {
-                            const cfg = STATUS_CONFIG[s];
-                            return <option key={s} value={s}>{cfg.emoji} {cfg.label}</option>;
-                          })}
+                          {statusOptions.map(s => <option key={s} value={s}>{STATUS_CONFIG[s].emoji} {STATUS_CONFIG[s].label}</option>)}
                         </select>
                       </div>
                     </div>
 
-                    {/* Items */}
                     <div className="bg-muted/30 rounded-xl p-3 mb-3">
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">Items Ordered</p>
                       {(order.items as any[])?.map((item: any, i: number) => (
@@ -288,7 +314,6 @@ export default function AdminOrders() {
                       ))}
                     </div>
 
-                    {/* Total & actions */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <span className="font-bold">💰 ₹{order.total?.toLocaleString()}</span>
@@ -304,19 +329,18 @@ export default function AdminOrders() {
                   </div>
                 </div>
 
-                {/* Expanded: Notes */}
                 {isExpanded && (
                   <div className="border-t border-border p-4 bg-muted/30 space-y-3">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">📝 Internal Notes</p>
                     <p className="text-[10px] text-muted-foreground">Only visible to you. Customers can't see these notes.</p>
                     <div className="flex gap-2">
-                      <Textarea placeholder="Write a note about this order... (e.g. 'Customer requested extra icing')" value={newNote} onChange={(e) => setNewNote(e.target.value)} rows={2} className="text-sm" />
+                      <Textarea placeholder="Write a note about this order..." value={newNote} onChange={(e) => setNewNote(e.target.value)} rows={2} className="text-sm" />
                       <Button size="icon" className="shrink-0 self-end" onClick={() => addNote(order.id)} disabled={!newNote.trim()} title="Add note">
                         <Send className="w-4 h-4" />
                       </Button>
                     </div>
                     {notes.length === 0 ? (
-                      <p className="text-xs text-muted-foreground italic text-center py-2">No notes added yet for this order</p>
+                      <p className="text-xs text-muted-foreground italic text-center py-2">No notes added yet</p>
                     ) : (
                       <div className="space-y-2">
                         {notes.map((n: any) => (
@@ -344,7 +368,7 @@ export default function AdminOrders() {
               <Info className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
               <p className="text-lg font-semibold mb-1">No orders found</p>
               <p className="text-sm text-muted-foreground">
-                {search || statusFilter ? "Try adjusting your search or filter." : "Orders will appear here when customers place them."}
+                {search || statusFilter || hasDateFilter ? "Try adjusting your search, status, or date filters." : "Orders will appear here when customers place them."}
               </p>
             </div>
           )}
