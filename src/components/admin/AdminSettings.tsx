@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, X, Trash2, Tag, Layers, Palette, Calendar, Pencil, Upload, Image, Eye, EyeOff, BarChart3, Crop, Mail, Bell, BellOff, Send, CheckCircle2, AlertCircle, MapPin, Phone, Truck } from "lucide-react";
+import { Plus, X, Trash2, Tag, Layers, Palette, Calendar, Pencil, Upload, Image, Eye, EyeOff, BarChart3, Crop, Mail, Bell, BellOff, Send, CheckCircle2, AlertCircle, MapPin, Phone, Truck, UserCog, Lock, AtSign } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
@@ -62,6 +63,7 @@ const emptyBanner = {
 };
 
 export default function AdminSettings() {
+  const { user } = useAuth();
   const [configItems, setConfigItems] = useState<ConfigItem[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
@@ -70,7 +72,7 @@ export default function AdminSettings() {
   const [showNewSectionForm, setShowNewSectionForm] = useState(false);
   const [newSectionLabel, setNewSectionLabel] = useState("");
   const [newSectionMulti, setNewSectionMulti] = useState(false);
-  const [activeSection, setActiveSection] = useState<"config" | "coupons" | "banners" | "notifications" | "storeinfo" | "delivery">("config");
+  const [activeSection, setActiveSection] = useState<"config" | "coupons" | "banners" | "notifications" | "storeinfo" | "delivery" | "account">("config");
   const [storeInfoForm, setStoreInfoForm] = useState<StoreInfo>(DEFAULT_STORE_INFO);
   const [storeInfoId, setStoreInfoId] = useState<string | null>(null);
   const [savingStoreInfo, setSavingStoreInfo] = useState(false);
@@ -97,6 +99,11 @@ export default function AdminSettings() {
   const [deliveryConfigId, setDeliveryConfigId] = useState<string | null>(null);
   const [savingDelivery, setSavingDelivery] = useState(false);
   const [newTimeSlot, setNewTimeSlot] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [savingEmailAddr, setSavingEmailAddr] = useState(false);
 
   // Confirm dialog state
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; type: "config" | "coupon" | "banner"; id: string; name: string }>({ open: false, type: "config", id: "", name: "" });
@@ -362,6 +369,7 @@ export default function AdminSettings() {
           { key: "coupons" as const, label: "Coupons", icon: Tag },
           { key: "banners" as const, label: "Banners", icon: Image },
           { key: "notifications" as const, label: "Notifications", icon: Bell },
+          { key: "account" as const, label: "Account", icon: UserCog },
         ].map(tab => (
           <button key={tab.key} onClick={() => setActiveSection(tab.key)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 ${activeSection === tab.key ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-primary/10"}`}>
@@ -999,6 +1007,78 @@ export default function AdminSettings() {
           <Button onClick={saveDeliveryConfig} disabled={savingDelivery} className="mt-2">
             {savingDelivery ? "Saving..." : "Save Delivery Settings"}
           </Button>
+        </div>
+      )}
+
+      {activeSection === "account" && (
+        <div className="space-y-6">
+          <div className="bg-card rounded-2xl border border-border p-5">
+            <h2 className="text-base font-semibold mb-3 flex items-center gap-2"><UserCog className="w-4 h-4" /> Account Info</h2>
+            <p className="text-sm text-muted-foreground">Logged in as: <span className="font-medium text-foreground">{user?.email}</span></p>
+          </div>
+
+          <div className="bg-card rounded-2xl border border-border p-5">
+            <h2 className="text-base font-semibold mb-4 flex items-center gap-2"><Lock className="w-4 h-4" /> Change Password</h2>
+            <div className="space-y-3 max-w-md">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">New Password</label>
+                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Min 8 chars, uppercase, lowercase, number, special"
+                  className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Confirm Password</label>
+                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Re-enter new password"
+                  className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
+              </div>
+              <Button
+                disabled={savingPassword || !newPassword}
+                onClick={async () => {
+                  if (newPassword.length < 8) { toast.error("Password must be at least 8 characters"); return; }
+                  if (!/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/\d/.test(newPassword) || !/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
+                    toast.error("Password needs uppercase, lowercase, number, and special character"); return;
+                  }
+                  if (newPassword !== confirmPassword) { toast.error("Passwords don't match"); return; }
+                  setSavingPassword(true);
+                  const { error } = await supabase.auth.updateUser({ password: newPassword });
+                  setSavingPassword(false);
+                  if (error) toast.error(error.message);
+                  else { toast.success("Password updated successfully!"); setNewPassword(""); setConfirmPassword(""); }
+                }}
+                className="gap-2"
+              >
+                {savingPassword ? "Updating..." : "Update Password"}
+              </Button>
+            </div>
+          </div>
+
+          <div className="bg-card rounded-2xl border border-border p-5">
+            <h2 className="text-base font-semibold mb-4 flex items-center gap-2"><AtSign className="w-4 h-4" /> Change Email</h2>
+            <div className="space-y-3 max-w-md">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">New Email Address</label>
+                <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="Enter new email address"
+                  className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
+              </div>
+              <p className="text-xs text-muted-foreground">A confirmation link will be sent to both your current and new email.</p>
+              <Button
+                disabled={savingEmailAddr || !newEmail}
+                onClick={async () => {
+                  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) { toast.error("Enter a valid email"); return; }
+                  setSavingEmailAddr(true);
+                  const { error } = await supabase.auth.updateUser({ email: newEmail });
+                  setSavingEmailAddr(false);
+                  if (error) toast.error(error.message);
+                  else { toast.success("Confirmation email sent! Check both inboxes."); setNewEmail(""); }
+                }}
+                className="gap-2"
+              >
+                {savingEmailAddr ? "Sending..." : "Update Email"}
+              </Button>
+            </div>
+          </div>
         </div>
       )}
 
