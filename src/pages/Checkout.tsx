@@ -84,6 +84,15 @@ export default function Checkout() {
       }
     }
 
+    if (!deliveryDate) {
+      toast.error("Please select a delivery date");
+      return;
+    }
+    if (!deliveryTime) {
+      toast.error("Please select a delivery time");
+      return;
+    }
+
     if (!user) {
       toast.error("Please sign in to place an order");
       navigate("/login");
