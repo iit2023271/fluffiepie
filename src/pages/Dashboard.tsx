@@ -4,12 +4,16 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Package, User, LogOut, Clock, CheckCircle, Truck, ChefHat, Search, Shield, Star, MessageSquare, MapPin, StickyNote } from "lucide-react";
+import { Package, User, LogOut, Clock, CheckCircle, Truck, ChefHat, Search, Shield, Star, MapPin, StickyNote, Heart, XCircle } from "lucide-react";
 import SavedAddresses from "@/components/SavedAddresses";
 import ReviewForm from "@/components/ReviewForm";
+import ProductCard from "@/components/ProductCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { format } from "date-fns";
+import { format, differenceInMinutes } from "date-fns";
 import { useStoreInfo } from "@/hooks/useStoreInfo";
+import { useWishlist } from "@/hooks/useWishlist";
+import { useProducts } from "@/hooks/useProducts";
+import ConfirmDialog from "@/components/admin/ConfirmDialog";
 
 interface OrderNote {
   id: string;
