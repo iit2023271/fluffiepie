@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, Star, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useHomepageConfig } from "@/hooks/useHomepageConfig";
+import { useHomepageConfig, BUILTIN_SECTION_IDS } from "@/hooks/useHomepageConfig";
+import type { HomepageSection, CustomSectionData } from "@/hooks/useHomepageConfig";
 
 import heroCake from "@/assets/hero-cake.jpg";
 import catBirthday from "@/assets/category-birthday.jpg";
