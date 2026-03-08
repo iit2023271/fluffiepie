@@ -16,7 +16,7 @@ export default function Footer() {
           {/* Brand Column */}
           <div>
             <h3 className="text-xl font-display font-bold text-background mb-4">
-              Sweet<span className="text-primary">Crumbs</span>
+              Fluffie<span className="text-primary">Pie</span>
             </h3>
             <p className="text-sm leading-relaxed text-background/60">
               {footer.brandDescription}

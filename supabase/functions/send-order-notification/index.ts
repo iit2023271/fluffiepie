@@ -170,7 +170,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'SweetCrumbs <onboarding@resend.dev>',
+        from: 'FluffiePie <onboarding@resend.dev>',
         to: [email],
         subject: `${isTest ? '[TEST] ' : ''}${statusEmoji} Order #${shortId} — ${statusLabel}`,
         html: emailHtml,
