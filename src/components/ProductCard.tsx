@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Heart, ShoppingCart, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { Product } from "@/data/products";
+import { useStoreConfig } from "@/hooks/useStoreConfig";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
@@ -16,6 +17,14 @@ interface Props {
 export default function ProductCard({ product, index = 0, isWishlisted = false, onToggleWishlist }: Props) {
   const { dispatch } = useCart();
   const { user } = useAuth();
+  const { productTags } = useStoreConfig();
+  
+  // Get the product's active tag and its color
+  const activeTag = product.tags?.[0];
+  const tagDef = activeTag ? productTags.find(t => t.name === activeTag) : null;
+  // Fallback for legacy is_bestseller/is_new
+  const displayTag = tagDef || (product.isBestseller ? { name: "Bestseller", bgColor: "", textColor: "" } : product.isNew ? { name: "New", bgColor: "", textColor: "" } : null);
+  const isLegacyTag = !tagDef && displayTag;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -60,23 +69,22 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
               loading="lazy"
               decoding="async"
             />
-            {/* Badges */}
-            <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-              {product.isBestseller && (
-                <span className="px-2.5 py-1 bg-primary text-primary-foreground text-xs font-semibold rounded-full">
-                  Bestseller
+            {/* Badge */}
+            <div className="absolute top-3 left-3">
+              {displayTag && (
+                <span
+                  className={`px-2.5 py-1 text-xs font-semibold rounded-full ${
+                    tagDef?.bgColor
+                      ? ""
+                      : displayTag.name === "New"
+                        ? "bg-accent text-accent-foreground"
+                        : "bg-primary text-primary-foreground"
+                  }`}
+                  style={tagDef?.bgColor ? { backgroundColor: `hsl(${tagDef.bgColor})`, color: `hsl(${tagDef.textColor})` } : undefined}
+                >
+                  {displayTag.name}
                 </span>
               )}
-              {product.isNew && (
-                <span className="px-2.5 py-1 bg-accent text-accent-foreground text-xs font-semibold rounded-full">
-                  New
-                </span>
-              )}
-              {product.tags?.filter(t => t !== "Bestseller" && t !== "New").map(tag => (
-                <span key={tag} className="px-2.5 py-1 bg-secondary text-secondary-foreground text-xs font-semibold rounded-full">
-                  {tag}
-                </span>
-              ))}
             </div>
             {/* Wishlist */}
             <button
