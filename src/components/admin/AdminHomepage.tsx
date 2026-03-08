@@ -781,6 +781,23 @@ export default function AdminHomepage() {
                     </div>
                   ))}
                 </div>
+                {/* Preview */}
+                <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview ({config.howItWorks.steps.length} steps)</p>
+                  <div className="text-center mb-2">
+                    <p className="text-sm font-bold">{config.howItWorks.title}</p>
+                    <p className="text-[10px] text-muted-foreground">{config.howItWorks.subtitle}</p>
+                  </div>
+                  <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.min(config.howItWorks.steps.length, 4)}, 1fr)` }}>
+                    {config.howItWorks.steps.map((step, i) => (
+                      <div key={i} className="text-center p-2 rounded-lg bg-background border">
+                        <span className="text-sm">{step.emoji}</span>
+                        <p className="text-[8px] font-semibold truncate mt-0.5">{step.title}</p>
+                        <p className="text-[7px] text-muted-foreground truncate">{step.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </SectionEditor>
           );
@@ -1046,8 +1063,24 @@ function CtaBannerEditor({ data, onChange }: { data: CustomSectionData; onChange
               <SelectItem value="medium">Medium (Default)</SelectItem>
               <SelectItem value="tall">Tall (Large)</SelectItem>
               <SelectItem value="full">Full Screen</SelectItem>
+              <SelectItem value="custom">Custom (px)</SelectItem>
             </SelectContent>
           </Select>
+          {data.ctaHeight === "custom" && (
+            <div className="mt-2">
+              <Input
+                type="number"
+                min={100}
+                max={1200}
+                step={10}
+                value={data.ctaCustomHeight || 400}
+                onChange={e => onChange({ ctaCustomHeight: parseInt(e.target.value) || 400 })}
+                className="h-8 text-sm"
+                placeholder="Height in px"
+              />
+              <p className="text-[9px] text-muted-foreground mt-0.5">100–1200px</p>
+            </div>
+          )}
         </div>
         <div>
           <Label className="text-xs">📍 Text Alignment</Label>
@@ -1089,6 +1122,47 @@ function CtaBannerEditor({ data, onChange }: { data: CustomSectionData; onChange
           <p className="text-[9px] text-muted-foreground">Controls how dark the overlay is over the background image</p>
         </div>
       )}
+
+      {/* Live Preview */}
+      <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview</p>
+        {(() => {
+          const bgMap: Record<string, string> = {
+            primary: "bg-primary text-primary-foreground",
+            blush: "bg-blush text-foreground",
+            cream: "bg-cream text-foreground",
+            muted: "bg-muted text-foreground",
+          };
+          const previewHeight = data.ctaHeight === "custom" ? `${Math.min((data.ctaCustomHeight || 400) / 4, 150)}px`
+            : data.ctaHeight === "compact" ? "60px" : data.ctaHeight === "tall" ? "120px" : data.ctaHeight === "full" ? "150px" : "80px";
+          const layoutAlign = data.ctaLayout === "left" ? "text-left items-start" : data.ctaLayout === "right" ? "text-right items-end" : "text-center items-center";
+          return (
+            <div
+              className={`relative overflow-hidden rounded-lg flex items-center ${data.ctaBgImage ? "" : bgMap[data.ctaBg || "primary"]}`}
+              style={{ minHeight: previewHeight }}
+            >
+              {data.ctaBgImage && (
+                <>
+                  <img src={data.ctaBgImage} alt="" className={`absolute inset-0 w-full h-full ${(data.ctaImageFit || "cover") === "contain" ? "object-contain" : "object-cover"}`} />
+                  <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--foreground) / ${(data.ctaOverlayOpacity ?? 50) / 100})` }} />
+                </>
+              )}
+              <div className={`relative z-10 w-full px-3 py-2 flex flex-col ${layoutAlign}`}>
+                {data.ctaTitle && <p className={`font-bold font-display text-[10px] ${data.ctaBgImage ? "text-background" : ""}`}>{data.ctaTitle}</p>}
+                {data.ctaSubtitle && <p className={`text-[8px] opacity-70 mt-0.5 ${data.ctaBgImage ? "text-background" : ""}`}>{data.ctaSubtitle}</p>}
+                {data.ctaButtonText && (
+                  <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[7px] font-medium ${data.ctaBgImage || data.ctaBg === "primary" ? "bg-background text-foreground" : "bg-primary text-primary-foreground"}`}>
+                    {data.ctaButtonText}
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+        <p className="text-[9px] text-muted-foreground mt-1.5">
+          Height: {data.ctaHeight === "custom" ? `${data.ctaCustomHeight || 400}px` : data.ctaHeight || "medium"} · Layout: {data.ctaLayout || "center"}
+        </p>
+      </div>
 
       {/* Background Image (optional) */}
       <div className="space-y-2">
@@ -1193,6 +1267,23 @@ function FaqEditor({ data, onChange }: { data: CustomSectionData; onChange: (u: 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div><Label className="text-xs">Section Title</Label><Input value={data.faqTitle || ""} onChange={e => onChange({ faqTitle: e.target.value })} className="mt-1" /></div>
         <div><Label className="text-xs">Section Subtitle</Label><Input value={data.faqSubtitle || ""} onChange={e => onChange({ faqSubtitle: e.target.value })} className="mt-1" /></div>
+      </div>
+      {/* Preview */}
+      <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview ({faqs.length} questions)</p>
+        <div className="text-center mb-2">
+          {data.faqTitle && <p className="text-sm font-bold">{data.faqTitle}</p>}
+          {data.faqSubtitle && <p className="text-[10px] text-muted-foreground">{data.faqSubtitle}</p>}
+        </div>
+        <div className="space-y-1 max-w-xs mx-auto">
+          {faqs.slice(0, 3).map((faq, i) => (
+            <div key={i} className="p-1.5 rounded-lg border bg-background text-[8px]">
+              <p className="font-semibold truncate">{faq.question}</p>
+              <p className="text-muted-foreground truncate">{faq.answer}</p>
+            </div>
+          ))}
+          {faqs.length > 3 && <p className="text-[8px] text-muted-foreground text-center">+{faqs.length - 3} more</p>}
+        </div>
       </div>
       <div className="flex items-center justify-between">
         <Label className="text-xs font-semibold uppercase tracking-wider">Questions</Label>
