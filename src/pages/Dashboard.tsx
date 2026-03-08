@@ -286,8 +286,8 @@ export default function Dashboard() {
         {tab === "orders" && (
           <div className="space-y-4">
             {orders.length > 0 && (
-              <div className="flex flex-wrap gap-3 mb-2">
-                <div className="relative flex-1 min-w-[180px] max-w-sm">
+              <div className="space-y-3 mb-2">
+                <div className="relative max-w-sm">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <input
                     placeholder="Search orders..."
@@ -296,16 +296,29 @@ export default function Dashboard() {
                     className="w-full pl-9 pr-4 py-2 rounded-xl border border-border text-sm bg-background focus:outline-none focus:border-primary"
                   />
                 </div>
-                <select value={orderStatusFilter} onChange={(e) => setOrderStatusFilter(e.target.value)}
-                  className="px-3 py-2 rounded-xl border border-border text-sm bg-background">
-                  <option value="">All Statuses</option>
-                  <option value="placed">Placed</option>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="baking">Baking</option>
-                  <option value="out_for_delivery">Out for Delivery</option>
-                  <option value="delivered">Delivered</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { value: "", label: "All" },
+                    { value: "placed", label: "Placed" },
+                    { value: "confirmed", label: "Confirmed" },
+                    { value: "baking", label: "Baking" },
+                    { value: "out_for_delivery", label: "On the Way" },
+                    { value: "delivered", label: "Delivered" },
+                    { value: "cancelled", label: "Cancelled" },
+                  ].map((s) => (
+                    <button
+                      key={s.value}
+                      onClick={() => setOrderStatusFilter(orderStatusFilter === s.value ? "" : s.value)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                        orderStatusFilter === s.value
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground hover:bg-primary/10"
+                      }`}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
             {orders.length === 0 ? (
