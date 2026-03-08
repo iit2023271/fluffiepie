@@ -449,9 +449,9 @@ export default function AdminDashboard() {
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="bg-card rounded-2xl p-6 shadow-soft">
-          <h3 className="font-display font-semibold text-lg mb-1">🔄 Order Status Breakdown</h3>
-          <p className="text-xs text-muted-foreground mb-4">Where your orders are in the pipeline</p>
+        <div className="bg-card rounded-2xl p-4 md:p-6 shadow-soft">
+          <h3 className="font-display font-semibold text-base md:text-lg mb-1">🔄 Status Breakdown</h3>
+          <p className="text-xs text-muted-foreground mb-4">Order pipeline overview</p>
           {statusData.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-10">No orders to show.</p>
           ) : (
