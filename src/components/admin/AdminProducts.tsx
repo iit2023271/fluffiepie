@@ -119,11 +119,20 @@ export default function AdminProducts() {
     if (!form.name || !form.slug) { toast.error("Name and slug are required"); return; }
     setSaving(true);
     const imageUrl = await uploadImage();
+
+    // Upload any pending additional image files
+    const newImageUrls: string[] = [];
+    for (const file of pendingAdditionalFiles) {
+      const url = await uploadSingleFile(file);
+      if (url) newImageUrls.push(url);
+    }
+    const allImages = [...form.images, ...newImageUrls];
+
     const payload: any = {
       name: form.name, slug: form.slug, description: form.description, category: form.category || "",
       occasion: form.occasion, flavour: form.flavour || "", base_price: form.base_price,
       weights: form.weights as any, is_new: form.is_new, is_bestseller: form.is_bestseller,
-      is_active: form.is_active, image_url: imageUrl,
+      is_active: form.is_active, image_url: imageUrl, images: allImages,
       stock_quantity: form.stock_quantity, low_stock_threshold: form.low_stock_threshold,
       sku: form.sku || null, custom_attributes: form.custom_attributes,
     };
