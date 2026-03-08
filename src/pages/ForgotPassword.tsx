@@ -1,23 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Mail, ChevronLeft, KeyRound, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, ChevronLeft, Lock, Eye, EyeOff, CheckCircle } from "lucide-react";
 
-type Step = "email" | "otp" | "password";
+type Step = "email" | "sent" | "password";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSendOtp = async (e: React.FormEvent) => {
+  // When user clicks the reset link in email, Supabase redirects here with a recovery session
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setStep("password");
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSendLink = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) { toast.error("Please enter your email"); return; }
     setLoading(true);
@@ -26,30 +35,10 @@ export default function ForgotPassword() {
         redirectTo: `${window.location.origin}/forgot-password`,
       });
       if (error) throw error;
-      toast.success("A 6-digit code has been sent to your email");
-      setStep("otp");
+      toast.success("Password reset link sent to your email");
+      setStep("sent");
     } catch (error: any) {
-      toast.error(error.message || "Failed to send code");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otp.length !== 6) { toast.error("Please enter the 6-digit code"); return; }
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.verifyOtp({
-        email: email.trim(),
-        token: otp.trim(),
-        type: "recovery",
-      });
-      if (error) throw error;
-      toast.success("Code verified! Set your new password");
-      setStep("password");
-    } catch (error: any) {
-      toast.error(error.message || "Invalid or expired code");
+      toast.error(error.message || "Failed to send reset link");
     } finally {
       setLoading(false);
     }
@@ -73,8 +62,8 @@ export default function ForgotPassword() {
   };
 
   const stepConfig = {
-    email: { title: "Reset Password", subtitle: "Enter your email and we'll send you a 6-digit code." },
-    otp: { title: "Enter Code", subtitle: `We sent a 6-digit code to ${email}` },
+    email: { title: "Reset Password", subtitle: "Enter your email and we'll send you a reset link." },
+    sent: { title: "Check Your Email", subtitle: `We sent a password reset link to ${email}` },
     password: { title: "New Password", subtitle: "Set a new password for your account." },
   };
 
@@ -88,11 +77,11 @@ export default function ForgotPassword() {
         <div className="p-8 rounded-2xl bg-card shadow-card">
           {/* Progress dots */}
           <div className="flex items-center justify-center gap-2 mb-6">
-            {(["email", "otp", "password"] as Step[]).map((s, i) => (
+            {(["email", "sent", "password"] as Step[]).map((s, i) => (
               <div
                 key={s}
                 className={`h-2 rounded-full transition-all ${
-                  s === step ? "w-8 bg-primary" : i < ["email", "otp", "password"].indexOf(step) ? "w-2 bg-primary/60" : "w-2 bg-secondary"
+                  s === step ? "w-8 bg-primary" : i < ["email", "sent", "password"].indexOf(step) ? "w-2 bg-primary/60" : "w-2 bg-secondary"
                 }`}
               />
             ))}
@@ -104,7 +93,7 @@ export default function ForgotPassword() {
 
             {/* Step 1: Email */}
             {step === "email" && (
-              <form onSubmit={handleSendOtp} className="space-y-4">
+              <form onSubmit={handleSendLink} className="space-y-4">
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <input
@@ -117,34 +106,28 @@ export default function ForgotPassword() {
                   />
                 </div>
                 <button type="submit" disabled={loading} className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 disabled:opacity-50">
-                  {loading ? "Sending..." : "Send Code"}
+                  {loading ? "Sending..." : "Send Reset Link"}
                 </button>
               </form>
             )}
 
-            {/* Step 2: OTP */}
-            {step === "otp" && (
-              <form onSubmit={handleVerifyOtp} className="space-y-4">
-                <div className="relative">
-                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    placeholder="Enter 6-digit code"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-background text-sm tracking-[0.3em] text-center font-mono text-lg focus:outline-none focus:border-primary"
-                    autoFocus
-                  />
+            {/* Step 2: Link Sent */}
+            {step === "sent" && (
+              <div className="space-y-4 text-center">
+                <div className="flex justify-center">
+                  <CheckCircle className="w-12 h-12 text-primary" />
                 </div>
-                <button type="submit" disabled={loading || otp.length !== 6} className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 disabled:opacity-50">
-                  {loading ? "Verifying..." : "Verify Code"}
+                <p className="text-sm text-muted-foreground">
+                  Open the link in the email to reset your password. If you don't see it, check your spam folder.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => { setStep("email"); }}
+                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Didn't receive it? Try again
                 </button>
-                <button type="button" onClick={() => { setOtp(""); handleSendOtp({ preventDefault: () => {} } as any); }} className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Didn't receive the code? Resend
-                </button>
-              </form>
+              </div>
             )}
 
             {/* Step 3: New Password */}
