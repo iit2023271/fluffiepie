@@ -140,6 +140,15 @@ export const DEFAULT_HOMEPAGE_CONFIG: HomepageConfig = {
     subtitle: "Real reviews from real cake lovers",
     count: 3,
   },
+  sectionNav: {
+    enabled: true,
+    items: [
+      { sectionId: "categories", label: "Occasions", visible: true },
+      { sectionId: "trending", label: "Trending", visible: true },
+      { sectionId: "howItWorks", label: "How It Works", visible: true },
+      { sectionId: "reviews", label: "Reviews", visible: true },
+    ],
+  },
 };
 
 export const SECTION_LABELS: Record<string, string> = {
