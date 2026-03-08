@@ -418,7 +418,7 @@ export default function AdminSettings() {
       {activeSection === "config" && (
         <div className="space-y-6">
           {/* Built-in sections */}
-          {BUILTIN_CONFIG_SECTIONS.map(section => {
+          {BUILTIN_CONFIG_SECTIONS.filter(s => s.type !== "product_tag").map(section => {
             const items = configItems.filter(c => c.config_type === section.type);
             return (
               <div key={section.type} className="bg-card rounded-2xl p-6 shadow-soft">
@@ -466,6 +466,76 @@ export default function AdminSettings() {
               </div>
             );
           })}
+
+          {/* Product Tags section with color pickers */}
+          <div className="bg-card rounded-2xl p-6 shadow-soft">
+            <div className="flex items-center gap-3 mb-1">
+              <Tag className="w-5 h-5 text-primary" />
+              <h3 className="font-display font-semibold text-lg">🏷️ Product Tags</h3>
+            </div>
+            <p className="text-xs text-muted-foreground mb-4">Tags like Bestseller, New, Limited Edition — each product can have one tag with a custom color badge</p>
+            
+            {/* Existing tags */}
+            <div className="flex flex-wrap gap-3 mb-5">
+              {configItems.filter(c => c.config_type === "product_tag").map(item => {
+                let tag: { name: string; bgColor: string; textColor: string };
+                try { tag = JSON.parse(item.value); } catch { tag = { name: item.value, bgColor: "350 45% 55%", textColor: "0 0% 100%" }; }
+                return (
+                  <div key={item.id} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-secondary/30">
+                    <span
+                      className="px-2.5 py-1 rounded-full text-xs font-semibold"
+                      style={{ backgroundColor: `hsl(${tag.bgColor})`, color: `hsl(${tag.textColor})` }}
+                    >
+                      {tag.name}
+                    </span>
+                    <button onClick={() => setDeleteConfirm({ open: true, type: "config", id: item.id, name: tag.name })} className="text-muted-foreground hover:text-destructive">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                );
+              })}
+              {configItems.filter(c => c.config_type === "product_tag").length === 0 && (
+                <p className="text-sm text-muted-foreground">No tags yet. Add your first tag below.</p>
+              )}
+            </div>
+
+            {/* Add new tag */}
+            <div className="flex flex-wrap items-end gap-3">
+              <div>
+                <label className="text-xs font-medium mb-1 block">Tag Name</label>
+                <input
+                  placeholder="e.g. Limited Edition"
+                  value={newTagName}
+                  onChange={(e) => setNewTagName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addProductTag()}
+                  className="px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background w-48"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium mb-1 block">Badge Color</label>
+                <div className="flex items-center gap-2">
+                  <input type="color" value={newTagBg} onChange={(e) => setNewTagBg(e.target.value)} className="w-8 h-8 rounded-lg border border-border cursor-pointer" />
+                  <div className="w-12 h-8 rounded-lg border border-border" style={{ backgroundColor: newTagBg }} />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium mb-1 block">Text Color</label>
+                <div className="flex items-center gap-2">
+                  <input type="color" value={newTagText} onChange={(e) => setNewTagText(e.target.value)} className="w-8 h-8 rounded-lg border border-border cursor-pointer" />
+                  <div className="w-12 h-8 rounded-lg border border-border" style={{ backgroundColor: newTagText }} />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium mb-1 block">Preview</label>
+                <span className="px-3 py-1.5 rounded-full text-xs font-semibold inline-block" style={{ backgroundColor: newTagBg, color: newTagText }}>
+                  {newTagName || "Tag"}
+                </span>
+              </div>
+              <button onClick={addProductTag} className="flex items-center gap-1 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90">
+                <Plus className="w-4 h-4" /> Add Tag
+              </button>
+            </div>
+          </div>
 
           {/* Custom sections */}
           {configItems.filter(c => c.config_type === "filter_section").map(sectionDef => {
