@@ -4,6 +4,7 @@ import { Plus, X, Trash2, Tag, Layers, Palette, Calendar, Pencil, Upload, Image,
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import ImageCropper from "@/components/admin/ImageCropper";
 
 interface ConfigItem {
   id: string;
