@@ -9,6 +9,7 @@ import { lazy, Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
+import ThemeProvider from "@/components/ThemeProvider";
 import Index from "./pages/Index";
 
 const Shop = lazy(() => import("./pages/Shop"));
