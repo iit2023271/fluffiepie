@@ -290,23 +290,24 @@ export default function AdminUsers() {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> Profile</h3>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-xs h-7 gap-1.5"
-                          onClick={() => openWhatsApp(u.profile.phone || "", u.profile.full_name || "")}
-                        >
-                          <MessageCircle className="w-3 h-3" /> WhatsApp
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={u.isAdmin ? "destructive" : "outline"}
-                          className="text-xs h-7 gap-1.5"
-                          onClick={() => setAdminConfirm({ open: true, userId: u.profile.user_id, isAdmin: u.isAdmin, name: u.profile.full_name || "this user" })}
-                        >
-                          {u.isAdmin ? <><ShieldOff className="w-3 h-3" /> Remove Admin</> : <><Shield className="w-3 h-3" /> Make Admin</>}
-                        </Button>
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-7 gap-1.5"
+                            onClick={() => openWhatsApp(u.profile.phone || "", u.profile.full_name || "")}
+                          >
+                            <MessageCircle className="w-3 h-3" /> WhatsApp
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={u.isAdmin ? "destructive" : "outline"}
+                            className="text-xs h-7 gap-1.5"
+                            onClick={() => setAdminConfirm({ open: true, userId: u.profile.user_id, isAdmin: u.isAdmin, name: u.profile.full_name || "this user" })}
+                          >
+                            {u.isAdmin ? <><ShieldOff className="w-3 h-3" /> Remove Admin</> : <><Shield className="w-3 h-3" /> Make Admin</>}
+                          </Button>
+                        </div>
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <div className="bg-card rounded-lg p-3 border border-border">
