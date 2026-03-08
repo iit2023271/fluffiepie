@@ -107,7 +107,6 @@ export default function Shop() {
   const clearFilters = () => {
     setSearchQuery("");
     setSelectedFilters({});
-    setPriceRange([priceExtents.min, priceExtents.max]);
     setSelectedTag("");
     setDiscountFilter("");
     setCurrentPage(1);
