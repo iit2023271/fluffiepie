@@ -38,6 +38,9 @@ export default function AdminUsers() {
   const [adminConfirm, setAdminConfirm] = useState<{ open: boolean; userId: string; isAdmin: boolean; name: string }>({ open: false, userId: "", isAdmin: false, name: "" });
   const [waDialog, setWaDialog] = useState<{ open: boolean; phone: string; name: string }>({ open: false, phone: "", name: "" });
   const [waMessage, setWaMessage] = useState("");
+  const [emailDialog, setEmailDialog] = useState<{ open: boolean; email: string; name: string }>({ open: false, email: "", name: "" });
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
   const { storeInfo } = useStoreInfo();
 
   const waTemplates = [
@@ -46,6 +49,14 @@ export default function AdminUsers() {
     { label: "💝 Thank You", text: `Hi {name}! Thank you so much for your order from ${storeInfo.storeName}! We hope you loved it. Come back soon for more treats! ❤️🍰` },
     { label: "🎂 Festival Offer", text: `Hi {name}! 🎊 Celebrate this festive season with ${storeInfo.storeName}! Get *20% off* on all cakes. Limited time offer! 🎉` },
     { label: "⭐ Feedback", text: `Hi {name}! We'd love to hear your feedback on your recent order from ${storeInfo.storeName}. Your opinion matters to us! 🙏` },
+  ];
+
+  const emailTemplates = [
+    { label: "🎁 Coupon", subject: `Exclusive offer from ${storeInfo.storeName}!`, body: `Hi {name},\n\nWe have a special coupon just for you! Use code SPECIAL10 to get 10% off on your next order.\n\nVisit us today!\n\nBest regards,\n${storeInfo.storeName}` },
+    { label: "🆕 New Arrival", subject: `New cakes at ${storeInfo.storeName}!`, body: `Hi {name},\n\nWe've added some delicious new cakes to our menu! Check them out and treat yourself.\n\nBest regards,\n${storeInfo.storeName}` },
+    { label: "💝 Thank You", subject: `Thank you from ${storeInfo.storeName}!`, body: `Hi {name},\n\nThank you so much for your recent order! We hope you loved it.\n\nCome back soon for more treats!\n\nBest regards,\n${storeInfo.storeName}` },
+    { label: "🎂 Festival", subject: `Festive offers at ${storeInfo.storeName}!`, body: `Hi {name},\n\nCelebrate this festive season with us! Get 20% off on all cakes. Limited time offer!\n\nBest regards,\n${storeInfo.storeName}` },
+    { label: "⭐ Feedback", subject: `We'd love your feedback - ${storeInfo.storeName}`, body: `Hi {name},\n\nWe'd love to hear your feedback on your recent order. Your opinion helps us improve!\n\nBest regards,\n${storeInfo.storeName}` },
   ];
 
   const openWhatsApp = (phone: string, name: string) => {
@@ -61,6 +72,22 @@ export default function AdminUsers() {
     window.open(url, "_blank");
     setWaDialog({ open: false, phone: "", name: "" });
     toast.success("WhatsApp opened!");
+  };
+
+  const openEmail = (email: string, name: string) => {
+    if (!email) { toast.error("No email available for this customer"); return; }
+    setEmailDialog({ open: true, email, name });
+    const t = emailTemplates[0];
+    setEmailSubject(t.subject);
+    setEmailBody(t.body.replace(/{name}/g, name || "there"));
+  };
+
+  const sendEmail = () => {
+    if (!emailDialog.email) { toast.error("No email available"); return; }
+    const mailto = `mailto:${emailDialog.email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+    window.open(mailto, "_blank");
+    setEmailDialog({ open: false, email: "", name: "" });
+    toast.success("Email client opened!");
   };
 
   useEffect(() => { loadUsers(); }, []);
