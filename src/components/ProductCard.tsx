@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import { Heart, ShoppingCart, Star } from "lucide-react";
-import { motion } from "framer-motion";
+import { Heart, ShoppingCart, Star, Plus, Minus, Trash2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Product } from "@/data/products";
 import { useStoreConfig } from "@/hooks/useStoreConfig";
 import { useCart } from "@/context/CartContext";
@@ -15,10 +15,16 @@ interface Props {
 }
 
 export default function ProductCard({ product, index = 0, isWishlisted = false, onToggleWishlist }: Props) {
-  const { dispatch } = useCart();
+  const { state, dispatch } = useCart();
   const { user } = useAuth();
   const { productTags } = useStoreConfig();
   const isSoldOut = (product.stockQuantity ?? 100) <= 0;
+
+  const defaultWeight = product.weights[0].label;
+  const cartItem = state.items.find(
+    (i) => i.product.id === product.id && i.weight === defaultWeight
+  );
+  const cartQty = cartItem?.quantity ?? 0;
   
   const activeTag = product.tags?.[0];
   const tagDef = activeTag ? productTags.find(t => t.name === activeTag) : null;
@@ -36,11 +42,34 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
       payload: {
         product,
         quantity: 1,
-        weight: product.weights[0].label,
+        weight: defaultWeight,
         price: product.weights[0].price,
       },
     });
     toast.success(`${product.name} added to cart!`);
+  };
+
+  const handleIncrement = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dispatch({
+      type: "UPDATE_QUANTITY",
+      payload: { id: product.id, weight: defaultWeight, quantity: cartQty + 1 },
+    });
+  };
+
+  const handleDecrement = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (cartQty <= 1) {
+      dispatch({ type: "REMOVE_ITEM", payload: { id: product.id, weight: defaultWeight } });
+      toast.success("Removed from cart");
+    } else {
+      dispatch({
+        type: "UPDATE_QUANTITY",
+        payload: { id: product.id, weight: defaultWeight, quantity: cartQty - 1 },
+      });
+    }
   };
 
   const handleWishlist = (e: React.MouseEvent) => {
@@ -112,7 +141,7 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
                 </motion.span>
               )}
             </div>
-            {/* Wishlist — always visible on mobile */}
+            {/* Wishlist */}
             <motion.button
               onClick={handleWishlist}
               whileTap={{ scale: 0.8 }}
@@ -126,16 +155,72 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
                 <Heart className={`w-4.5 h-4.5 ${isWishlisted ? "fill-destructive text-destructive" : "text-primary"}`} />
               </motion.div>
             </motion.button>
-            {/* Quick add — always visible on mobile */}
-            <motion.button
-              onClick={handleAddToCart}
-              whileTap={{ scale: 0.85 }}
-              whileHover={{ scale: 1.1 }}
-              className="absolute bottom-3 right-3 w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shadow-card"
-              aria-label="Add to cart"
-            >
-              <ShoppingCart className="w-4 h-4" />
-            </motion.button>
+
+            {/* Cart Control — Add or Quantity Stepper */}
+            <div className="absolute bottom-3 right-3 z-10">
+              <AnimatePresence mode="wait">
+                {cartQty === 0 ? (
+                  <motion.button
+                    key="add-btn"
+                    onClick={handleAddToCart}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    whileTap={{ scale: 0.85 }}
+                    whileHover={{ scale: 1.1 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    className="w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shadow-card"
+                    aria-label="Add to cart"
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                  </motion.button>
+                ) : (
+                  <motion.div
+                    key="qty-stepper"
+                    initial={{ scale: 0, opacity: 0, width: 44 }}
+                    animate={{ scale: 1, opacity: 1, width: "auto" }}
+                    exit={{ scale: 0, opacity: 0, width: 44 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    className="flex items-center gap-0 bg-primary rounded-full shadow-card overflow-hidden"
+                  >
+                    <motion.button
+                      onClick={handleDecrement}
+                      whileTap={{ scale: 0.75 }}
+                      className="w-9 h-9 flex items-center justify-center text-primary-foreground hover:bg-primary-foreground/10 transition-colors"
+                      aria-label={cartQty <= 1 ? "Remove from cart" : "Decrease quantity"}
+                    >
+                      {cartQty <= 1 ? (
+                        <motion.div
+                          initial={{ rotate: 0 }}
+                          animate={{ rotate: 0 }}
+                          whileTap={{ rotate: -20 }}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </motion.div>
+                      ) : (
+                        <Minus className="w-3.5 h-3.5" />
+                      )}
+                    </motion.button>
+                    <motion.span
+                      key={cartQty}
+                      initial={{ scale: 1.5, y: -8, opacity: 0 }}
+                      animate={{ scale: 1, y: 0, opacity: 1 }}
+                      className="text-sm font-bold text-primary-foreground w-6 text-center select-none"
+                    >
+                      {cartQty}
+                    </motion.span>
+                    <motion.button
+                      onClick={handleIncrement}
+                      whileTap={{ scale: 0.75 }}
+                      className="w-9 h-9 flex items-center justify-center text-primary-foreground hover:bg-primary-foreground/10 transition-colors"
+                      aria-label="Increase quantity"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </motion.button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* Content */}
