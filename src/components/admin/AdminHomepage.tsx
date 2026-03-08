@@ -18,7 +18,7 @@ import {
   CUSTOM_TYPE_LABELS,
   getDefaultCustomData,
 } from "@/hooks/useHomepageConfig";
-import type { HomepageSection, CustomSectionType, CustomSectionData } from "@/hooks/useHomepageConfig";
+import type { HomepageSection, CustomSectionType, CustomSectionData, FooterColumn } from "@/hooks/useHomepageConfig";
 
 const CUSTOM_TYPE_ICONS: Record<CustomSectionType, typeof Type> = {
   text_block: Type,
