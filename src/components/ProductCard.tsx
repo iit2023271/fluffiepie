@@ -15,7 +15,7 @@ interface Props {
   onToggleWishlist?: (productId: string) => void;
 }
 
-export default function ProductCard({ product, index = 0, isWishlisted = false, onToggleWishlist }: Props) {
+function ProductCard({ product, index = 0, isWishlisted = false, onToggleWishlist }: Props) {
   const { state, dispatch } = useCart();
   const { user } = useAuth();
   const { productTags } = useStoreConfig();
