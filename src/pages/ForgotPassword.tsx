@@ -22,7 +22,9 @@ export default function ForgotPassword() {
     if (!email.trim()) { toast.error("Please enter your email"); return; }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/forgot-password`,
+      });
       if (error) throw error;
       toast.success("A 6-digit code has been sent to your email");
       setStep("otp");
