@@ -289,6 +289,7 @@ export default function AdminSettings() {
       <div className="flex gap-2 mb-6 flex-wrap">
         {[
           { key: "config" as const, label: "Store Config", icon: Layers },
+          { key: "storeinfo" as const, label: "Store Info", icon: MapPin },
           { key: "coupons" as const, label: "Coupons", icon: Tag },
           { key: "banners" as const, label: "Banners", icon: Image },
           { key: "notifications" as const, label: "Notifications", icon: Bell },
