@@ -127,6 +127,14 @@ export default function AdminSettings() {
           setStoreInfoId(storeInfoRow.id);
         } catch { /* use defaults */ }
       }
+      // Load delivery config
+      const deliveryRow = (configRes.data as ConfigItem[]).find(c => c.config_type === "delivery_settings");
+      if (deliveryRow) {
+        try {
+          setDeliveryForm({ ...DEFAULT_DELIVERY_CONFIG, ...JSON.parse(deliveryRow.value) });
+          setDeliveryConfigId(deliveryRow.id);
+        } catch { /* use defaults */ }
+      }
     }
     if (couponRes.data) setCoupons(couponRes.data as Coupon[]);
     if (bannerRes.data) setBanners(bannerRes.data as Banner[]);
