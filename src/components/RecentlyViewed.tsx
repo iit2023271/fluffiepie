@@ -3,7 +3,6 @@ import { useProducts } from "@/hooks/useProducts";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import ProductCard from "@/components/ProductCard";
 import { Clock } from "lucide-react";
-import { Clock } from "lucide-react";
 
 interface Props {
   excludeId?: string;
