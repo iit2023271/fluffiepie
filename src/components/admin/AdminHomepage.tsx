@@ -511,21 +511,105 @@ export default function AdminHomepage() {
           );
 
           if (section.id === "categories") return (
-            <SectionEditor key="categories" id="categories" label="Shop by Occasion" expanded={expandedSection === "categories"} onToggle={() => toggleExpand("categories")} visible={isSectionVisible("categories")}>
+            <SectionEditor key="categories" id="categories" label="Shop by Category" expanded={expandedSection === "categories"} onToggle={() => toggleExpand("categories")} visible={isSectionVisible("categories")}>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div><Label className="text-xs">Section Title</Label><Input value={config.categories.title} onChange={e => updateCategories("title", e.target.value)} className="mt-1" /></div>
                   <div><Label className="text-xs">Section Subtitle</Label><Input value={config.categories.subtitle} onChange={e => updateCategories("subtitle", e.target.value)} className="mt-1" /></div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 rounded-xl bg-muted/50 border">
+
+                {/* Filter Source */}
+                <div className="p-3 rounded-xl bg-muted/50 border space-y-3">
                   <div>
-                    <Label className="text-xs">🔲 Grid Columns</Label>
+                    <Label className="text-xs">📂 Show Items From</Label>
+                    <Select value={config.categories.filterType || "occasion"} onValueChange={v => updateCategories("filterType", v)}>
+                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="occasion">Occasions</SelectItem>
+                        <SelectItem value="category">Categories</SelectItem>
+                        <SelectItem value="flavour">Flavours</SelectItem>
+                        <SelectItem value="custom">Custom Items</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {config.categories.filterType === "custom" 
+                        ? "Define your own items with custom images and links below" 
+                        : `Items are automatically pulled from your store ${config.categories.filterType || "occasion"} settings`}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Custom Items Editor */}
+                {config.categories.filterType === "custom" && (
+                  <div className="p-3 rounded-xl border border-primary/20 bg-cream/30 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-semibold">✏️ Custom Items</Label>
+                      <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => {
+                        const items = [...(config.categories.items || []), { name: "New Item", image: "", link: "/shop" }];
+                        updateCategories("items", items);
+                      }}><Plus className="w-3 h-3 mr-1" /> Add Item</Button>
+                    </div>
+                    {(config.categories.items || []).map((item, idx) => (
+                      <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-background border">
+                        <div className="w-16 h-16 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+                          {item.image ? (
+                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                              <Image className="w-5 h-5" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <Input placeholder="Item name" value={item.name} onChange={e => {
+                            const items = [...(config.categories.items || [])];
+                            items[idx] = { ...items[idx], name: e.target.value };
+                            updateCategories("items", items);
+                          }} className="h-8 text-sm" />
+                          <div className="flex gap-2">
+                            <Input placeholder="Link (e.g. /shop?category=...)" value={item.link || ""} onChange={e => {
+                              const items = [...(config.categories.items || [])];
+                              items[idx] = { ...items[idx], link: e.target.value };
+                              updateCategories("items", items);
+                            }} className="h-8 text-xs flex-1" />
+                            <label className="cursor-pointer">
+                              <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const ext = file.name.split(".").pop();
+                                const path = `categories/${Date.now()}.${ext}`;
+                                const { error } = await supabase.storage.from("homepage-assets").upload(path, file);
+                                if (error) { toast.error("Upload failed"); return; }
+                                const { data: urlData } = supabase.storage.from("homepage-assets").getPublicUrl(path);
+                                const items = [...(config.categories.items || [])];
+                                items[idx] = { ...items[idx], image: urlData.publicUrl };
+                                updateCategories("items", items);
+                              }} />
+                              <span className="inline-flex items-center gap-1 px-2 py-1.5 rounded bg-secondary text-xs hover:bg-secondary/80 transition-colors">
+                                <Upload className="w-3 h-3" /> Image
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                        <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => {
+                          const items = (config.categories.items || []).filter((_, i) => i !== idx);
+                          updateCategories("items", items);
+                        }}><Trash2 className="w-3 h-3" /></Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Layout Controls */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 rounded-xl bg-muted/50 border">
+                  <div>
+                    <Label className="text-xs">🔲 Columns</Label>
                     <Select value={String(config.categories.columns || 4)} onValueChange={v => updateCategories("columns", parseInt(v))}>
                       <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="2">2 Columns</SelectItem>
-                        <SelectItem value="3">3 Columns</SelectItem>
-                        <SelectItem value="4">4 Columns (Default)</SelectItem>
+                        <SelectItem value="2">2</SelectItem>
+                        <SelectItem value="3">3</SelectItem>
+                        <SelectItem value="4">4</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -534,20 +618,69 @@ export default function AdminHomepage() {
                     <Select value={config.categories.cardAspect || "portrait"} onValueChange={v => updateCategories("cardAspect", v)}>
                       <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="portrait">Portrait (Tall)</SelectItem>
+                        <SelectItem value="portrait">Portrait</SelectItem>
                         <SelectItem value="square">Square</SelectItem>
-                        <SelectItem value="landscape">Landscape (Wide)</SelectItem>
+                        <SelectItem value="landscape">Landscape</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs">🔘 Card Radius</Label>
+                    <Select value={config.categories.cardRadius || "lg"} onValueChange={v => updateCategories("cardRadius", v)}>
+                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sm">Small</SelectItem>
+                        <SelectItem value="md">Medium</SelectItem>
+                        <SelectItem value="lg">Large</SelectItem>
+                        <SelectItem value="full">Pill</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs">🎨 Overlay</Label>
+                    <Select value={config.categories.overlayStyle || "gradient"} onValueChange={v => updateCategories("overlayStyle", v)}>
+                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="gradient">Gradient</SelectItem>
+                        <SelectItem value="solid">Solid Dark</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
+
+                {/* View All Link */}
+                <div className="flex items-center gap-4 p-3 rounded-xl bg-muted/50 border">
+                  <div className="flex items-center gap-2">
+                    <Switch checked={config.categories.showViewAll ?? false} onCheckedChange={v => updateCategories("showViewAll", v)} />
+                    <Label className="text-xs">Show "View All" link</Label>
+                  </div>
+                  {config.categories.showViewAll && (
+                    <Input placeholder="/shop" value={config.categories.viewAllLink || "/shop"} onChange={e => updateCategories("viewAllLink", e.target.value)} className="h-8 text-xs flex-1" />
+                  )}
+                </div>
+
                 {/* Preview */}
                 <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview</p>
-                  <div className={`grid gap-1.5`} style={{ gridTemplateColumns: `repeat(${config.categories.columns || 4}, 1fr)` }}>
-                    {Array.from({ length: config.categories.columns || 4 }).map((_, i) => (
-                      <div key={i} className={`rounded bg-muted ${config.categories.cardAspect === "square" ? "aspect-square" : config.categories.cardAspect === "landscape" ? "aspect-video" : "aspect-[3/4]"}`} />
-                    ))}
+                  <div className="text-center mb-2">
+                    <p className="text-sm font-bold">{config.categories.title}</p>
+                    <p className="text-[10px] text-muted-foreground">{config.categories.subtitle}</p>
+                  </div>
+                  <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${config.categories.columns || 4}, 1fr)` }}>
+                    {Array.from({ length: config.categories.columns || 4 }).map((_, i) => {
+                      const item = config.categories.filterType === "custom" ? (config.categories.items || [])[i] : undefined;
+                      const radiusCls = config.categories.cardRadius === "sm" ? "rounded" : config.categories.cardRadius === "md" ? "rounded-lg" : config.categories.cardRadius === "full" ? "rounded-full" : "rounded-xl";
+                      return (
+                        <div key={i} className={`relative overflow-hidden bg-muted ${radiusCls} ${config.categories.cardAspect === "square" ? "aspect-square" : config.categories.cardAspect === "landscape" ? "aspect-video" : "aspect-[3/4]"}`}>
+                          {item?.image && <img src={item.image} className="w-full h-full object-cover" alt="" />}
+                          {config.categories.overlayStyle !== "none" && (
+                            <div className={`absolute inset-0 ${config.categories.overlayStyle === "solid" ? "bg-foreground/50" : "bg-gradient-to-t from-foreground/60 to-transparent"}`} />
+                          )}
+                          {item?.name && <span className="absolute bottom-1.5 left-2 text-[9px] font-bold text-background">{item.name}</span>}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>

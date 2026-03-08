@@ -184,19 +184,21 @@ export default function Index() {
 
   const isVisible = (id: string) => config.sections.find(s => s.id === id)?.visible ?? true;
 
-  // Get categories from store_config
-  const [occasions, setOccasions] = useState<string[]>([]);
+  // Get filter items from store_config based on categories.filterType
+  const [filterItems, setFilterItems] = useState<string[]>([]);
   useEffect(() => {
+    const filterType = config.categories.filterType || "occasion";
+    if (filterType === "custom") return; // custom items come from config
     supabase
       .from("store_config")
       .select("value")
-      .eq("config_type", "occasion")
+      .eq("config_type", filterType)
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
       .then(({ data }) => {
-        if (data) setOccasions(data.map(d => d.value));
+        if (data) setFilterItems(data.map(d => d.value));
       });
-  }, []);
+  }, [config.categories.filterType]);
 
   // Build section renderers
   const sectionRenderers: Record<string, () => React.ReactNode> = {
@@ -254,7 +256,29 @@ export default function Index() {
     categories: () => {
       const cols = config.categories.columns || 4;
       const aspectCls = config.categories.cardAspect === "square" ? "aspect-square" : config.categories.cardAspect === "landscape" ? "aspect-video" : "aspect-[3/4]";
-      const displayOccasions = occasions.length > 0 ? occasions.filter(o => categoryImages[o]) : Object.keys(categoryImages);
+      const radiusCls = config.categories.cardRadius === "sm" ? "rounded-lg" : config.categories.cardRadius === "md" ? "rounded-xl" : config.categories.cardRadius === "full" ? "rounded-full" : "rounded-2xl";
+      const overlayStyle = config.categories.overlayStyle || "gradient";
+      const overlayCls = overlayStyle === "solid" ? "bg-foreground/50" : overlayStyle === "none" ? "" : "bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent group-hover:from-foreground/80 transition-all duration-500";
+      const filterType = config.categories.filterType || "occasion";
+
+      // Build display items
+      let displayItems: { name: string; image: string; link: string }[];
+      if (filterType === "custom") {
+        displayItems = (config.categories.items || []).map(item => ({
+          name: item.name,
+          image: item.image || catCustom,
+          link: item.link || "/shop",
+        }));
+      } else {
+        const itemNames = filterItems.length > 0 ? filterItems : Object.keys(categoryImages);
+        const paramKey = filterType === "occasion" ? "occasion" : filterType === "category" ? "category" : "flavour";
+        displayItems = itemNames.map(name => ({
+          name,
+          image: categoryImages[name] || catCustom,
+          link: `/shop?${paramKey}=${encodeURIComponent(name)}`,
+        }));
+      }
+
       return (
         <section key="categories" className="container mx-auto px-4 py-16">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
@@ -263,19 +287,28 @@ export default function Index() {
           </motion.div>
           <div className="grid gap-4 md:gap-6" style={{ gridTemplateColumns: `repeat(${Math.min(cols, 2)}, 1fr)` }} data-desktop-cols={cols}>
             <style>{`@media(min-width:768px){[data-desktop-cols="${cols}"]{grid-template-columns:repeat(${cols},1fr)!important}}`}</style>
-            {displayOccasions.slice(0, cols).map((name, i) => (
-              <motion.div key={name} initial={{ opacity: 0, y: 40, scale: 0.9 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.12, type: "spring", stiffness: 100 }}>
-                <Link to={`/shop?occasion=${name}`} className={`group block relative rounded-2xl overflow-hidden ${aspectCls}`}>
-                  <img src={categoryImages[name] || catCustom} alt={name} className="w-full h-full object-cover transition-transform duration-700 will-change-transform group-hover:scale-110" loading="lazy" decoding="async" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent group-hover:from-foreground/80 transition-all duration-500" />
+            {displayItems.slice(0, filterType === "custom" ? undefined : cols).map((item, i) => (
+              <motion.div key={item.name + i} initial={{ opacity: 0, y: 40, scale: 0.9 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.12, type: "spring", stiffness: 100 }}>
+                <Link to={item.link} className={`group block relative overflow-hidden ${radiusCls} ${aspectCls}`}>
+                  <img src={item.image} alt={item.name} className="w-full h-full object-cover transition-transform duration-700 will-change-transform group-hover:scale-110" loading="lazy" decoding="async" />
+                  {overlayStyle !== "none" && (
+                    <div className={`absolute inset-0 ${overlayCls}`} />
+                  )}
                   <motion.div className="absolute bottom-4 left-4" whileHover={{ x: 5 }}>
-                    <h3 className="text-lg font-display font-bold text-background">{name}</h3>
+                    <h3 className="text-lg font-display font-bold text-background">{item.name}</h3>
                     <span className="text-xs text-background/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Shop Now →</span>
                   </motion.div>
                 </Link>
               </motion.div>
             ))}
           </div>
+          {config.categories.showViewAll && (
+            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-8">
+              <Link to={config.categories.viewAllLink || "/shop"} className="inline-flex items-center gap-1 text-primary font-medium text-sm hover:underline group">
+                View All <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </motion.div>
+          )}
         </section>
       );
     },

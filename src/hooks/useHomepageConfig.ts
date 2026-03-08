@@ -66,11 +66,24 @@ export interface HeroConfig {
   heroHeight?: "compact" | "default" | "tall";
 }
 
+export interface CategoryItem {
+  name: string;
+  image?: string;
+  link?: string;
+}
+
 export interface CategoriesConfig {
   title: string;
   subtitle: string;
   columns?: number;
   cardAspect?: "portrait" | "square" | "landscape";
+  filterType?: "occasion" | "category" | "flavour" | "custom";
+  items?: CategoryItem[];
+  showViewAll?: boolean;
+  viewAllLink?: string;
+  cardRadius?: "sm" | "md" | "lg" | "full";
+  showOverlay?: boolean;
+  overlayStyle?: "gradient" | "solid" | "none";
 }
 
 export interface TrendingConfig {
@@ -221,7 +234,7 @@ export const DEFAULT_HOMEPAGE_CONFIG: HomepageConfig = {
 export const SECTION_LABELS: Record<string, string> = {
   banners: "Banner Carousel",
   hero: "Hero Section",
-  categories: "Shop by Occasion",
+  categories: "Shop by Category",
   trending: "Trending Products",
   howItWorks: "How It Works",
   reviews: "Customer Reviews",

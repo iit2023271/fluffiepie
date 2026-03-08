@@ -24,6 +24,8 @@ const ITEMS_PER_PAGE = 12;
 export default function Shop() {
   const [searchParams] = useSearchParams();
   const initialOccasion = searchParams.get("occasion") || "";
+  const initialCategory = searchParams.get("category") || "";
+  const initialFlavour = searchParams.get("flavour") || "";
   const { data: products = [] } = useProducts();
   const { filterSections: allFilters, productTags } = useStoreConfig();
   const { isWishlisted, toggle: toggleWishlist } = useWishlist();
@@ -32,6 +34,8 @@ export default function Shop() {
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {};
     if (initialOccasion) init["occasion"] = initialOccasion;
+    if (initialCategory) init["category"] = initialCategory;
+    if (initialFlavour) init["flavour"] = initialFlavour;
     return init;
   });
   const [sortBy, setSortBy] = useState("popularity");
