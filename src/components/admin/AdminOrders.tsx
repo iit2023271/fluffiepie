@@ -29,7 +29,6 @@ const STATUS_STEP_ORDER = ["placed", "confirmed", "baking", "out_for_delivery", 
 function getRelativeDate(date: Date): string {
   if (isToday(date)) return `Today, ${format(date, "hh:mm a")}`;
   if (isYesterday(date)) return `Yesterday, ${format(date, "hh:mm a")}`;
-  if (isTomorrow(date)) return `Tomorrow, ${format(date, "hh:mm a")}`;
   return format(date, "dd MMM yyyy, hh:mm a");
 }
 
