@@ -17,6 +17,7 @@ export interface StoreInfo {
   pincode: string;
   mapUrl: string;
   openingHours: string;
+  whatsappNumber: string;
   socialLinks: SocialLink[];
 }
 
@@ -31,6 +32,7 @@ export const DEFAULT_STORE_INFO: StoreInfo = {
   pincode: "",
   mapUrl: "",
   openingHours: "",
+  whatsappNumber: "",
   socialLinks: [],
 };
 
