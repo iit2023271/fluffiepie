@@ -72,6 +72,11 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
                   New
                 </span>
               )}
+              {product.tags?.filter(t => t !== "Bestseller" && t !== "New").map(tag => (
+                <span key={tag} className="px-2.5 py-1 bg-secondary text-secondary-foreground text-xs font-semibold rounded-full">
+                  {tag}
+                </span>
+              ))}
             </div>
             {/* Wishlist */}
             <button
