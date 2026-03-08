@@ -46,6 +46,10 @@ export default function ProductDetail() {
   const allImages = [product.image, ...(product.images || [])].filter(Boolean);
 
   const handleAddToCart = () => {
+    if (isSoldOut) {
+      toast.error("This product is currently sold out");
+      return;
+    }
     dispatch({
       type: "ADD_ITEM",
       payload: {
