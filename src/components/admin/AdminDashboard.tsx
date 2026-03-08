@@ -471,8 +471,8 @@ export default function AdminDashboard() {
       </div>
 
       {/* CLV + Top Products + Recent Orders */}
-      <div className="grid md:grid-cols-3 gap-6">
-        <div className="bg-card rounded-2xl p-6 shadow-soft">
+      <div className="grid md:grid-cols-3 gap-4 md:gap-6">
+        <div className="bg-card rounded-2xl p-4 md:p-6 shadow-soft">
           <h3 className="font-display font-semibold text-lg mb-1">💎 Customer Value</h3>
           <p className="text-xs text-muted-foreground mb-4">How much each customer spends over time</p>
           <div className="space-y-4">
