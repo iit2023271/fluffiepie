@@ -235,6 +235,9 @@ export default function AdminUsers() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-semibold truncate">{u.profile.full_name || "—"}</p>
+                        {u.isAdmin && (
+                          <Badge className="text-[10px] bg-primary/10 text-primary border-0 gap-1"><Shield className="w-2.5 h-2.5" />Admin</Badge>
+                        )}
                         {u.tags.map(t => (
                           <span key={t} className="px-1.5 py-0.5 rounded text-[10px] bg-accent/10 text-accent font-medium">{t}</span>
                         ))}
