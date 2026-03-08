@@ -250,6 +250,7 @@ export default function Dashboard() {
         <div className="flex gap-2 mb-8">
           {[
             { key: "orders" as const, icon: Package, label: "My Orders" },
+            { key: "wishlist" as const, icon: Heart, label: "Favorites" },
             { key: "addresses" as const, icon: MapPin, label: "Addresses" },
             { key: "profile" as const, icon: User, label: "Profile" },
           ].map((t) => (
