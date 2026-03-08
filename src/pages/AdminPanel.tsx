@@ -110,6 +110,7 @@ export default function AdminPanel() {
 
         <main className="flex-1 p-4 md:p-8 pb-20 md:pb-8">
           {activeTab === "dashboard" && <AdminDashboard />}
+          {activeTab === "homepage" && <AdminHomepage />}
           {activeTab === "products" && <AdminProducts />}
           {activeTab === "orders" && <AdminOrders />}
           {activeTab === "kitchen" && <AdminKitchen />}
