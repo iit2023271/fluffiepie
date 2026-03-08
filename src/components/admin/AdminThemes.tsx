@@ -468,6 +468,15 @@ export default function AdminThemes() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={deletePresetConfirm.open}
+        onOpenChange={(open) => setDeletePresetConfirm(prev => ({ ...prev, open }))}
+        title="Delete Theme Preset"
+        description={`Are you sure you want to delete "${deletePresetConfirm.preset?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={() => { if (deletePresetConfirm.preset) deleteCustomPreset(deletePresetConfirm.preset); setDeletePresetConfirm({ open: false, preset: null }); }}
+      />
     </div>
   );
 }
