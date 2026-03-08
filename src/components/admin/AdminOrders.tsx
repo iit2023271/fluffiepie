@@ -414,6 +414,34 @@ export default function AdminOrders() {
         )}
       </div>
 
+      {/* Status Filter Pills */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        <button onClick={() => setStatusFilter("")}
+          className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${!statusFilter ? "bg-foreground text-background shadow-md" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"}`}>
+          All Statuses ({baseFiltered.length})
+        </button>
+        {statusOptions.map(s => {
+          const cfg = STATUS_CONFIG[s];
+          const count = statusCounts[s] || 0;
+          if (count === 0) return null;
+          return (
+            <button key={s} onClick={() => setStatusFilter(statusFilter === s ? "" : s)}
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all border ${statusFilter === s ? `${cfg.bgColor} ${cfg.color} shadow-sm` : "bg-card border-border text-muted-foreground hover:border-primary/30"}`}>
+              {cfg.emoji} {cfg.label} <span className="ml-1 opacity-70">({count})</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Search */}
+      <div className="mb-4">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <input placeholder="Search by order ID, name, or phone..." value={search} onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background" />
+        </div>
+      </div>
+
       {/* Active filters summary */}
       {(hasDateFilter || statusFilter || search) && (
         <div className="mb-4 text-xs text-muted-foreground">
