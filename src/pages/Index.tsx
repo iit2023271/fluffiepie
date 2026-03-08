@@ -504,22 +504,44 @@ export default function Index() {
           cream: "bg-cream text-foreground",
           muted: "bg-muted text-foreground",
         };
+        const heightMap: Record<string, string> = {
+          compact: "min-h-[200px] md:min-h-[250px] py-8 md:py-10",
+          medium: "min-h-[280px] md:min-h-[350px] py-12 md:py-16",
+          tall: "min-h-[380px] md:min-h-[500px] py-16 md:py-20",
+          full: "min-h-[60vh] md:min-h-[80vh] py-16 md:py-20",
+        };
+        const layoutAlign: Record<string, string> = {
+          center: "text-center items-center",
+          left: "text-left items-start",
+          right: "text-right items-end",
+        };
+        const height = data.ctaHeight || "medium";
+        const layout = data.ctaLayout || "center";
+        const imageFit = data.ctaImageFit || "cover";
+        const overlayOpacity = data.ctaOverlayOpacity ?? 50;
+
         return (
-          <section key={section.id} className={`relative py-16 overflow-hidden ${data.ctaBgImage ? "text-background" : bgMap[data.ctaBg || "primary"]}`}>
+          <section key={section.id} className={`relative overflow-hidden flex items-center ${heightMap[height]} ${data.ctaBgImage ? "text-background" : bgMap[data.ctaBg || "primary"]}`}>
             {data.ctaBgImage && (
               <>
-                <img src={data.ctaBgImage} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
-                <div className="absolute inset-0 bg-foreground/50" />
+                <img
+                  src={data.ctaBgImage}
+                  alt=""
+                  className={`absolute inset-0 w-full h-full ${imageFit === "contain" ? "object-contain" : "object-cover"}`}
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--foreground) / ${overlayOpacity / 100})` }} />
               </>
             )}
-            <div className="container mx-auto px-4 text-center relative z-10">
-              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-                {data.ctaTitle && <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{data.ctaTitle}</h2>}
-                {data.ctaSubtitle && <p className="text-lg opacity-80 mb-6 max-w-lg mx-auto">{data.ctaSubtitle}</p>}
+            <div className={`container mx-auto px-4 relative z-10 flex flex-col ${layoutAlign[layout]}`}>
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`max-w-2xl ${layout === "center" ? "mx-auto" : ""}`}>
+                {data.ctaTitle && <h2 className="text-2xl md:text-4xl font-display font-bold mb-3">{data.ctaTitle}</h2>}
+                {data.ctaSubtitle && <p className="text-sm md:text-lg opacity-80 mb-6 max-w-lg">{data.ctaSubtitle}</p>}
                 {data.ctaButtonText && data.ctaButtonLink && (
                   <Link
                     to={data.ctaButtonLink}
-                    className={`inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-medium transition-opacity hover:opacity-90 shadow-card ${
+                    className={`inline-flex items-center gap-2 px-6 md:px-8 py-3 md:py-3.5 rounded-xl font-medium transition-opacity hover:opacity-90 shadow-card text-sm md:text-base ${
                       data.ctaBgImage ? "bg-background text-foreground" : data.ctaBg === "primary" ? "bg-background text-foreground" : "bg-primary text-primary-foreground"
                     }`}
                   >
