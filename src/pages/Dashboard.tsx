@@ -10,6 +10,13 @@ import ReviewForm from "@/components/ReviewForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
 
+interface OrderNote {
+  id: string;
+  note: string;
+  note_type: string;
+  created_at: string;
+}
+
 interface Order {
   id: string;
   items: any;
