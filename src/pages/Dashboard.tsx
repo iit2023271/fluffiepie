@@ -78,6 +78,7 @@ export default function Dashboard() {
           .from("order_notes")
           .select("id, note, note_type, created_at, order_id")
           .in("order_id", orderIds)
+          .eq("note_type", "customer")
           .order("created_at", { ascending: true });
         if (notes) {
           const grouped: Record<string, OrderNote[]> = {};
