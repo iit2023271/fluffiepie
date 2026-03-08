@@ -9,6 +9,7 @@ import SavedAddresses from "@/components/SavedAddresses";
 import ReviewForm from "@/components/ReviewForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
+import { useStoreInfo } from "@/hooks/useStoreInfo";
 
 interface OrderNote {
   id: string;
