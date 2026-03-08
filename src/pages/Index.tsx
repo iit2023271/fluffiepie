@@ -89,7 +89,7 @@ function HeroBannerCarousel() {
             className="absolute inset-0 will-change-transform"
           >
             {banner.image_url ? (
-              <img src={banner.image_url} alt={banner.title} className="w-full h-full object-cover" />
+              <img src={banner.image_url} alt={banner.title} className="w-full h-full object-cover" loading="eager" decoding="async" />
             ) : (
               <div className="w-full h-full bg-gradient-to-r from-primary/20 to-accent/20" />
             )}
