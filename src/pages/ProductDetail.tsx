@@ -180,7 +180,12 @@ export default function ProductDetail() {
               </button>
             </div>
             <div>
-              <p className="text-2xl font-bold">₹{totalPrice.toLocaleString()}</p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl font-bold">₹{totalPrice.toLocaleString()}</p>
+                {product.originalPrice && product.originalPrice > currentPrice && (
+                  <p className="text-base text-muted-foreground line-through">₹{(product.originalPrice * quantity).toLocaleString()}</p>
+                )}
+              </div>
               {quantity > 1 && <p className="text-xs text-muted-foreground">₹{currentPrice} each</p>}
             </div>
           </div>
