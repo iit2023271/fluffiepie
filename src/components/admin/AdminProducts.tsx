@@ -6,6 +6,7 @@ import Pagination from "@/components/Pagination";
 const ITEMS_PER_PAGE = 10;
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
+import { useStoreConfig } from "@/hooks/useStoreConfig";
 
 type Product = Tables<"products">;
 
@@ -15,11 +16,9 @@ const emptyProduct = {
   is_new: false, is_bestseller: false, is_active: true, image_url: null as string | null,
 };
 
-const categoryOptions = ["Classic", "Premium", "Chocolate", "Fruit"];
-const occasionOptions = ["Birthday", "Wedding", "Anniversary", "Custom"];
-const flavourOptions = ["Chocolate", "Vanilla", "Red Velvet", "Butterscotch", "Strawberry", "Mango", "Blueberry", "Pineapple"];
-
 export default function AdminProducts() {
+  const { categories: categoryOptions, flavours: flavourOptions, occasions: occasionOptions } = useStoreConfig();
+
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);

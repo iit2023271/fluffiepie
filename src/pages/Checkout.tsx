@@ -19,13 +19,45 @@ export default function Checkout() {
   const [deliveryDay, setDeliveryDay] = useState("Today");
   const [deliverySlot, setDeliverySlot] = useState("9AM - 12PM");
 
-  const applyCoupon = () => {
-    if (coupon.toUpperCase() === "SWEET10") {
-      setDiscount(Math.round(totalPrice * 0.1));
-      toast.success("Coupon applied! 10% off");
-    } else {
+  const applyCoupon = async () => {
+    if (!coupon.trim()) { toast.error("Enter a coupon code"); return; }
+    const { data, error } = await supabase
+      .from("coupons")
+      .select("*")
+      .eq("code", coupon.toUpperCase().trim())
+      .eq("is_active", true)
+      .single();
+
+    if (error || !data) {
       toast.error("Invalid coupon code");
+      return;
     }
+
+    if (data.expires_at && new Date(data.expires_at) < new Date()) {
+      toast.error("This coupon has expired");
+      return;
+    }
+
+    if (data.usage_limit && data.used_count >= data.usage_limit) {
+      toast.error("This coupon has reached its usage limit");
+      return;
+    }
+
+    if (totalPrice < data.min_order_amount) {
+      toast.error(`Minimum order amount is ₹${data.min_order_amount}`);
+      return;
+    }
+
+    let disc = 0;
+    if (data.discount_type === "percentage") {
+      disc = Math.round(totalPrice * (data.discount_value / 100));
+      if (data.max_discount) disc = Math.min(disc, data.max_discount);
+    } else {
+      disc = data.discount_value;
+    }
+
+    setDiscount(disc);
+    toast.success(`Coupon applied! You save ₹${disc}`);
   };
 
   const deliveryFee = totalPrice >= 999 ? 0 : 49;
@@ -186,7 +218,7 @@ export default function Checkout() {
                 Apply
               </button>
             </div>
-            <p className="text-xs text-muted-foreground mb-4">Try: SWEET10</p>
+            
 
             <div className="border-t border-border pt-4 space-y-2 text-sm">
               <div className="flex justify-between">
