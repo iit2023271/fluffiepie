@@ -92,6 +92,16 @@ export default function Dashboard() {
           }
         }
       )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'orders', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          const updated = payload.new as any;
+          setOrders(prev => prev.map(o => o.id === updated.id ? { ...o, status: updated.status, updated_at: updated.updated_at } : o));
+          const statusLabel = statusConfig[updated.status]?.label || updated.status;
+          toast.info(`Order #${updated.id.slice(0, 8).toUpperCase()} → ${statusLabel}`);
+        }
+      )
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
