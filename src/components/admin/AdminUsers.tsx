@@ -254,7 +254,7 @@ export default function AdminUsers() {
       <div className="flex flex-wrap gap-3 mb-4">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input placeholder="Search by name or phone..." value={search} onChange={(e) => setSearch(e.target.value)}
+          <input placeholder="Search by name, phone, or order ID..." value={search} onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
         </div>
         
