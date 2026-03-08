@@ -451,7 +451,15 @@ export default function Index() {
                   >
                     <div className="flex items-center gap-1 mb-3">
                       {Array.from({ length: r.rating }).map((_, j) => (
-                        <Star key={j} className="w-4 h-4 fill-accent text-accent" />
+                        <motion.div
+                          key={j}
+                          initial={{ opacity: 0, scale: 0 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: i * 0.1 + j * 0.05 }}
+                        >
+                          <Star className="w-4 h-4 fill-accent text-accent" />
+                        </motion.div>
                       ))}
                     </div>
                     <p className="text-sm text-foreground mb-4 leading-relaxed">"{r.comment}"</p>
