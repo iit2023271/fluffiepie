@@ -144,7 +144,7 @@ export default function Checkout() {
         body: {
           orderId: orderData.id,
           newStatus: "placed",
-          customerName: `${form.firstName} ${form.lastName}`.trim(),
+          customerName,
           orderTotal: finalTotal,
           items: orderItems,
           userId: user.id,
