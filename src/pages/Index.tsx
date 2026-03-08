@@ -25,11 +25,6 @@ const steps = [
   { icon: Truck, title: "Delivered to You", desc: "Right on time, every time" },
 ];
 
-const testimonials = [
-  { name: "Priya S.", rating: 5, text: "The chocolate truffle cake was absolutely divine! Best bakery I've ordered from.", avatar: "PS" },
-  { name: "Rahul M.", rating: 5, text: "Ordered a custom cake for my daughter's birthday. She was thrilled! Amazing quality.", avatar: "RM" },
-  { name: "Anita K.", rating: 5, text: "Their red velvet is to die for. Fast delivery and beautifully packaged.", avatar: "AK" },
-];
 
 interface Banner {
   id: string;
