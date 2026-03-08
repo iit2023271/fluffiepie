@@ -8,7 +8,8 @@ import AdminOrders from "@/components/admin/AdminOrders";
 import AdminUsers from "@/components/admin/AdminUsers";
 import AdminSettings from "@/components/admin/AdminSettings";
 import AdminKitchen from "@/components/admin/AdminKitchen";
-import { LayoutDashboard, Package, ShoppingCart, Users, LogOut, ChevronLeft, Settings, ChefHat } from "lucide-react";
+import AdminHomepage from "@/components/admin/AdminHomepage";
+import { LayoutDashboard, Package, ShoppingCart, Users, LogOut, ChevronLeft, Settings, ChefHat, Home } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
