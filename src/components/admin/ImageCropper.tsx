@@ -4,12 +4,24 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Crop, RotateCw, ZoomIn, ZoomOut } from "lucide-react";
 
+const ASPECT_PRESETS = [
+  { label: "Free", value: 0 },
+  { label: "1:1", value: 1 },
+  { label: "4:3", value: 4 / 3 },
+  { label: "3:2", value: 3 / 2 },
+  { label: "16:9", value: 16 / 9 },
+  { label: "21:9", value: 21 / 9 },
+  { label: "9:16", value: 9 / 16 },
+  { label: "3:4", value: 3 / 4 },
+];
+
 interface ImageCropperProps {
   open: boolean;
   imageSrc: string;
   aspect?: number;
   onCropComplete: (croppedBlob: Blob) => void;
   onClose: () => void;
+  showAspectPresets?: boolean;
 }
 
 async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
@@ -47,11 +59,12 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
   });
 }
 
-export default function ImageCropper({ open, imageSrc, aspect = 1, onCropComplete, onClose }: ImageCropperProps) {
+export default function ImageCropper({ open, imageSrc, aspect = 1, onCropComplete, onClose, showAspectPresets = true }: ImageCropperProps) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [selectedAspect, setSelectedAspect] = useState<number>(aspect);
 
   const onCropChange = useCallback((_: any, croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels);
@@ -67,6 +80,8 @@ export default function ImageCropper({ open, imageSrc, aspect = 1, onCropComplet
     }
   };
 
+  const activeAspect = selectedAspect === 0 ? undefined : selectedAspect;
+
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-lg p-0 overflow-hidden">
@@ -75,13 +90,33 @@ export default function ImageCropper({ open, imageSrc, aspect = 1, onCropComplet
             <Crop className="w-4 h-4" /> Crop Image
           </DialogTitle>
         </DialogHeader>
+
+        {/* Aspect Ratio Presets */}
+        {showAspectPresets && (
+          <div className="px-4 pt-2 flex flex-wrap gap-1.5">
+            {ASPECT_PRESETS.map((preset) => (
+              <button
+                key={preset.label}
+                onClick={() => setSelectedAspect(preset.value)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  selectedAspect === preset.value
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="relative w-full h-[350px] bg-muted">
           <Cropper
             image={imageSrc}
             crop={crop}
             zoom={zoom}
             rotation={rotation}
-            aspect={aspect}
+            aspect={activeAspect}
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onCropComplete={onCropChange}
@@ -109,6 +144,14 @@ export default function ImageCropper({ open, imageSrc, aspect = 1, onCropComplet
               <RotateCw className="w-3.5 h-3.5" />
             </Button>
           </div>
+
+          {/* Dimension info */}
+          {croppedAreaPixels && (
+            <p className="text-[10px] text-muted-foreground text-center">
+              Output: {croppedAreaPixels.width} × {croppedAreaPixels.height}px
+            </p>
+          )}
+
           <div className="flex gap-2">
             <Button onClick={handleSave} className="flex-1">
               Apply Crop
