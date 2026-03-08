@@ -343,9 +343,9 @@ export default function AdminOrders() {
         <div className="bg-card rounded-2xl p-4 border border-border">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-sm">💰</div>
-            <span className="text-xs text-muted-foreground">Today's Revenue</span>
+            <span className="text-xs text-muted-foreground">{statsLabel} Revenue</span>
           </div>
-          <p className="text-2xl font-bold">₹{orderStats.todayRevenue.toLocaleString()}</p>
+          <p className="text-2xl font-bold">₹{orderStats.revenue.toLocaleString()}</p>
         </div>
         <div className="bg-card rounded-2xl p-4 border border-border">
           <div className="flex items-center gap-2 mb-1">
