@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Heart, ShoppingCart, Star, Plus, Minus, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
