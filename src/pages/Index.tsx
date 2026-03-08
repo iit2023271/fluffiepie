@@ -389,23 +389,33 @@ export default function Index() {
     ),
     howItWorks: () => (
       <section key="howItWorks" className="container mx-auto px-4 py-20">
-        <div className="text-center mb-14">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-14"
+        >
           <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{config.howItWorks.title}</h2>
           <p className="text-muted-foreground">{config.howItWorks.subtitle}</p>
-        </div>
+        </motion.div>
         <div className={`grid md:grid-cols-${config.howItWorks.steps.length} gap-8`}>
           {config.howItWorks.steps.map((step, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 40, scale: 0.9 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.15 }}
-              className="text-center p-8 rounded-2xl bg-card shadow-soft hover:shadow-card transition-shadow"
+              transition={{ delay: i * 0.15, type: "spring", stiffness: 100 }}
+              whileHover={{ y: -8, transition: { duration: 0.3 } }}
+              className="text-center p-8 rounded-2xl bg-card shadow-soft hover:shadow-elevated transition-shadow cursor-default"
             >
-              <div className="w-16 h-16 rounded-2xl bg-blush flex items-center justify-center mx-auto mb-5 text-2xl">
+              <motion.div
+                whileHover={{ scale: 1.15, rotate: [0, -10, 10, 0] }}
+                transition={{ duration: 0.5 }}
+                className="w-16 h-16 rounded-2xl bg-blush flex items-center justify-center mx-auto mb-5 text-2xl"
+              >
                 {step.emoji}
-              </div>
+              </motion.div>
               <h3 className="text-lg font-display font-semibold mb-2">{step.title}</h3>
               <p className="text-sm text-muted-foreground">{step.desc}</p>
             </motion.div>
