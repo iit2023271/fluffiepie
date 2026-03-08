@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import SavedAddresses from "@/components/SavedAddresses";
+import { useDeliveryConfig } from "@/hooks/useDeliveryConfig";
 
 export default function Checkout() {
   const { state, totalPrice, dispatch } = useCart();
