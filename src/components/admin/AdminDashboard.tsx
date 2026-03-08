@@ -171,9 +171,10 @@ export default function AdminDashboard() {
     const months = eachMonthOfInterval({ start: subMonths(startOfMonth(now), 11), end: now });
     return months.map(month => {
       const monthOrders = orders.filter(o => isSameMonth(new Date(o.created_at), month));
+      const monthDelivered = monthOrders.filter(o => o.status === "delivered");
       return {
         month: format(month, "MMM yy"),
-        revenue: monthOrders.reduce((s, o) => s + (o.total || 0), 0),
+        revenue: monthDelivered.reduce((s, o) => s + (o.total || 0), 0),
         orders: monthOrders.length,
       };
     });
