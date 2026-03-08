@@ -157,9 +157,10 @@ export default function AdminDashboard() {
     const interval = eachDayOfInterval({ start: subDays(now, days - 1), end: now });
     return interval.map(day => {
       const dayOrders = filteredOrders.filter(o => isSameDay(new Date(o.created_at), day));
+      const dayDelivered = dayOrders.filter(o => o.status === "delivered");
       return {
         date: format(day, days <= 7 ? "EEE" : "dd MMM"),
-        revenue: dayOrders.reduce((s, o) => s + (o.total || 0), 0),
+        revenue: dayDelivered.reduce((s, o) => s + (o.total || 0), 0),
         orders: dayOrders.length,
       };
     });
