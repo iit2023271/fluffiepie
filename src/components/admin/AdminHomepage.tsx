@@ -426,23 +426,38 @@ export default function AdminHomepage() {
                     )}
                     <label className="flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed border-border bg-muted/30 hover:bg-muted/60 cursor-pointer transition-colors text-sm text-muted-foreground">
                       <Upload className="w-4 h-4" /> Upload Image
-                      <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (!file) return;
-                        const ext = file.name.split(".").pop();
-                        const path = `hero/hero-image-${Date.now()}.${ext}`;
-                        const { error } = await supabase.storage.from("homepage-assets").upload(path, file, { upsert: true });
-                        if (error) { toast.error("Upload failed"); return; }
-                        const { data: urlData } = supabase.storage.from("homepage-assets").getPublicUrl(path);
-                        updateHero("heroImage", urlData.publicUrl);
-                        toast.success("Image uploaded!");
+                        setHeroCropState({ open: true, src: URL.createObjectURL(file) });
+                        e.target.value = "";
                       }} />
                     </label>
                     {config.hero.heroImage && (
-                      <button onClick={() => updateHero("heroImage", "")} className="text-xs text-destructive hover:underline">Remove</button>
+                      <>
+                        <button onClick={() => setHeroCropState({ open: true, src: config.hero.heroImage! })} className="flex items-center gap-1 px-3 py-2 border border-border rounded-xl text-sm hover:bg-secondary">
+                          <Crop className="w-4 h-4" /> Crop
+                        </button>
+                        <button onClick={() => updateHero("heroImage", "")} className="text-xs text-destructive hover:underline">Remove</button>
+                      </>
                     )}
                   </div>
                   <p className="text-[10px] text-muted-foreground mt-1">Leave empty to use the default cake image</p>
+                  <ImageCropper
+                    open={heroCropState.open}
+                    imageSrc={heroCropState.src}
+                    aspect={16 / 9}
+                    onClose={() => setHeroCropState({ open: false, src: "" })}
+                    onCropComplete={async (blob) => {
+                      const path = `hero/hero-image-${Date.now()}_cropped.jpg`;
+                      const { error } = await supabase.storage.from("homepage-assets").upload(path, blob, { contentType: "image/jpeg", upsert: true });
+                      if (error) { toast.error("Upload failed"); setHeroCropState({ open: false, src: "" }); return; }
+                      const { data: urlData } = supabase.storage.from("homepage-assets").getPublicUrl(path);
+                      updateHero("heroImage", urlData.publicUrl);
+                      setHeroCropState({ open: false, src: "" });
+                      toast.success("Image cropped & uploaded!");
+                    }}
+                  />
                 </div>
               </div>
             </SectionEditor>
