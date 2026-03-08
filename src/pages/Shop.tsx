@@ -32,11 +32,12 @@ export default function Shop() {
       default: result.sort((a, b) => b.reviewCount - a.reviewCount);
     }
     return result;
-  }, [selectedCategory, selectedOccasion, selectedFlavour, sortBy]);
+  }, [searchQuery, selectedCategory, selectedOccasion, selectedFlavour, sortBy, products]);
 
-  const hasFilters = selectedCategory || selectedOccasion || selectedFlavour;
+  const hasFilters = selectedCategory || selectedOccasion || selectedFlavour || searchQuery;
 
   const clearFilters = () => {
+    setSearchQuery("");
     setSelectedCategory("");
     setSelectedOccasion("");
     setSelectedFlavour("");
