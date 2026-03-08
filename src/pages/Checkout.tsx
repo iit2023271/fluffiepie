@@ -112,7 +112,7 @@ export default function Checkout() {
                 <span>₹{totalPrice.toLocaleString()}</span>
               </div>
               {discount > 0 && (
-                <div className="flex justify-between text-green-600">
+                <div className="flex justify-between" style={{ color: "hsl(142 71% 45%)" }}>
                   <span>Discount</span>
                   <span>-₹{discount.toLocaleString()}</span>
                 </div>
