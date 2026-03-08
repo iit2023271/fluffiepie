@@ -1,6 +1,6 @@
 import { useState, useEffect, memo } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart, Search, User, Menu, X, LogOut, Shield } from "lucide-react";
+import { ShoppingCart, Search, User, Menu, X, LogOut, Shield, Sun, Moon } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
