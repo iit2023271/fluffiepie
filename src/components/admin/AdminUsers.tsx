@@ -8,6 +8,9 @@ import Pagination from "@/components/Pagination";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { useAuth } from "@/context/AuthContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { useStoreInfo } from "@/hooks/useStoreInfo";
 
 const ITEMS_PER_PAGE = 10;
 
