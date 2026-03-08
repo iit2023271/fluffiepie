@@ -326,9 +326,14 @@ export default function AdminSettings() {
             const items = configItems.filter(c => c.config_type === section.type);
             return (
               <div key={section.type} className="bg-card rounded-2xl p-6 shadow-soft">
-                <div className="flex items-center gap-3 mb-1">
-                  <section.icon className="w-5 h-5 text-primary" />
-                  <h3 className="font-display font-semibold text-lg">{section.label}</h3>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-3">
+                    <section.icon className="w-5 h-5 text-primary" />
+                    <h3 className="font-display font-semibold text-lg">{section.label}</h3>
+                  </div>
+                  <button onClick={() => setDeleteConfirm({ open: true, type: "config", id: `section:${section.type}`, name: section.label })} className="text-muted-foreground hover:text-destructive text-xs flex items-center gap-1">
+                    <Trash2 className="w-3 h-3" /> Remove Section
+                  </button>
                 </div>
                 <p className="text-xs text-muted-foreground mb-4">{section.description}</p>
                 <div className="flex flex-wrap gap-2 mb-4">
