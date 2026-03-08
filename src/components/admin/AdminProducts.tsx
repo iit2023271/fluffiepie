@@ -33,7 +33,7 @@ export default function AdminProducts() {
   const [form, setForm] = useState(emptyProduct);
   const [saving, setSaving] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [additionalImageFiles, setAdditionalImageFiles] = useState<File[]>([]);
+  const [pendingAdditionalFiles, setPendingAdditionalFiles] = useState<File[]>([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
