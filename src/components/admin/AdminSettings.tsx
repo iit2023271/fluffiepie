@@ -405,9 +405,31 @@ export default function AdminSettings() {
                       )}
                       <label className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm cursor-pointer hover:bg-secondary">
                         <Upload className="w-4 h-4" /> Upload
-                        <input type="file" accept="image/*" className="hidden" onChange={(e) => setBannerImage(e.target.files?.[0] || null)} />
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setBannerCropSrc(URL.createObjectURL(file));
+                            setShowBannerCropper(true);
+                          }
+                        }} />
                       </label>
+                      {bannerImage && (
+                        <button onClick={() => { setBannerCropSrc(URL.createObjectURL(bannerImage)); setShowBannerCropper(true); }} className="flex items-center gap-1 px-3 py-2 border border-border rounded-xl text-sm hover:bg-secondary">
+                          <Crop className="w-4 h-4" /> Crop
+                        </button>
+                      )}
                     </div>
+                    <ImageCropper
+                      open={showBannerCropper}
+                      imageSrc={bannerCropSrc || ""}
+                      aspect={3}
+                      onClose={() => setShowBannerCropper(false)}
+                      onCropComplete={(blob) => {
+                        const file = new File([blob], `banner-${Date.now()}.jpg`, { type: "image/jpeg" });
+                        setBannerImage(file);
+                        setShowBannerCropper(false);
+                      }}
+                    />
                   </div>
                   <div>
                     <label className="text-xs font-medium mb-1 block">Link URL</label>
