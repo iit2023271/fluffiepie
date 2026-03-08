@@ -570,7 +570,7 @@ export default function Index() {
                     transition={{ delay: i * 0.05 }}
                     className="relative rounded-2xl overflow-hidden bg-muted aspect-square"
                   >
-                    {img.url && <img src={img.url} alt={img.caption || ""} className="w-full h-full object-cover" />}
+                    {img.url && <img src={img.url} alt={img.caption || ""} className="w-full h-full object-cover" loading="lazy" decoding="async" />}
                     {img.caption && (
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-foreground/60 to-transparent p-3">
                         <p className="text-xs text-background font-medium">{img.caption}</p>
