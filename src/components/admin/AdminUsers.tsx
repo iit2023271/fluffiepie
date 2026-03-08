@@ -511,6 +511,47 @@ export default function AdminUsers() {
         variant={adminConfirm.isAdmin ? "destructive" : "default"}
         onConfirm={() => { toggleAdmin(adminConfirm.userId, adminConfirm.isAdmin); setAdminConfirm({ open: false, userId: "", isAdmin: false, name: "" }); }}
       />
+
+      {/* WhatsApp Message Dialog */}
+      <Dialog open={waDialog.open} onOpenChange={(open) => setWaDialog(prev => ({ ...prev, open }))}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><MessageCircle className="w-5 h-5 text-green-600" /> Send WhatsApp to {waDialog.name || "Customer"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2">Quick Templates</p>
+              <div className="flex flex-wrap gap-1.5">
+                {waTemplates.map((t) => (
+                  <button
+                    key={t.label}
+                    onClick={() => setWaMessage(t.text.replace(/{name}/g, waDialog.name || "there"))}
+                    className="px-2.5 py-1.5 rounded-lg text-xs border border-border hover:bg-accent/50 hover:border-primary/30 transition-colors"
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-1.5">Message</p>
+              <Textarea
+                value={waMessage}
+                onChange={(e) => setWaMessage(e.target.value)}
+                rows={5}
+                placeholder="Type your message..."
+                className="text-sm"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] text-muted-foreground">📱 {waDialog.phone || "No phone"}</p>
+              <Button onClick={sendWhatsApp} className="gap-1.5" disabled={!waMessage.trim()}>
+                <Send className="w-4 h-4" /> Send on WhatsApp
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
