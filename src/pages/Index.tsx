@@ -157,7 +157,16 @@ function HeroBannerCarousel() {
 export default function Index() {
   const { config, loading: configLoading } = useHomepageConfig();
   const { data: allProducts = [] } = useProducts();
-  const featured = allProducts.filter((p) => p.isBestseller || p.isNew).slice(0, config.trending.count);
+  const featured = useMemo(() => {
+    const filterBy = config.trending.filterBy || "bestseller";
+    let pool = [...allProducts];
+    if (filterBy === "bestseller") pool = pool.filter(p => p.isBestseller);
+    else if (filterBy === "new") pool = pool.filter(p => p.isNew);
+    else if (filterBy === "tag" && config.trending.filterTag) pool = pool.filter(p => p.tags?.includes(config.trending.filterTag!));
+    // "all" = no filter
+    if (pool.length === 0) pool = [...allProducts]; // fallback
+    return pool.sort((a, b) => b.reviewCount - a.reviewCount).slice(0, config.trending.count);
+  }, [allProducts, config.trending]);
 
   const [reviews, setReviews] = useState<any[]>([]);
   useEffect(() => {
