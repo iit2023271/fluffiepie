@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { ChevronDown, ChevronUp, MapPin, ShoppingBag, User, Phone, Calendar, Search, Tag, X, Download, Ban, CheckCircle } from "lucide-react";
+import { ChevronDown, ChevronUp, MapPin, ShoppingBag, User, Search, Tag, X, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/components/Pagination";
@@ -14,7 +14,6 @@ interface UserDetail {
   profile: any;
   addresses: any[];
   orders: any[];
-  roles: any[];
   tags: string[];
 }
 
@@ -23,7 +22,7 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState("");
+  
   const [tagFilter, setTagFilter] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
@@ -35,18 +34,16 @@ export default function AdminUsers() {
 
   const loadUsers = async () => {
     setLoading(true);
-    const [profilesRes, addressesRes, ordersRes, rolesRes, tagsRes] = await Promise.all([
+    const [profilesRes, addressesRes, ordersRes, tagsRes] = await Promise.all([
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("addresses").select("*"),
       supabase.from("orders").select("*").order("created_at", { ascending: false }),
-      supabase.from("user_roles").select("*"),
       supabase.from("customer_tags").select("*"),
     ]);
 
     const profiles = profilesRes.data || [];
     const addresses = addressesRes.data || [];
     const orders = ordersRes.data || [];
-    const roles = rolesRes.data || [];
     const tags = tagsRes.data || [];
 
     const uniqueTags = [...new Set(tags.map((t: any) => t.tag))];
@@ -56,7 +53,6 @@ export default function AdminUsers() {
       profile: p,
       addresses: addresses.filter((a) => a.user_id === p.user_id),
       orders: orders.filter((o) => o.user_id === p.user_id),
-      roles: roles.filter((r) => r.user_id === p.user_id),
       tags: tags.filter((t: any) => t.user_id === p.user_id).map((t: any) => t.tag),
     }));
 
@@ -84,14 +80,13 @@ export default function AdminUsers() {
   };
 
   const exportCSV = () => {
-    const rows = [["Name", "Phone", "Joined", "Total Orders", "Total Spent", "Roles", "Tags"]];
+    const rows = [["Name", "Phone", "Joined", "Total Orders", "Total Spent", "Tags"]];
     filtered.forEach(u => {
       const totalSpent = u.orders.reduce((s, o) => s + (o.total || 0), 0);
       rows.push([
         u.profile.full_name || "", u.profile.phone || "",
         format(new Date(u.profile.created_at), "yyyy-MM-dd"),
         String(u.orders.length), String(totalSpent),
-        u.roles.map((r: any) => r.role).join(", "),
         u.tags.join(", "),
       ]);
     });
@@ -113,9 +108,7 @@ export default function AdminUsers() {
         (u.profile.phone || "").includes(q)
       );
     }
-    if (roleFilter) {
-      result = result.filter((u) => roleFilter === "no_role" ? u.roles.length === 0 : u.roles.some((r) => r.role === roleFilter));
-    }
+    
     if (tagFilter) {
       result = result.filter(u => u.tags.includes(tagFilter));
     }
@@ -126,9 +119,9 @@ export default function AdminUsers() {
       default: result.sort((a, b) => new Date(b.profile.created_at).getTime() - new Date(a.profile.created_at).getTime());
     }
     return result;
-  }, [users, search, roleFilter, tagFilter, sortBy]);
+  }, [users, search, tagFilter, sortBy]);
 
-  useEffect(() => { setCurrentPage(1); }, [search, roleFilter, tagFilter, sortBy]);
+  useEffect(() => { setCurrentPage(1); }, [search, tagFilter, sortBy]);
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
@@ -181,13 +174,7 @@ export default function AdminUsers() {
           <input placeholder="Search by name or phone..." value={search} onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
         </div>
-        <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="px-3 py-2 rounded-xl border border-border text-sm bg-background">
-          <option value="">All Roles</option>
-          <option value="admin">Admin</option>
-          <option value="moderator">Moderator</option>
-          <option value="user">User</option>
-          <option value="no_role">No Role</option>
-        </select>
+        
         {allTags.length > 0 && (
           <select value={tagFilter} onChange={(e) => setTagFilter(e.target.value)} className="px-3 py-2 rounded-xl border border-border text-sm bg-background">
             <option value="">All Tags</option>
@@ -234,7 +221,7 @@ export default function AdminUsers() {
                     <div className="hidden sm:flex items-center gap-4 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1"><ShoppingBag className="w-3.5 h-3.5" />{u.orders.length}</span>
                       <span className="font-semibold text-foreground">₹{totalSpent.toLocaleString()}</span>
-                      {u.roles.length > 0 && <Badge variant="outline" className="text-xs">{u.roles[0].role}</Badge>}
+                      
                     </div>
                     {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                   </div>
