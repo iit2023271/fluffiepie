@@ -530,21 +530,50 @@ export default function AdminSettings() {
             <p className="text-xs text-muted-foreground mb-4">Tags like Bestseller, New, Limited Edition — each product can have one tag with a custom color badge</p>
             
             {/* Existing tags */}
-            <div className="flex flex-wrap gap-3 mb-5">
+            <div className="space-y-3 mb-5">
               {configItems.filter(c => c.config_type === "product_tag").map(item => {
                 let tag: { name: string; bgColor: string; textColor: string };
                 try { tag = JSON.parse(item.value); } catch { tag = { name: item.value, bgColor: "350 45% 55%", textColor: "0 0% 100%" }; }
+                const isEditing = editingTagId === item.id;
                 return (
-                  <div key={item.id} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-secondary/30">
-                    <span
-                      className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                      style={{ backgroundColor: `hsl(${tag.bgColor})`, color: `hsl(${tag.textColor})` }}
-                    >
-                      {tag.name}
-                    </span>
-                    <button onClick={() => setDeleteConfirm({ open: true, type: "config", id: item.id, name: tag.name })} className="text-muted-foreground hover:text-destructive">
-                      <X className="w-3.5 h-3.5" />
-                    </button>
+                  <div key={item.id} className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl border border-border bg-secondary/30">
+                    {isEditing ? (
+                      <>
+                        <input
+                          value={editTagName}
+                          onChange={(e) => setEditTagName(e.target.value)}
+                          className="px-3 py-1.5 rounded-lg border border-border text-sm focus:outline-none focus:border-primary bg-background w-40"
+                        />
+                        <div className="flex items-center gap-1.5">
+                          <label className="text-[10px] text-muted-foreground">BG</label>
+                          <input type="color" value={editTagBg} onChange={(e) => setEditTagBg(e.target.value)} className="w-7 h-7 rounded border border-border cursor-pointer" />
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <label className="text-[10px] text-muted-foreground">Text</label>
+                          <input type="color" value={editTagText} onChange={(e) => setEditTagText(e.target.value)} className="w-7 h-7 rounded border border-border cursor-pointer" />
+                        </div>
+                        <span className="px-2.5 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: editTagBg, color: editTagText }}>
+                          {editTagName || "Tag"}
+                        </span>
+                        <button onClick={saveEditTag} className="px-3 py-1 bg-primary text-primary-foreground rounded-lg text-xs font-medium hover:opacity-90">Save</button>
+                        <button onClick={() => setEditingTagId(null)} className="px-3 py-1 bg-secondary text-foreground rounded-lg text-xs font-medium hover:opacity-90">Cancel</button>
+                      </>
+                    ) : (
+                      <>
+                        <span
+                          className="px-2.5 py-1 rounded-full text-xs font-semibold"
+                          style={{ backgroundColor: `hsl(${tag.bgColor})`, color: `hsl(${tag.textColor})` }}
+                        >
+                          {tag.name}
+                        </span>
+                        <button onClick={() => startEditTag(item)} className="text-muted-foreground hover:text-primary text-xs flex items-center gap-1">
+                          <Pencil className="w-3 h-3" /> Edit
+                        </button>
+                        <button onClick={() => setDeleteConfirm({ open: true, type: "config", id: item.id, name: tag.name })} className="text-muted-foreground hover:text-destructive text-xs flex items-center gap-1">
+                          <X className="w-3.5 h-3.5" /> Delete
+                        </button>
+                      </>
+                    )}
                   </div>
                 );
               })}
