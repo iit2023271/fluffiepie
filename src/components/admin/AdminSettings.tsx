@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, X, Trash2, Tag, Layers, Palette, Calendar, Pencil, Upload, Image, Eye, EyeOff, BarChart3 } from "lucide-react";
+import { Plus, X, Trash2, Tag, Layers, Palette, Calendar, Pencil, Upload, Image, Eye, EyeOff, BarChart3, Crop } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
