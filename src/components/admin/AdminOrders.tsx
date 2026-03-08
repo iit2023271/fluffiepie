@@ -248,9 +248,11 @@ export default function AdminOrders() {
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
+  // Only select orders that can still be acted upon (exclude delivered/cancelled)
+  const selectableOnPage = paginated.filter(o => o.status !== "delivered" && o.status !== "cancelled");
   const toggleSelectAll = () => {
-    if (selectedOrders.size === paginated.length) setSelectedOrders(new Set());
-    else setSelectedOrders(new Set(paginated.map(o => o.id)));
+    if (selectedOrders.size === selectableOnPage.length && selectableOnPage.length > 0) setSelectedOrders(new Set());
+    else setSelectedOrders(new Set(selectableOnPage.map(o => o.id)));
   };
 
   const statusCounts = useMemo(() => {
