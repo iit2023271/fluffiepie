@@ -75,6 +75,17 @@ export interface ReviewsConfig {
   count: number;
 }
 
+export interface SectionNavItem {
+  sectionId: string;
+  label: string;
+  visible: boolean;
+}
+
+export interface SectionNavConfig {
+  enabled: boolean;
+  items: SectionNavItem[];
+}
+
 export interface HomepageConfig {
   sections: HomepageSection[];
   hero: HeroConfig;
@@ -82,6 +93,7 @@ export interface HomepageConfig {
   trending: TrendingConfig;
   howItWorks: HowItWorksConfig;
   reviews: ReviewsConfig;
+  sectionNav: SectionNavConfig;
 }
 
 export const BUILTIN_SECTION_IDS = ["banners", "hero", "categories", "trending", "howItWorks", "reviews"];
