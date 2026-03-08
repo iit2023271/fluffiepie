@@ -393,7 +393,7 @@ export default function AdminDashboard() {
           { label: "✅ Delivery Rate", value: `${metrics.conversionRate}%`, sub: "Successfully delivered" },
           { label: "❌ Cancel Rate", value: `${metrics.cancelRate}%`, sub: `${metrics.cancelledCount} cancelled` },
           { label: "🏷️ Discounts", value: `₹${metrics.totalDiscount.toLocaleString()}`, sub: `${metrics.couponOrders} coupon orders` },
-          { label: "📊 Net Revenue", value: `₹${metrics.netRevenue.toLocaleString()}`, sub: "After refunds" },
+          { label: "📊 Net Revenue", value: `₹${metrics.netRevenue.toLocaleString()}`, sub: "Delivered orders" },
         ].map((stat) => (
           <div key={stat.label} className="bg-card rounded-2xl p-3 md:p-4 shadow-soft">
             <p className="text-base md:text-lg font-bold break-all leading-tight">{stat.value}</p>
