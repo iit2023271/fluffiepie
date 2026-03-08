@@ -5,6 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { flavours, categoryTypes, occasions } from "@/data/products";
 import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
+import Pagination from "@/components/Pagination";
+
+const ITEMS_PER_PAGE = 12;
 
 export default function Shop() {
   const [searchParams] = useSearchParams();
