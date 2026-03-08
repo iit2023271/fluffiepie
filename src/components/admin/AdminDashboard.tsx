@@ -395,10 +395,10 @@ export default function AdminDashboard() {
           { label: "🏷️ Discounts", value: `₹${metrics.totalDiscount.toLocaleString()}`, sub: `${metrics.couponOrders} coupon orders` },
           { label: "📊 Net Revenue", value: `₹${metrics.netRevenue.toLocaleString()}`, sub: "After refunds" },
         ].map((stat) => (
-          <div key={stat.label} className="bg-card rounded-2xl p-3 md:p-4 shadow-soft overflow-hidden">
-            <p className="text-base md:text-lg font-bold truncate">{stat.value}</p>
-            <p className="text-[10px] md:text-xs font-medium text-muted-foreground mt-0.5 truncate">{stat.label}</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{stat.sub}</p>
+          <div key={stat.label} className="bg-card rounded-2xl p-3 md:p-4 shadow-soft">
+            <p className="text-base md:text-lg font-bold break-all leading-tight">{stat.value}</p>
+            <p className="text-[10px] md:text-xs font-medium text-muted-foreground mt-0.5">{stat.label}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{stat.sub}</p>
           </div>
         ))}
       </div>
