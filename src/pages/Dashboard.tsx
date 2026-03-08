@@ -38,6 +38,8 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<Profile>({ full_name: "", phone: "" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [orderSearch, setOrderSearch] = useState("");
+  const [orderStatusFilter, setOrderStatusFilter] = useState("");
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
