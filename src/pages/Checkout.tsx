@@ -68,9 +68,16 @@ export default function Checkout() {
   const finalTotal = totalPrice - discount + deliveryFee;
 
   const handlePlaceOrder = async () => {
-    if (!form.firstName || !form.phone || !form.address || !form.city || !form.pincode) {
-      toast.error("Please fill in all address fields");
-      return;
+    if (addressMode === "saved") {
+      if (!selectedAddress) {
+        toast.error("Please select a saved address");
+        return;
+      }
+    } else {
+      if (!form.firstName || !form.phone || !form.address || !form.city || !form.pincode) {
+        toast.error("Please fill in all address fields");
+        return;
+      }
     }
 
     if (!user) {
