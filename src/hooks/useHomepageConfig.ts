@@ -117,16 +117,18 @@ export interface HomepageConfig {
   footer: FooterConfig;
 }
 
-export const BUILTIN_SECTION_IDS = ["banners", "hero", "categories", "trending", "howItWorks", "reviews"];
+export const BUILTIN_SECTION_IDS = ["banners", "hero", "categories", "trending", "howItWorks", "reviews", "sectionNav", "footer"];
 
 export const DEFAULT_HOMEPAGE_CONFIG: HomepageConfig = {
   sections: [
     { id: "banners", visible: true },
+    { id: "sectionNav", visible: true },
     { id: "hero", visible: true },
     { id: "categories", visible: true },
     { id: "trending", visible: true },
     { id: "howItWorks", visible: true },
     { id: "reviews", visible: true },
+    { id: "footer", visible: true },
   ],
   hero: {
     badge: "🎂 Freshly Baked, Daily",
