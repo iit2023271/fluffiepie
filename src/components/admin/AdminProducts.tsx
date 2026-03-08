@@ -19,7 +19,6 @@ const emptyProduct = {
 export default function AdminProducts() {
   const { categories: categoryOptions, flavours: flavourOptions, occasions: occasionOptions } = useStoreConfig();
 
-export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
