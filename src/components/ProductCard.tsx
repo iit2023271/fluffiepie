@@ -17,6 +17,14 @@ interface Props {
 export default function ProductCard({ product, index = 0, isWishlisted = false, onToggleWishlist }: Props) {
   const { dispatch } = useCart();
   const { user } = useAuth();
+  const { productTags } = useStoreConfig();
+  
+  // Get the product's active tag and its color
+  const activeTag = product.tags?.[0];
+  const tagDef = activeTag ? productTags.find(t => t.name === activeTag) : null;
+  // Fallback for legacy is_bestseller/is_new
+  const displayTag = tagDef || (product.isBestseller ? { name: "Bestseller", bgColor: "", textColor: "" } : product.isNew ? { name: "New", bgColor: "", textColor: "" } : null);
+  const isLegacyTag = !tagDef && displayTag;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
