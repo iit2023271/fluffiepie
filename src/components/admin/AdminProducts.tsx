@@ -240,7 +240,7 @@ export default function AdminProducts() {
 
     const payload: any = {
       name: form.name, slug: form.slug, description: form.description, category: form.category || "",
-      occasion: form.occasion, flavour: form.flavour || "", base_price: form.base_price,
+      occasion: form.occasion, flavour: form.flavour || "", base_price: form.base_price, original_price: form.original_price || null,
       weights: form.weights as any, is_new: form.is_new, is_bestseller: form.is_bestseller,
       is_active: form.is_active, image_url: imageUrl, images: allImages,
       stock_quantity: form.stock_quantity, low_stock_threshold: form.low_stock_threshold,
