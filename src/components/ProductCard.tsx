@@ -31,7 +31,7 @@ function ProductCard({ product, index = 0, isWishlisted = false, onToggleWishlis
   const tagDef = activeTag ? productTags.find(t => t.name === activeTag) : null;
   const displayTag = tagDef || (product.isBestseller ? { name: "Bestseller", bgColor: "", textColor: "" } : product.isNew ? { name: "New", bgColor: "", textColor: "" } : null);
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (isSoldOut) {
@@ -48,7 +48,7 @@ function ProductCard({ product, index = 0, isWishlisted = false, onToggleWishlis
       },
     });
     toast.success(`${product.name} added to cart!`);
-  };
+  }, [product, defaultWeight, isSoldOut, dispatch]);
 
   const handleIncrement = (e: React.MouseEvent) => {
     e.preventDefault();
