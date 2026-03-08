@@ -117,6 +117,7 @@ export default function AdminPanel() {
           {activeTab === "orders" && <AdminOrders />}
           {activeTab === "kitchen" && <AdminKitchen />}
           {activeTab === "users" && <AdminUsers />}
+          {activeTab === "reviews" && <AdminReviews />}
           {activeTab === "settings" && <AdminSettings />}
         </main>
       </div>
