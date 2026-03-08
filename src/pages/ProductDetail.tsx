@@ -16,7 +16,7 @@ const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transi
 
 export default function ProductDetail() {
   const { slug } = useParams();
-  const { data: product, isLoading } = useProduct(slug);
+  const { data: product } = useProduct(slug);
   const { data: allProducts = [] } = useProducts();
   const { dispatch } = useCart();
   const { addViewed } = useRecentlyViewed();
