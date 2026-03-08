@@ -149,7 +149,7 @@ export default function Shop() {
         {/* Product grid */}
         <div className="flex-1">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-            {filtered.map((product, i) => (
+            {paginatedProducts.map((product, i) => (
               <ProductCard key={product.id} product={product} index={i} />
             ))}
           </div>
@@ -159,6 +159,13 @@ export default function Shop() {
               <button onClick={clearFilters} className="mt-4 text-primary hover:underline text-sm">Clear all filters</button>
             </div>
           )}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(p) => { setCurrentPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            totalItems={filtered.length}
+            itemsPerPage={ITEMS_PER_PAGE}
+          />
         </div>
       </div>
     </div>

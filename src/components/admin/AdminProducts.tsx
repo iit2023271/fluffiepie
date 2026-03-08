@@ -391,6 +391,9 @@ export default function AdminProducts() {
           {filtered.length === 0 && (
             <div className="py-10 text-center text-sm text-muted-foreground">No products found.</div>
           )}
+          <div className="px-4 pb-4">
+            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filtered.length} itemsPerPage={ITEMS_PER_PAGE} />
+          </div>
         </div>
       )}
     </div>

@@ -51,6 +51,7 @@ export default function AdminUsers() {
   };
 
   const filtered = useMemo(() => {
+    setCurrentPage(1);
     let result = [...users];
     if (search) {
       const q = search.toLowerCase();

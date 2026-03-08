@@ -123,6 +123,7 @@ export default function AdminOrders() {
           {filtered.length === 0 && (
             <div className="py-10 text-center text-sm text-muted-foreground">No orders found.</div>
           )}
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filtered.length} itemsPerPage={ITEMS_PER_PAGE} />
         </div>
       )}
     </div>
