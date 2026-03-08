@@ -237,9 +237,11 @@ export default function AdminOrders() {
       const orderDate = new Date(o.created_at);
       const matchDateFrom = !dateFrom || orderDate >= startOfDay(dateFrom);
       const matchDateTo = !dateTo || orderDate <= endOfDay(dateTo);
-      return matchSearch && matchStatus && matchDateFrom && matchDateTo;
+      // When searching, show all orders; otherwise default to today only unless "All Orders" is toggled
+      const matchToday = search ? true : showAllOrders ? true : isToday(orderDate);
+      return matchSearch && matchStatus && matchDateFrom && matchDateTo && matchToday;
     });
-  }, [orders, search, statusFilter, dateFrom, dateTo]);
+  }, [orders, search, statusFilter, dateFrom, dateTo, showAllOrders]);
 
   useEffect(() => { setCurrentPage(1); }, [search, statusFilter, dateFrom, dateTo]);
 
