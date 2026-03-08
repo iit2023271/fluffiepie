@@ -16,6 +16,7 @@ export interface Product {
   occasion: string[];
   flavour: string;
   image: string;
+  images: string[];
   basePrice: number;
   rating: number;
   reviewCount: number;

@@ -76,6 +76,7 @@ export function useProduct(slug: string | undefined) {
         occasion: data.occasion || [],
         flavour: data.flavour,
         image: data.image_url || mock?.image || "",
+        images: (data as any).images || [],
         basePrice: data.base_price,
         rating: Number(data.rating),
         reviewCount: data.review_count,
