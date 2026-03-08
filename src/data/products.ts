@@ -24,6 +24,7 @@ export interface Product {
   isNew?: boolean;
   isBestseller?: boolean;
   tags?: string[];
+  stockQuantity?: number;
   custom_attributes?: Record<string, string | string[]>;
 }
 

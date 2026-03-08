@@ -39,6 +39,7 @@ export function useProducts() {
           isNew: p.is_new,
           isBestseller: p.is_bestseller,
           tags: (p as any).tags || [],
+          stockQuantity: p.stock_quantity ?? 100,
           custom_attributes: (p as any).custom_attributes || {},
         };
       });

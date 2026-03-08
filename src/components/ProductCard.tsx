@@ -18,6 +18,7 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
   const { dispatch } = useCart();
   const { user } = useAuth();
   const { productTags } = useStoreConfig();
+  const isSoldOut = (product.stockQuantity ?? 100) <= 0;
   
   // Get the product's active tag and its color
   const activeTag = product.tags?.[0];
