@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, X, Trash2, Tag, Layers, Palette, Calendar, Pencil, Upload, Image, Eye, EyeOff, BarChart3, Crop, Mail, Bell, BellOff, Send, CheckCircle2, AlertCircle } from "lucide-react";
+import { Plus, X, Trash2, Tag, Layers, Palette, Calendar, Pencil, Upload, Image, Eye, EyeOff, BarChart3, Crop, Mail, Bell, BellOff, Send, CheckCircle2, AlertCircle, MapPin, Phone } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+import ImageCropper from "@/components/admin/ImageCropper";
+import ConfirmDialog from "@/components/admin/ConfirmDialog";
+import { DEFAULT_STORE_INFO, type StoreInfo } from "@/hooks/useStoreInfo";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
