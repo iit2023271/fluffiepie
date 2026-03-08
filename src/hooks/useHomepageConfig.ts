@@ -266,6 +266,7 @@ export function useHomepageConfig() {
             howItWorks: { ...DEFAULT_HOMEPAGE_CONFIG.howItWorks, ...(parsed.howItWorks || {}) },
             reviews: { ...DEFAULT_HOMEPAGE_CONFIG.reviews, ...(parsed.reviews || {}) },
             sectionNav: { ...DEFAULT_HOMEPAGE_CONFIG.sectionNav, ...(parsed.sectionNav || {}), items: parsed.sectionNav?.items || DEFAULT_HOMEPAGE_CONFIG.sectionNav.items },
+            footer: { ...DEFAULT_HOMEPAGE_CONFIG.footer, ...(parsed.footer || {}), columns: parsed.footer?.columns || DEFAULT_HOMEPAGE_CONFIG.footer.columns },
             sections: parsed.sections || DEFAULT_HOMEPAGE_CONFIG.sections,
           });
         } catch { /* use defaults */ }
