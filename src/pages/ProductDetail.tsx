@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Star, ShoppingCart, Heart, Minus, Plus, ChevronLeft, Truck, Shield, Clock } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Star, ShoppingCart, Heart, Minus, Plus, ChevronLeft, Truck, Shield, Clock, X, ChevronRight, ZoomIn } from "lucide-react";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/context/CartContext";
 import ProductCard from "@/components/ProductCard";
