@@ -110,6 +110,12 @@ export default function AdminSettings() {
   const [newTagName, setNewTagName] = useState("");
   const [newTagBg, setNewTagBg] = useState("#c0392b");
   const [newTagText, setNewTagText] = useState("#ffffff");
+  
+  // Editing existing tag state
+  const [editingTagId, setEditingTagId] = useState<string | null>(null);
+  const [editTagName, setEditTagName] = useState("");
+  const [editTagBg, setEditTagBg] = useState("#c0392b");
+  const [editTagText, setEditTagText] = useState("#ffffff");
 
   // Confirm dialog state
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; type: "config" | "coupon" | "banner"; id: string; name: string }>({ open: false, type: "config", id: "", name: "" });
@@ -166,34 +172,82 @@ export default function AdminSettings() {
     loadAll();
   };
 
+  const hexToHslLocal = (hex: string) => {
+    let r = 0, g = 0, b = 0;
+    if (hex.length === 7) {
+      r = parseInt(hex.substring(1, 3), 16); g = parseInt(hex.substring(3, 5), 16); b = parseInt(hex.substring(5, 7), 16);
+    }
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0;
+    const l = (max + min) / 2;
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+        case g: h = ((b - r) / d + 2) / 6; break;
+        case b: h = ((r - g) / d + 4) / 6; break;
+      }
+    }
+    return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+  };
+
+  const hslToHex = (hsl: string) => {
+    const parts = hsl.match(/[\d.]+/g);
+    if (!parts || parts.length < 3) return "#c0392b";
+    let h = parseFloat(parts[0]) / 360, s = parseFloat(parts[1]) / 100, l = parseFloat(parts[2]) / 100;
+    const hue2rgb = (p: number, q: number, t: number) => { if (t < 0) t += 1; if (t > 1) t -= 1; if (t < 1/6) return p + (q - p) * 6 * t; if (t < 1/2) return q; if (t < 2/3) return p + (q - p) * (2/3 - t) * 6; return p; };
+    let r, g, b;
+    if (s === 0) { r = g = b = l; } else {
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1/3); g = hue2rgb(p, q, h); b = hue2rgb(p, q, h - 1/3);
+    }
+    const toHex = (x: number) => Math.round(x * 255).toString(16).padStart(2, "0");
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  };
+
   const addProductTag = async () => {
     if (!newTagName.trim()) { toast.error("Enter a tag name"); return; }
-    const hexToHslLocal = (hex: string) => {
-      let r = 0, g = 0, b = 0;
-      if (hex.length === 7) {
-        r = parseInt(hex.substring(1, 3), 16); g = parseInt(hex.substring(3, 5), 16); b = parseInt(hex.substring(5, 7), 16);
-      }
-      r /= 255; g /= 255; b /= 255;
-      const max = Math.max(r, g, b), min = Math.min(r, g, b);
-      let h = 0, s = 0;
-      const l = (max + min) / 2;
-      if (max !== min) {
-        const d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        switch (max) {
-          case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-          case g: h = ((b - r) / d + 2) / 6; break;
-          case b: h = ((r - g) / d + 4) / 6; break;
-        }
-      }
-      return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
-    };
     const tagValue = JSON.stringify({ name: newTagName.trim(), bgColor: hexToHslLocal(newTagBg), textColor: hexToHslLocal(newTagText) });
     const maxOrder = configItems.filter(c => c.config_type === "product_tag").reduce((m, c) => Math.max(m, c.sort_order), 0);
     const { error } = await supabase.from("store_config").insert({ config_type: "product_tag", value: tagValue, sort_order: maxOrder + 1 });
     if (error) { toast.error("Failed to add tag"); return; }
     toast.success(`Tag "${newTagName.trim()}" added!`);
     setNewTagName(""); setNewTagBg("#c0392b"); setNewTagText("#ffffff");
+    loadAll();
+  };
+
+  const startEditTag = (item: ConfigItem) => {
+    let tag: { name: string; bgColor: string; textColor: string };
+    try { tag = JSON.parse(item.value); } catch { tag = { name: item.value, bgColor: "350 45% 55%", textColor: "0 0% 100%" }; }
+    setEditingTagId(item.id);
+    setEditTagName(tag.name);
+    setEditTagBg(hslToHex(tag.bgColor));
+    setEditTagText(hslToHex(tag.textColor));
+  };
+
+  const saveEditTag = async () => {
+    if (!editingTagId || !editTagName.trim()) { toast.error("Enter a tag name"); return; }
+    // Find old tag name to update products if name changed
+    const oldItem = configItems.find(c => c.id === editingTagId);
+    let oldName = "";
+    if (oldItem) { try { oldName = JSON.parse(oldItem.value).name; } catch { oldName = oldItem.value; } }
+    const tagValue = JSON.stringify({ name: editTagName.trim(), bgColor: hexToHslLocal(editTagBg), textColor: hexToHslLocal(editTagText) });
+    const { error } = await supabase.from("store_config").update({ value: tagValue }).eq("id", editingTagId);
+    if (error) { toast.error("Failed to update tag"); return; }
+    // If name changed, update all products that had the old tag name
+    if (oldName && oldName !== editTagName.trim()) {
+      const { data: products } = await supabase.from("products").select("id, tags").contains("tags", [oldName]);
+      if (products) {
+        for (const p of products) {
+          const newTags = (p.tags as string[]).map(t => t === oldName ? editTagName.trim() : t);
+          await supabase.from("products").update({ tags: newTags }).eq("id", p.id);
+        }
+      }
+    }
+    toast.success(`Tag "${editTagName.trim()}" updated!`);
+    setEditingTagId(null);
     loadAll();
   };
 
@@ -476,21 +530,50 @@ export default function AdminSettings() {
             <p className="text-xs text-muted-foreground mb-4">Tags like Bestseller, New, Limited Edition — each product can have one tag with a custom color badge</p>
             
             {/* Existing tags */}
-            <div className="flex flex-wrap gap-3 mb-5">
+            <div className="space-y-3 mb-5">
               {configItems.filter(c => c.config_type === "product_tag").map(item => {
                 let tag: { name: string; bgColor: string; textColor: string };
                 try { tag = JSON.parse(item.value); } catch { tag = { name: item.value, bgColor: "350 45% 55%", textColor: "0 0% 100%" }; }
+                const isEditing = editingTagId === item.id;
                 return (
-                  <div key={item.id} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-secondary/30">
-                    <span
-                      className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                      style={{ backgroundColor: `hsl(${tag.bgColor})`, color: `hsl(${tag.textColor})` }}
-                    >
-                      {tag.name}
-                    </span>
-                    <button onClick={() => setDeleteConfirm({ open: true, type: "config", id: item.id, name: tag.name })} className="text-muted-foreground hover:text-destructive">
-                      <X className="w-3.5 h-3.5" />
-                    </button>
+                  <div key={item.id} className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl border border-border bg-secondary/30">
+                    {isEditing ? (
+                      <>
+                        <input
+                          value={editTagName}
+                          onChange={(e) => setEditTagName(e.target.value)}
+                          className="px-3 py-1.5 rounded-lg border border-border text-sm focus:outline-none focus:border-primary bg-background w-40"
+                        />
+                        <div className="flex items-center gap-1.5">
+                          <label className="text-[10px] text-muted-foreground">BG</label>
+                          <input type="color" value={editTagBg} onChange={(e) => setEditTagBg(e.target.value)} className="w-7 h-7 rounded border border-border cursor-pointer" />
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <label className="text-[10px] text-muted-foreground">Text</label>
+                          <input type="color" value={editTagText} onChange={(e) => setEditTagText(e.target.value)} className="w-7 h-7 rounded border border-border cursor-pointer" />
+                        </div>
+                        <span className="px-2.5 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: editTagBg, color: editTagText }}>
+                          {editTagName || "Tag"}
+                        </span>
+                        <button onClick={saveEditTag} className="px-3 py-1 bg-primary text-primary-foreground rounded-lg text-xs font-medium hover:opacity-90">Save</button>
+                        <button onClick={() => setEditingTagId(null)} className="px-3 py-1 bg-secondary text-foreground rounded-lg text-xs font-medium hover:opacity-90">Cancel</button>
+                      </>
+                    ) : (
+                      <>
+                        <span
+                          className="px-2.5 py-1 rounded-full text-xs font-semibold"
+                          style={{ backgroundColor: `hsl(${tag.bgColor})`, color: `hsl(${tag.textColor})` }}
+                        >
+                          {tag.name}
+                        </span>
+                        <button onClick={() => startEditTag(item)} className="text-muted-foreground hover:text-primary text-xs flex items-center gap-1">
+                          <Pencil className="w-3 h-3" /> Edit
+                        </button>
+                        <button onClick={() => setDeleteConfirm({ open: true, type: "config", id: item.id, name: tag.name })} className="text-muted-foreground hover:text-destructive text-xs flex items-center gap-1">
+                          <X className="w-3.5 h-3.5" /> Delete
+                        </button>
+                      </>
+                    )}
                   </div>
                 );
               })}
