@@ -188,6 +188,24 @@ export default function Dashboard() {
     window.open(url, "_blank");
   };
 
+  const canCancelOrder = (order: Order) => {
+    if (order.status !== "placed") return false;
+    const minutesSincePlaced = differenceInMinutes(new Date(), new Date(order.created_at));
+    return minutesSincePlaced <= CANCEL_WINDOW_MINUTES;
+  };
+
+  const cancelOrder = async (orderId: string) => {
+    const { error } = await supabase.from("orders").update({ status: "cancelled" }).eq("id", orderId);
+    if (error) toast.error("Failed to cancel order");
+    else {
+      toast.success("Order cancelled");
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: "cancelled" } : o));
+    }
+    setCancelConfirm({ open: false, orderId: "" });
+  };
+
+  const wishlistProducts = allProducts.filter(p => isWishlisted(p.id));
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
