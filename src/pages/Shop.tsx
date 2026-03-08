@@ -60,6 +60,21 @@ export default function Shop() {
     // Price range filter
     result = result.filter(p => p.basePrice >= priceRange[0] && p.basePrice <= priceRange[1]);
 
+    // Tag filter
+    if (selectedTag) {
+      result = result.filter(p => p.tags && p.tags.includes(selectedTag));
+    }
+
+    // Discount filter
+    if (discountFilter) {
+      const minDiscount = parseInt(discountFilter);
+      result = result.filter(p => {
+        if (!p.originalPrice || p.originalPrice <= p.basePrice) return false;
+        const pct = Math.round(((p.originalPrice - p.basePrice) / p.originalPrice) * 100);
+        return pct >= minDiscount;
+      });
+    }
+
     const normalize = (value: unknown) => String(value ?? "").trim().toLowerCase();
     for (const [filterType, filterValue] of Object.entries(selectedFilters)) {
       if (!filterValue) continue;
@@ -88,7 +103,7 @@ export default function Shop() {
       default: result.sort((a, b) => b.reviewCount - a.reviewCount);
     }
     return result;
-  }, [searchQuery, selectedFilters, sortBy, products, priceRange]);
+  }, [searchQuery, selectedFilters, sortBy, products, priceRange, selectedTag, discountFilter]);
 
   useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedFilters, sortBy, priceRange]);
 
