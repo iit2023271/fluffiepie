@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, formatDistanceToNow, startOfDay, endOfDay, isToday, isTomorrow, isYesterday } from "date-fns";
-import { Search, MessageSquare, Send, Download, ChevronDown, ChevronUp, Trash2, Info, Calendar as CalendarIcon, X, Clock, MapPin, Phone, User, Package, Truck, CheckCircle2, XCircle, Timer, Copy } from "lucide-react";
+import { Search, MessageSquare, Send, Download, ChevronDown, ChevronUp, Trash2, Calendar as CalendarIcon, X, Clock, MapPin, Phone, Package, Truck, CheckCircle2, Timer, Copy } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
