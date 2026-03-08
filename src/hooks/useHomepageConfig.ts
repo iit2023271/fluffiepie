@@ -17,6 +17,10 @@ export interface CustomSectionData {
   ctaButtonLink?: string;
   ctaBg?: "primary" | "blush" | "cream" | "muted";
   ctaBgImage?: string;
+  ctaHeight?: "compact" | "medium" | "tall" | "full";
+  ctaImageFit?: "cover" | "contain";
+  ctaLayout?: "center" | "left" | "right";
+  ctaOverlayOpacity?: number;
   // feature_grid
   gridTitle?: string;
   gridSubtitle?: string;

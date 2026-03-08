@@ -708,13 +708,68 @@ function CtaBannerEditor({ data, onChange }: { data: CustomSectionData; onChange
         </div>
       </div>
 
+      {/* Layout Controls */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-3 rounded-xl bg-muted/50 border">
+        <div>
+          <Label className="text-xs">📐 Banner Height</Label>
+          <Select value={data.ctaHeight || "medium"} onValueChange={v => onChange({ ctaHeight: v as any })}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="compact">Compact (Small)</SelectItem>
+              <SelectItem value="medium">Medium (Default)</SelectItem>
+              <SelectItem value="tall">Tall (Large)</SelectItem>
+              <SelectItem value="full">Full Screen</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label className="text-xs">📍 Text Alignment</Label>
+          <Select value={data.ctaLayout || "center"} onValueChange={v => onChange({ ctaLayout: v as any })}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="left">Left Aligned</SelectItem>
+              <SelectItem value="center">Center (Default)</SelectItem>
+              <SelectItem value="right">Right Aligned</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label className="text-xs">🖼️ Image Fit</Label>
+          <Select value={data.ctaImageFit || "cover"} onValueChange={v => onChange({ ctaImageFit: v as any })}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="cover">Cover (Fill & Crop)</SelectItem>
+              <SelectItem value="contain">Contain (Show Full)</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-[9px] text-muted-foreground mt-0.5">Contain shows the full image on mobile</p>
+        </div>
+      </div>
+
+      {/* Overlay Opacity */}
+      {data.ctaBgImage && (
+        <div className="space-y-1">
+          <Label className="text-xs">🌗 Overlay Darkness: {data.ctaOverlayOpacity ?? 50}%</Label>
+          <input
+            type="range"
+            min={0}
+            max={90}
+            step={5}
+            value={data.ctaOverlayOpacity ?? 50}
+            onChange={e => onChange({ ctaOverlayOpacity: Number(e.target.value) })}
+            className="w-full accent-primary"
+          />
+          <p className="text-[9px] text-muted-foreground">Controls how dark the overlay is over the background image</p>
+        </div>
+      )}
+
       {/* Background Image (optional) */}
       <div className="space-y-2">
         <Label className="text-xs font-semibold uppercase tracking-wider">Background Image (optional)</Label>
         <p className="text-[10px] text-muted-foreground">Overrides the background color when set.</p>
         {data.ctaBgImage && (
           <div className="relative w-full h-32 rounded-xl overflow-hidden bg-muted">
-            <img src={data.ctaBgImage} alt="CTA background" className="w-full h-full object-cover" />
+            <img src={data.ctaBgImage} alt="CTA background" className={`w-full h-full ${(data.ctaImageFit || "cover") === "contain" ? "object-contain" : "object-cover"}`} />
             <div className="absolute inset-0 bg-foreground/40 flex items-center justify-center gap-2">
               <button
                 onClick={() => setCropState({ open: true, src: data.ctaBgImage! })}
@@ -749,9 +804,9 @@ function CtaBannerEditor({ data, onChange }: { data: CustomSectionData; onChange
       <ImageCropper
         open={cropState.open}
         imageSrc={cropState.src}
-        aspect={21 / 9}
         onCropComplete={handleCropComplete}
         onClose={() => setCropState({ open: false, src: "" })}
+        showAspectPresets
       />
     </div>
   );
