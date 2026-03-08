@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, X, Trash2, Tag, Layers, Palette, Calendar, Pencil, Upload, Image, Eye, EyeOff, BarChart3, Crop, Mail, Bell, BellOff, Send, CheckCircle2, AlertCircle, MapPin, Phone } from "lucide-react";
+import { Plus, X, Trash2, Tag, Layers, Palette, Calendar, Pencil, Upload, Image, Eye, EyeOff, BarChart3, Crop, Mail, Bell, BellOff, Send, CheckCircle2, AlertCircle, MapPin, Phone, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import ImageCropper from "@/components/admin/ImageCropper";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { DEFAULT_STORE_INFO, type StoreInfo } from "@/hooks/useStoreInfo";
+import { DEFAULT_DELIVERY_CONFIG, type DeliveryConfig } from "@/hooks/useDeliveryConfig";
 
 interface ConfigItem {
   id: string;
@@ -48,7 +49,7 @@ const BUILTIN_CONFIG_SECTIONS = [
 ];
 
 // Reserved config types that should not show as product filter sections
-const RESERVED_CONFIG_TYPES = ["homepage_config", "email_notification", "store_info", "filter_section"];
+const RESERVED_CONFIG_TYPES = ["homepage_config", "email_notification", "store_info", "filter_section", "delivery_settings"];
 
 const emptyCoupon = {
   code: "", discount_type: "percentage", discount_value: 10, min_order_amount: 0,
@@ -69,7 +70,7 @@ export default function AdminSettings() {
   const [showNewSectionForm, setShowNewSectionForm] = useState(false);
   const [newSectionLabel, setNewSectionLabel] = useState("");
   const [newSectionMulti, setNewSectionMulti] = useState(false);
-  const [activeSection, setActiveSection] = useState<"config" | "coupons" | "banners" | "notifications" | "storeinfo">("config");
+  const [activeSection, setActiveSection] = useState<"config" | "coupons" | "banners" | "notifications" | "storeinfo" | "delivery">("config");
   const [storeInfoForm, setStoreInfoForm] = useState<StoreInfo>(DEFAULT_STORE_INFO);
   const [storeInfoId, setStoreInfoId] = useState<string | null>(null);
   const [savingStoreInfo, setSavingStoreInfo] = useState(false);
@@ -92,6 +93,10 @@ export default function AdminSettings() {
   const [testingEmail, setTestingEmail] = useState<string | null>(null);
   const [editingConfigItem, setEditingConfigItem] = useState<string | null>(null);
   const [editingConfigValue, setEditingConfigValue] = useState("");
+  const [deliveryForm, setDeliveryForm] = useState<DeliveryConfig>(DEFAULT_DELIVERY_CONFIG);
+  const [deliveryConfigId, setDeliveryConfigId] = useState<string | null>(null);
+  const [savingDelivery, setSavingDelivery] = useState(false);
+  const [newTimeSlot, setNewTimeSlot] = useState("");
 
   // Confirm dialog state
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; type: "config" | "coupon" | "banner"; id: string; name: string }>({ open: false, type: "config", id: "", name: "" });
@@ -120,6 +125,14 @@ export default function AdminSettings() {
         try {
           setStoreInfoForm({ ...DEFAULT_STORE_INFO, ...JSON.parse(storeInfoRow.value) });
           setStoreInfoId(storeInfoRow.id);
+        } catch { /* use defaults */ }
+      }
+      // Load delivery config
+      const deliveryRow = (configRes.data as ConfigItem[]).find(c => c.config_type === "delivery_settings");
+      if (deliveryRow) {
+        try {
+          setDeliveryForm({ ...DEFAULT_DELIVERY_CONFIG, ...JSON.parse(deliveryRow.value) });
+          setDeliveryConfigId(deliveryRow.id);
         } catch { /* use defaults */ }
       }
     }
@@ -290,6 +303,31 @@ export default function AdminSettings() {
     else { toast.success("Section removed"); loadAll(); }
   };
 
+  const saveDeliveryConfig = async () => {
+    setSavingDelivery(true);
+    const payload = JSON.stringify(deliveryForm);
+    if (deliveryConfigId) {
+      await supabase.from("store_config").update({ value: payload }).eq("id", deliveryConfigId);
+    } else {
+      const { data } = await supabase.from("store_config").insert({ config_type: "delivery_settings", value: payload, is_active: true, sort_order: 0 }).select("id").single();
+      if (data) setDeliveryConfigId(data.id);
+    }
+    toast.success("Delivery settings saved!");
+    setSavingDelivery(false);
+  };
+
+  const addTimeSlot = () => {
+    const slot = newTimeSlot.trim();
+    if (!slot) return;
+    if (deliveryForm.time_slots.includes(slot)) { toast.error("Already exists"); return; }
+    setDeliveryForm(prev => ({ ...prev, time_slots: [...prev.time_slots, slot] }));
+    setNewTimeSlot("");
+  };
+
+  const removeTimeSlot = (slot: string) => {
+    setDeliveryForm(prev => ({ ...prev, time_slots: prev.time_slots.filter(s => s !== slot) }));
+  };
+
   const handleDeleteConfirm = () => {
     if (deleteConfirm.type === "config") {
       if (deleteConfirm.id.startsWith("section:")) {
@@ -319,6 +357,7 @@ export default function AdminSettings() {
       <div className="flex gap-2 mb-6 flex-wrap">
         {[
           { key: "config" as const, label: "Store Config", icon: Layers },
+          { key: "delivery" as const, label: "Delivery", icon: Truck },
           { key: "storeinfo" as const, label: "Store Info", icon: MapPin },
           { key: "coupons" as const, label: "Coupons", icon: Tag },
           { key: "banners" as const, label: "Banners", icon: Image },
@@ -896,6 +935,70 @@ export default function AdminSettings() {
               {savingStoreInfo ? "Saving..." : "Save Store Info"}
             </Button>
           </div>
+        </div>
+      )}
+
+      {activeSection === "delivery" && (
+        <div className="bg-card rounded-2xl p-6 shadow-soft space-y-6">
+          <div>
+            <h3 className="font-display font-semibold text-lg flex items-center gap-2 mb-1">
+              <Truck className="w-5 h-5 text-primary" /> Delivery Settings
+            </h3>
+            <p className="text-xs text-muted-foreground mb-4">Configure delivery fees and available time slots</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Delivery Fee (₹)</label>
+              <input
+                type="number"
+                value={deliveryForm.delivery_fee}
+                onChange={(e) => setDeliveryForm(prev => ({ ...prev, delivery_fee: Number(e.target.value) }))}
+                className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Charged when order is below free delivery threshold</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Free Delivery Threshold (₹)</label>
+              <input
+                type="number"
+                value={deliveryForm.free_delivery_threshold}
+                onChange={(e) => setDeliveryForm(prev => ({ ...prev, free_delivery_threshold: Number(e.target.value) }))}
+                className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Orders above this amount get free delivery</p>
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2 block">Available Time Slots</label>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {deliveryForm.time_slots.map((slot) => (
+                <span key={slot} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border border-primary/30 bg-primary/5">
+                  {slot}
+                  <button onClick={() => removeTimeSlot(slot)} className="hover:text-destructive">
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                placeholder="e.g. 9:00 AM"
+                value={newTimeSlot}
+                onChange={(e) => setNewTimeSlot(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addTimeSlot()}
+                className="max-w-[200px] px-3 py-1.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background"
+              />
+              <Button size="sm" variant="outline" className="text-xs" onClick={addTimeSlot}>
+                <Plus className="w-3 h-3 mr-1" /> Add Slot
+              </Button>
+            </div>
+          </div>
+
+          <Button onClick={saveDeliveryConfig} disabled={savingDelivery} className="mt-2">
+            {savingDelivery ? "Saving..." : "Save Delivery Settings"}
+          </Button>
         </div>
       )}
 
