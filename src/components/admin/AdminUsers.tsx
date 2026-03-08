@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { ChevronDown, ChevronUp, MapPin, ShoppingBag, User, Search, Tag, X, Download, Clock, Truck, CheckCircle2 } from "lucide-react";
+import { ChevronDown, ChevronUp, MapPin, ShoppingBag, User, Search, Tag, X, Download, Clock, Truck, CheckCircle2, Shield, ShieldOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/components/Pagination";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
+import { useAuth } from "@/context/AuthContext";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -15,9 +16,11 @@ interface UserDetail {
   addresses: any[];
   orders: any[];
   tags: string[];
+  isAdmin: boolean;
 }
 
 export default function AdminUsers() {
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<UserDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
@@ -29,22 +32,25 @@ export default function AdminUsers() {
   const [newTag, setNewTag] = useState("");
   const [allTags, setAllTags] = useState<string[]>([]);
   const [removeTagConfirm, setRemoveTagConfirm] = useState<{ open: boolean; userId: string; tag: string }>({ open: false, userId: "", tag: "" });
+  const [adminConfirm, setAdminConfirm] = useState<{ open: boolean; userId: string; isAdmin: boolean; name: string }>({ open: false, userId: "", isAdmin: false, name: "" });
 
   useEffect(() => { loadUsers(); }, []);
 
   const loadUsers = async () => {
     setLoading(true);
-    const [profilesRes, addressesRes, ordersRes, tagsRes] = await Promise.all([
+    const [profilesRes, addressesRes, ordersRes, tagsRes, rolesRes] = await Promise.all([
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("addresses").select("*"),
       supabase.from("orders").select("*").order("created_at", { ascending: false }),
       supabase.from("customer_tags").select("*"),
+      supabase.from("user_roles").select("*"),
     ]);
 
     const profiles = profilesRes.data || [];
     const addresses = addressesRes.data || [];
     const orders = ordersRes.data || [];
     const tags = tagsRes.data || [];
+    const roles = rolesRes.data || [];
 
     const uniqueTags = [...new Set(tags.map((t: any) => t.tag))];
     setAllTags(uniqueTags);
@@ -54,10 +60,29 @@ export default function AdminUsers() {
       addresses: addresses.filter((a) => a.user_id === p.user_id),
       orders: orders.filter((o) => o.user_id === p.user_id),
       tags: tags.filter((t: any) => t.user_id === p.user_id).map((t: any) => t.tag),
+      isAdmin: roles.some((r: any) => r.user_id === p.user_id && r.role === "admin"),
     }));
 
     setUsers(combined);
     setLoading(false);
+  };
+
+  const toggleAdmin = async (userId: string, currentlyAdmin: boolean) => {
+    if (userId === currentUser?.id) {
+      toast.error("You cannot remove your own admin access");
+      return;
+    }
+    if (currentlyAdmin) {
+      const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", "admin");
+      if (error) toast.error("Failed to remove admin role");
+      else { toast.success("Admin role removed"); loadUsers(); }
+    } else {
+      const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: "admin" });
+      if (error) {
+        if (error.code === "23505") toast.error("User is already an admin");
+        else toast.error("Failed to assign admin role");
+      } else { toast.success("Admin role assigned"); loadUsers(); }
+    }
   };
 
   const addTag = async (userId: string, tag: string) => {
@@ -210,6 +235,9 @@ export default function AdminUsers() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-semibold truncate">{u.profile.full_name || "—"}</p>
+                        {u.isAdmin && (
+                          <Badge className="text-[10px] bg-primary/10 text-primary border-0 gap-1"><Shield className="w-2.5 h-2.5" />Admin</Badge>
+                        )}
                         {u.tags.map(t => (
                           <span key={t} className="px-1.5 py-0.5 rounded text-[10px] bg-accent/10 text-accent font-medium">{t}</span>
                         ))}
@@ -231,7 +259,17 @@ export default function AdminUsers() {
                   <div className="border-t border-border px-4 py-4 space-y-5 bg-muted/30">
                     {/* Profile info */}
                     <div>
-                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> Profile</h3>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> Profile</h3>
+                        <Button
+                          size="sm"
+                          variant={u.isAdmin ? "destructive" : "outline"}
+                          className="text-xs h-7 gap-1.5"
+                          onClick={() => setAdminConfirm({ open: true, userId: u.profile.user_id, isAdmin: u.isAdmin, name: u.profile.full_name || "this user" })}
+                        >
+                          {u.isAdmin ? <><ShieldOff className="w-3 h-3" /> Remove Admin</> : <><Shield className="w-3 h-3" /> Make Admin</>}
+                        </Button>
+                      </div>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <div className="bg-card rounded-lg p-3 border border-border">
                           <p className="text-xs text-muted-foreground">Phone</p>
@@ -420,6 +458,19 @@ export default function AdminUsers() {
         description={`Remove the tag "${removeTagConfirm.tag}" from this customer?`}
         confirmLabel="Remove"
         onConfirm={() => { removeTag(removeTagConfirm.userId, removeTagConfirm.tag); setRemoveTagConfirm({ open: false, userId: "", tag: "" }); }}
+      />
+
+      <ConfirmDialog
+        open={adminConfirm.open}
+        onOpenChange={(open) => setAdminConfirm(prev => ({ ...prev, open }))}
+        title={adminConfirm.isAdmin ? "Remove Admin Access" : "Grant Admin Access"}
+        description={adminConfirm.isAdmin
+          ? `Remove admin privileges from ${adminConfirm.name}? They will no longer be able to access the admin panel.`
+          : `Make ${adminConfirm.name} an admin? They will have full access to the admin panel including orders, products, and settings.`
+        }
+        confirmLabel={adminConfirm.isAdmin ? "Remove Admin" : "Make Admin"}
+        variant={adminConfirm.isAdmin ? "destructive" : "default"}
+        onConfirm={() => { toggleAdmin(adminConfirm.userId, adminConfirm.isAdmin); setAdminConfirm({ open: false, userId: "", isAdmin: false, name: "" }); }}
       />
     </div>
   );
