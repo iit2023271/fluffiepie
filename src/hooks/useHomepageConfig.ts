@@ -84,6 +84,7 @@ export interface CategoriesConfig {
   cardRadius?: "sm" | "md" | "lg" | "full";
   showOverlay?: boolean;
   overlayStyle?: "gradient" | "solid" | "none";
+  maxItems?: number;
 }
 
 export interface TrendingConfig {

@@ -601,7 +601,7 @@ export default function AdminHomepage() {
                 )}
 
                 {/* Layout Controls */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 rounded-xl bg-muted/50 border">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 p-3 rounded-xl bg-muted/50 border">
                   <div>
                     <Label className="text-xs">🔲 Columns</Label>
                     <Select value={String(config.categories.columns || 4)} onValueChange={v => updateCategories("columns", parseInt(v))}>
@@ -610,8 +610,15 @@ export default function AdminHomepage() {
                         <SelectItem value="2">2</SelectItem>
                         <SelectItem value="3">3</SelectItem>
                         <SelectItem value="4">4</SelectItem>
+                        <SelectItem value="5">5</SelectItem>
+                        <SelectItem value="6">6</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs">🔢 Max Items</Label>
+                    <Input type="number" min={1} max={20} value={config.categories.maxItems || ""} placeholder="All" onChange={e => updateCategories("maxItems", e.target.value ? parseInt(e.target.value) : 0)} className="mt-1" />
+                    <p className="text-[9px] text-muted-foreground mt-0.5">0 or empty = show all</p>
                   </div>
                   <div>
                     <Label className="text-xs">📐 Card Shape</Label>
