@@ -4,7 +4,7 @@ import { Plus, Pencil, Trash2, X, Upload, Search, AlertTriangle, Package, Crop }
 import Pagination from "@/components/Pagination";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
-import { useStoreConfig } from "@/hooks/useStoreConfig";
+import { useStoreConfig, BUILTIN_FILTER_TYPES } from "@/hooks/useStoreConfig";
 import { Badge } from "@/components/ui/badge";
 import ImageCropper from "@/components/admin/ImageCropper";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
@@ -14,14 +14,15 @@ const ITEMS_PER_PAGE = 10;
 type Product = Tables<"products">;
 
 const emptyProduct = {
-  name: "", slug: "", description: "", category: "Classic", occasion: [] as string[],
-  flavour: "Vanilla", base_price: 0, weights: [{ label: "500g", price: 0 }] as { label: string; price: number }[],
+  name: "", slug: "", description: "", category: "", occasion: [] as string[],
+  flavour: "", base_price: 0, weights: [{ label: "500g", price: 0 }] as { label: string; price: number }[],
   is_new: false, is_bestseller: false, is_active: true, image_url: null as string | null,
   stock_quantity: 100, low_stock_threshold: 10, sku: "",
+  custom_attributes: {} as Record<string, string | string[]>,
 };
 
 export default function AdminProducts() {
-  const { categories: categoryOptions, flavours: flavourOptions, occasions: occasionOptions } = useStoreConfig();
+  const { categories: categoryOptions, flavours: flavourOptions, occasions: occasionOptions, filterSections, customSectionDefs } = useStoreConfig();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,9 +63,9 @@ export default function AdminProducts() {
       name: product.name,
       slug: product.slug,
       description: product.description,
-      category: product.category,
+      category: product.category || "",
       occasion: product.occasion || [],
-      flavour: product.flavour,
+      flavour: product.flavour || "",
       base_price: product.base_price,
       weights: (product.weights as any) || [{ label: "500g", price: 0 }],
       is_new: product.is_new,
@@ -74,6 +75,7 @@ export default function AdminProducts() {
       stock_quantity: (product as any).stock_quantity ?? 100,
       low_stock_threshold: (product as any).low_stock_threshold ?? 10,
       sku: (product as any).sku || "",
+      custom_attributes: ((product as any).custom_attributes as Record<string, string | string[]>) || {},
     });
     setImageFile(null);
     setShowForm(true);
@@ -94,12 +96,12 @@ export default function AdminProducts() {
     setSaving(true);
     const imageUrl = await uploadImage();
     const payload: any = {
-      name: form.name, slug: form.slug, description: form.description, category: form.category,
-      occasion: form.occasion, flavour: form.flavour, base_price: form.base_price,
+      name: form.name, slug: form.slug, description: form.description, category: form.category || "",
+      occasion: form.occasion, flavour: form.flavour || "", base_price: form.base_price,
       weights: form.weights as any, is_new: form.is_new, is_bestseller: form.is_bestseller,
       is_active: form.is_active, image_url: imageUrl,
       stock_quantity: form.stock_quantity, low_stock_threshold: form.low_stock_threshold,
-      sku: form.sku || null,
+      sku: form.sku || null, custom_attributes: form.custom_attributes,
     };
 
     if (editing) {
@@ -276,12 +278,14 @@ export default function AdminProducts() {
                 <div>
                   <label className="text-xs font-medium mb-1 block">Category</label>
                   <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background">
+                    <option value="">None</option>
                     {categoryOptions.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="text-xs font-medium mb-1 block">Flavour</label>
                   <select value={form.flavour} onChange={(e) => setForm({ ...form, flavour: e.target.value })} className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background">
+                    <option value="">None</option>
                     {flavourOptions.map(f => <option key={f} value={f}>{f}</option>)}
                   </select>
                 </div>
@@ -322,6 +326,44 @@ export default function AdminProducts() {
                   ))}
                 </div>
               </div>
+
+              {/* Custom filter sections */}
+              {customSectionDefs.map(def => {
+                const sectionValues = filterSections.find(s => s.type === def.type)?.values || [];
+                if (!sectionValues.length) return null;
+                const currentVal = form.custom_attributes[def.type];
+
+                if (def.isMulti) {
+                  const selected = Array.isArray(currentVal) ? currentVal : [];
+                  return (
+                    <div key={def.type}>
+                      <label className="text-xs font-medium mb-1 block">{def.label}</label>
+                      <div className="flex flex-wrap gap-2">
+                        {sectionValues.map(val => (
+                          <button key={val} type="button" onClick={() => {
+                            const newSel = selected.includes(val) ? selected.filter(v => v !== val) : [...selected, val];
+                            setForm(f => ({ ...f, custom_attributes: { ...f.custom_attributes, [def.type]: newSel } }));
+                          }}
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${selected.includes(val) ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
+                            {val}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div key={def.type}>
+                      <label className="text-xs font-medium mb-1 block">{def.label}</label>
+                      <select value={(currentVal as string) || ""} onChange={(e) => setForm(f => ({ ...f, custom_attributes: { ...f.custom_attributes, [def.type]: e.target.value } }))}
+                        className="w-full max-w-xs px-3 py-2 rounded-xl border border-border text-sm bg-background">
+                        <option value="">None</option>
+                        {sectionValues.map(v => <option key={v} value={v}>{v}</option>)}
+                      </select>
+                    </div>
+                  );
+                }
+              })}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-medium">Weight Variants</label>

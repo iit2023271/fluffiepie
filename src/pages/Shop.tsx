@@ -13,12 +13,14 @@ export default function Shop() {
   const [searchParams] = useSearchParams();
   const initialOccasion = searchParams.get("occasion") || "";
   const { data: products = [] } = useProducts();
-  const { categories: categoryTypes, flavours, occasions } = useStoreConfig();
+  const { filterSections: allFilters } = useStoreConfig();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedOccasion, setSelectedOccasion] = useState(initialOccasion);
-  const [selectedFlavour, setSelectedFlavour] = useState("");
+  const [selectedFilters, setSelectedFilters] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {};
+    if (initialOccasion) init["occasion"] = initialOccasion;
+    return init;
+  });
   const [sortBy, setSortBy] = useState("popularity");
   const [showFilters, setShowFilters] = useState(false);
 
@@ -27,9 +29,26 @@ export default function Shop() {
   const filtered = useMemo(() => {
     let result = [...products];
     if (searchQuery) result = result.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase()));
-    if (selectedCategory) result = result.filter((p) => p.category === selectedCategory);
-    if (selectedOccasion) result = result.filter((p) => p.occasion.includes(selectedOccasion));
-    if (selectedFlavour) result = result.filter((p) => p.flavour === selectedFlavour);
+    
+    // Apply all selected filters
+    for (const [filterType, filterValue] of Object.entries(selectedFilters)) {
+      if (!filterValue) continue;
+      if (filterType === "category") {
+        result = result.filter((p) => p.category === filterValue);
+      } else if (filterType === "occasion") {
+        result = result.filter((p) => p.occasion.includes(filterValue));
+      } else if (filterType === "flavour") {
+        result = result.filter((p) => p.flavour === filterValue);
+      } else {
+        // Custom attribute filter
+        result = result.filter((p) => {
+          const attrs = (p as any).custom_attributes || {};
+          const val = attrs[filterType];
+          if (Array.isArray(val)) return val.includes(filterValue);
+          return val === filterValue;
+        });
+      }
+    }
 
     switch (sortBy) {
       case "price-low": result.sort((a, b) => a.basePrice - b.basePrice); break;
@@ -38,32 +57,33 @@ export default function Shop() {
       default: result.sort((a, b) => b.reviewCount - a.reviewCount);
     }
     return result;
-  }, [searchQuery, selectedCategory, selectedOccasion, selectedFlavour, sortBy, products]);
+  }, [searchQuery, selectedFilters, sortBy, products]);
 
-  useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedCategory, selectedOccasion, selectedFlavour, sortBy]);
+  useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedFilters, sortBy]);
 
-  const hasFilters = selectedCategory || selectedOccasion || selectedFlavour || searchQuery;
+  const hasFilters = Object.values(selectedFilters).some(v => v) || searchQuery;
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginatedProducts = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
-  // Reset page when filters change
   const clearFilters = () => {
     setSearchQuery("");
-    setSelectedCategory("");
-    setSelectedOccasion("");
-    setSelectedFlavour("");
+    setSelectedFilters({});
     setCurrentPage(1);
   };
 
-  const FilterSection = ({ title, options, selected, onSelect }: { title: string; options: string[]; selected: string; onSelect: (v: string) => void }) => (
+  const selectFilter = (type: string, value: string) => {
+    setSelectedFilters(prev => ({ ...prev, [type]: prev[type] === value ? "" : value }));
+  };
+
+  const FilterSectionUI = ({ title, options, selected, onSelect }: { title: string; options: string[]; selected: string; onSelect: (v: string) => void }) => (
     <div className="mb-6">
       <h4 className="text-sm font-semibold mb-3">{title}</h4>
       <div className="flex flex-wrap gap-2">
         {options.map((opt) => (
           <button
             key={opt}
-            onClick={() => onSelect(selected === opt ? "" : opt)}
+            onClick={() => onSelect(opt)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
               selected === opt
                 ? "bg-primary text-primary-foreground"
@@ -81,7 +101,7 @@ export default function Shop() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-display font-bold mb-2">
-          {selectedOccasion ? `${selectedOccasion} Cakes` : "All Cakes"}
+          {selectedFilters["occasion"] ? `${selectedFilters["occasion"]} Cakes` : "All Cakes"}
         </h1>
         <p className="text-muted-foreground">{filtered.length} products found</p>
       </div>
@@ -125,9 +145,9 @@ export default function Shop() {
       <div className="flex gap-8">
         {/* Sidebar filters (desktop) */}
         <aside className="hidden md:block w-56 flex-shrink-0">
-          <FilterSection title="Category" options={categoryTypes} selected={selectedCategory} onSelect={setSelectedCategory} />
-          <FilterSection title="Occasion" options={occasions} selected={selectedOccasion} onSelect={setSelectedOccasion} />
-          <FilterSection title="Flavour" options={flavours} selected={selectedFlavour} onSelect={setSelectedFlavour} />
+          {allFilters.map(f => (
+            <FilterSectionUI key={f.type} title={f.label} options={f.values} selected={selectedFilters[f.type] || ""} onSelect={(v) => selectFilter(f.type, v)} />
+          ))}
         </aside>
 
         {/* Mobile filters */}
@@ -139,9 +159,9 @@ export default function Shop() {
               exit={{ height: 0, opacity: 0 }}
               className="md:hidden fixed inset-x-0 top-16 bg-background z-40 border-b border-border p-4 overflow-hidden"
             >
-              <FilterSection title="Category" options={categoryTypes} selected={selectedCategory} onSelect={setSelectedCategory} />
-              <FilterSection title="Occasion" options={occasions} selected={selectedOccasion} onSelect={setSelectedOccasion} />
-              <FilterSection title="Flavour" options={flavours} selected={selectedFlavour} onSelect={setSelectedFlavour} />
+              {allFilters.map(f => (
+                <FilterSectionUI key={f.type} title={f.label} options={f.values} selected={selectedFilters[f.type] || ""} onSelect={(v) => selectFilter(f.type, v)} />
+              ))}
               <button onClick={() => setShowFilters(false)} className="w-full py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium mt-2">
                 Apply Filters
               </button>
