@@ -7,7 +7,8 @@ import AdminProducts from "@/components/admin/AdminProducts";
 import AdminOrders from "@/components/admin/AdminOrders";
 import AdminUsers from "@/components/admin/AdminUsers";
 import AdminSettings from "@/components/admin/AdminSettings";
-import { LayoutDashboard, Package, ShoppingCart, Users, LogOut, ChevronLeft, Settings } from "lucide-react";
+import AdminKitchen from "@/components/admin/AdminKitchen";
+import { LayoutDashboard, Package, ShoppingCart, Users, LogOut, ChevronLeft, Settings, ChefHat } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
