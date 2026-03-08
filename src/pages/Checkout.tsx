@@ -14,6 +14,9 @@ export default function Checkout() {
   const [coupon, setCoupon] = useState("");
   const [discount, setDiscount] = useState(0);
   const [placing, setPlacing] = useState(false);
+  const [addressMode, setAddressMode] = useState<"saved" | "new">(user ? "saved" : "new");
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [selectedAddress, setSelectedAddress] = useState<any>(null);
   const [form, setForm] = useState({
     firstName: "", lastName: "", phone: "", address: "", city: "", pincode: "",
   });
