@@ -1,4 +1,5 @@
 import { Phone, Mail, MapPin, Clock, MessageCircle, Send, LogIn } from "lucide-react";
+import { useSEO } from "@/hooks/useSEO";
 import { useStoreInfo } from "@/hooks/useStoreInfo";
 import { motion } from "framer-motion";
 import { useState } from "react";
