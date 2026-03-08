@@ -521,13 +521,6 @@ export default function Index() {
     }
   };
 
-  // Build nav items from config
-  const navItems = config.sectionNav.enabled
-    ? config.sectionNav.items
-        .filter(item => item.visible)
-        .filter(item => config.sections.some(s => s.id === item.sectionId && s.visible))
-    : [];
-
   const scrollToSection = (id: string) => {
     const el = document.getElementById(`section-${id}`);
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -537,32 +530,23 @@ export default function Index() {
     <div>
       {config.sections
         .filter(s => s.visible)
-        .map((s, idx, arr) => {
-          // Insert section nav after banners (or at start if no banners)
-          const prevId = idx > 0 ? arr[idx - 1].id : null;
-          const showNav = (prevId === "banners" && s.id === "hero") ||
-            (idx === 0 && s.id !== "banners" && s.id === "hero") ||
-            (prevId === "banners" && s.id !== "hero");
-          const showNavAtStart = idx === 0 && s.id !== "banners";
+        .map((s) => {
+          // Skip sectionNav and footer — they're handled separately
+          if (s.id === "sectionNav") {
+            if (!config.sectionNav.enabled) return null;
+            const navItems = config.sectionNav.items.filter(item => item.visible);
+            if (navItems.length === 0) return null;
+            return <SectionNavBar key="sectionNav" items={navItems} onNavigate={scrollToSection} />;
+          }
+          if (s.id === "footer") return null; // Footer rendered in App.tsx
 
-          const sectionNode = (
+          return (
             <div key={s.id} id={`section-${s.id}`}>
               {BUILTIN_SECTION_IDS.includes(s.id)
                 ? sectionRenderers[s.id]?.()
                 : renderCustomSection(s)}
             </div>
           );
-
-          if ((showNav || showNavAtStart) && navItems.length > 0) {
-            return (
-              <div key={`nav-${s.id}`}>
-                <SectionNavBar items={navItems} onNavigate={scrollToSection} />
-                {sectionNode}
-              </div>
-            );
-          }
-
-          return sectionNode;
         })}
     </div>
   );

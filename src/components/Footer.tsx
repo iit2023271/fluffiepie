@@ -5,6 +5,10 @@ export default function Footer() {
   const { config } = useHomepageConfig();
   const footer = config.footer;
 
+  // Check if footer section is visible
+  const footerSection = config.sections.find(s => s.id === "footer");
+  if (footerSection && !footerSection.visible) return null;
+
   return (
     <footer className="bg-foreground text-background/80 mt-20">
       <div className="container mx-auto px-4 py-16">

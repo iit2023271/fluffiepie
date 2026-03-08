@@ -309,100 +309,99 @@ export default function AdminHomepage() {
         </div>
       </div>
 
-      {/* Section Editors */}
+      {/* Section Editors — rendered in config.sections order */}
       <div className="space-y-3">
-        {/* Section Navigation Bar Editor */}
-        <SectionEditor id="sectionNav" label="Section Navigation Bar" expanded={expandedSection === "sectionNav"} onToggle={() => toggleExpand("sectionNav")} visible={config.sectionNav.enabled}>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-xs font-semibold">Enable Navigation Bar</Label>
-                <p className="text-[10px] text-muted-foreground">Sticky bar with quick links to sections</p>
-              </div>
-              <Switch checked={config.sectionNav.enabled} onCheckedChange={v => setConfig(prev => ({ ...prev, sectionNav: { ...prev.sectionNav, enabled: v } }))} />
-            </div>
-
-            {config.sectionNav.enabled && (
-              <>
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold uppercase tracking-wider">Nav Items</Label>
-                  <Button variant="outline" size="sm" onClick={() => {
-                    const existing = config.sectionNav.items.map(i => i.sectionId);
-                    const available = config.sections.filter(s => !existing.includes(s.id) && s.id !== "banners" && s.id !== "hero");
-                    if (available.length === 0) { toast.info("All sections are already in the nav"); return; }
-                    const s = available[0];
-                    const label = isBuiltin(s.id) ? (SECTION_LABELS[s.id] || s.id) : (s.label || "Section");
-                    setConfig(prev => ({ ...prev, sectionNav: { ...prev.sectionNav, items: [...prev.sectionNav.items, { sectionId: s.id, label, visible: true }] } }));
-                  }} className="gap-1 text-xs h-7"><Plus className="w-3 h-3" /> Add</Button>
-                </div>
-                <div className="space-y-2">
-                  {config.sectionNav.items.map((item, idx) => (
-                    <div key={item.sectionId} className={`flex items-center gap-2 p-3 rounded-xl border transition-colors ${item.visible ? "bg-background border-border" : "bg-muted/30 border-transparent opacity-60"}`}>
-                      <div className="flex items-center gap-0.5 shrink-0">
-                        <button onClick={() => {
-                          if (idx === 0) return;
-                          setConfig(prev => {
-                            const arr = [...prev.sectionNav.items];
-                            [arr[idx], arr[idx - 1]] = [arr[idx - 1], arr[idx]];
-                            return { ...prev, sectionNav: { ...prev.sectionNav, items: arr } };
-                          });
-                        }} disabled={idx === 0} className="p-1 rounded hover:bg-secondary disabled:opacity-30"><ChevronUp className="w-3.5 h-3.5" /></button>
-                        <button onClick={() => {
-                          if (idx === config.sectionNav.items.length - 1) return;
-                          setConfig(prev => {
-                            const arr = [...prev.sectionNav.items];
-                            [arr[idx], arr[idx + 1]] = [arr[idx + 1], arr[idx]];
-                            return { ...prev, sectionNav: { ...prev.sectionNav, items: arr } };
-                          });
-                        }} disabled={idx === config.sectionNav.items.length - 1} className="p-1 rounded hover:bg-secondary disabled:opacity-30"><ChevronDown className="w-3.5 h-3.5" /></button>
-                      </div>
-                      <Input
-                        value={item.label}
-                        onChange={e => {
-                          setConfig(prev => ({
-                            ...prev,
-                            sectionNav: {
-                              ...prev.sectionNav,
-                              items: prev.sectionNav.items.map((it, i) => i === idx ? { ...it, label: e.target.value } : it),
-                            },
-                          }));
-                        }}
-                        className="flex-1 h-8 text-sm"
-                        placeholder="Nav label"
-                      />
-                      <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-md shrink-0 whitespace-nowrap">
-                        → {isBuiltin(item.sectionId) ? SECTION_LABELS[item.sectionId] : config.sections.find(s => s.id === item.sectionId)?.label || item.sectionId}
-                      </span>
-                      <Switch
-                        checked={item.visible}
-                        onCheckedChange={v => {
-                          setConfig(prev => ({
-                            ...prev,
-                            sectionNav: {
-                              ...prev.sectionNav,
-                              items: prev.sectionNav.items.map((it, i) => i === idx ? { ...it, visible: v } : it),
-                            },
-                          }));
-                        }}
-                      />
-                      <button
-                        onClick={() => setConfig(prev => ({ ...prev, sectionNav: { ...prev.sectionNav, items: prev.sectionNav.items.filter((_, i) => i !== idx) } }))}
-                        className="p-1 rounded hover:bg-destructive/10"
-                      >
-                        <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground">Rename labels, reorder items, or toggle visibility. Items link to their respective homepage sections.</p>
-              </>
-            )}
-          </div>
-        </SectionEditor>
-
-        {/* Section Editors — rendered in config.sections order */}
         {config.sections.map(section => {
-          if (section.id === "banners") return null; // banners managed elsewhere
+          if (section.id === "banners") return null;
+
+          if (section.id === "sectionNav") return (
+            <SectionEditor key="sectionNav" id="sectionNav" label="Section Navigation Bar" expanded={expandedSection === "sectionNav"} onToggle={() => toggleExpand("sectionNav")} visible={isSectionVisible("sectionNav")}>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-xs font-semibold">Enable Navigation Bar</Label>
+                    <p className="text-[10px] text-muted-foreground">Sticky bar with quick links to sections</p>
+                  </div>
+                  <Switch checked={config.sectionNav.enabled} onCheckedChange={v => setConfig(prev => ({ ...prev, sectionNav: { ...prev.sectionNav, enabled: v } }))} />
+                </div>
+                {config.sectionNav.enabled && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-semibold uppercase tracking-wider">Nav Items</Label>
+                      <Button variant="outline" size="sm" onClick={() => {
+                        const existing = config.sectionNav.items.map(i => i.sectionId);
+                        const available = config.sections.filter(s => !existing.includes(s.id) && s.id !== "banners" && s.id !== "hero" && s.id !== "sectionNav" && s.id !== "footer");
+                        if (available.length === 0) { toast.info("All sections are already in the nav"); return; }
+                        const s = available[0];
+                        const label = isBuiltin(s.id) ? (SECTION_LABELS[s.id] || s.id) : (s.label || "Section");
+                        setConfig(prev => ({ ...prev, sectionNav: { ...prev.sectionNav, items: [...prev.sectionNav.items, { sectionId: s.id, label, visible: true }] } }));
+                      }} className="gap-1 text-xs h-7"><Plus className="w-3 h-3" /> Add</Button>
+                    </div>
+                    <div className="space-y-2">
+                      {config.sectionNav.items.map((item, idx) => (
+                        <div key={item.sectionId} className={`flex items-center gap-2 p-3 rounded-xl border transition-colors ${item.visible ? "bg-background border-border" : "bg-muted/30 border-transparent opacity-60"}`}>
+                          <div className="flex items-center gap-0.5 shrink-0">
+                            <button onClick={() => {
+                              if (idx === 0) return;
+                              setConfig(prev => {
+                                const arr = [...prev.sectionNav.items];
+                                [arr[idx], arr[idx - 1]] = [arr[idx - 1], arr[idx]];
+                                return { ...prev, sectionNav: { ...prev.sectionNav, items: arr } };
+                              });
+                            }} disabled={idx === 0} className="p-1 rounded hover:bg-secondary disabled:opacity-30"><ChevronUp className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => {
+                              if (idx === config.sectionNav.items.length - 1) return;
+                              setConfig(prev => {
+                                const arr = [...prev.sectionNav.items];
+                                [arr[idx], arr[idx + 1]] = [arr[idx + 1], arr[idx]];
+                                return { ...prev, sectionNav: { ...prev.sectionNav, items: arr } };
+                              });
+                            }} disabled={idx === config.sectionNav.items.length - 1} className="p-1 rounded hover:bg-secondary disabled:opacity-30"><ChevronDown className="w-3.5 h-3.5" /></button>
+                          </div>
+                          <Input
+                            value={item.label}
+                            onChange={e => {
+                              setConfig(prev => ({
+                                ...prev,
+                                sectionNav: {
+                                  ...prev.sectionNav,
+                                  items: prev.sectionNav.items.map((it, i) => i === idx ? { ...it, label: e.target.value } : it),
+                                },
+                              }));
+                            }}
+                            className="flex-1 h-8 text-sm"
+                            placeholder="Nav label"
+                          />
+                          <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-md shrink-0 whitespace-nowrap">
+                            → {isBuiltin(item.sectionId) ? SECTION_LABELS[item.sectionId] : config.sections.find(s => s.id === item.sectionId)?.label || item.sectionId}
+                          </span>
+                          <Switch
+                            checked={item.visible}
+                            onCheckedChange={v => {
+                              setConfig(prev => ({
+                                ...prev,
+                                sectionNav: {
+                                  ...prev.sectionNav,
+                                  items: prev.sectionNav.items.map((it, i) => i === idx ? { ...it, visible: v } : it),
+                                },
+                              }));
+                            }}
+                          />
+                          <button
+                            onClick={() => setConfig(prev => ({ ...prev, sectionNav: { ...prev.sectionNav, items: prev.sectionNav.items.filter((_, i) => i !== idx) } }))}
+                            className="p-1 rounded hover:bg-destructive/10"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">Rename labels, reorder items, or toggle visibility. Items link to their respective homepage sections.</p>
+                  </>
+                )}
+              </div>
+            </SectionEditor>
+          );
 
           if (section.id === "hero") return (
             <SectionEditor key="hero" id="hero" label="Hero Section" expanded={expandedSection === "hero"} onToggle={() => toggleExpand("hero")} visible={isSectionVisible("hero")}>
@@ -494,6 +493,66 @@ export default function AdminHomepage() {
                 <div><Label className="text-xs">Reviews to Show</Label><Input type="number" min={1} max={9} value={config.reviews.count} onChange={e => updateReviews("count", parseInt(e.target.value) || 3)} className="mt-1" /></div>
               </div>
               <p className="text-xs text-muted-foreground mt-3">Reviews are automatically pulled from your database (4+ stars with comments).</p>
+            </SectionEditor>
+          );
+
+          if (section.id === "footer") return (
+            <SectionEditor key="footer" id="footer" label="Footer" expanded={expandedSection === "footer"} onToggle={() => toggleExpand("footer")} visible={isSectionVisible("footer")}>
+              <div className="space-y-5">
+                <div>
+                  <Label className="text-xs">Brand Description</Label>
+                  <Textarea value={config.footer.brandDescription} onChange={e => updateFooter("brandDescription", e.target.value)} className="mt-1" rows={2} />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <Label className="text-xs font-semibold uppercase tracking-wider">Link Columns</Label>
+                    <Button variant="outline" size="sm" onClick={addFooterColumn} className="gap-1 text-xs h-7" disabled={config.footer.columns.length >= 4}>
+                      <Plus className="w-3 h-3" /> Add Column
+                    </Button>
+                  </div>
+                  <div className="space-y-4">
+                    {config.footer.columns.map((col, colIdx) => (
+                      <div key={colIdx} className="p-4 rounded-xl border border-border bg-muted/20 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Input value={col.title} onChange={e => updateFooterColumn(colIdx, "title", e.target.value)} className="flex-1 h-8 text-sm font-semibold" placeholder="Column title" />
+                          <Button variant="ghost" size="sm" onClick={() => removeFooterColumn(colIdx)} disabled={config.footer.columns.length <= 1} className="text-destructive hover:text-destructive h-8 px-2">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                        {col.links.map((link, linkIdx) => (
+                          <div key={linkIdx} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
+                            <Input value={link.label} onChange={e => updateFooterLink(colIdx, linkIdx, "label", e.target.value)} className="h-7 text-xs" placeholder="Label" />
+                            <Input value={link.url} onChange={e => updateFooterLink(colIdx, linkIdx, "url", e.target.value)} className="h-7 text-xs" placeholder="/path or URL" />
+                            <button onClick={() => removeFooterLink(colIdx, linkIdx)} disabled={col.links.length <= 1} className="p-1 rounded hover:bg-destructive/10 disabled:opacity-30">
+                              <Trash2 className="w-3 h-3 text-destructive" />
+                            </button>
+                          </div>
+                        ))}
+                        <Button variant="outline" size="sm" onClick={() => addFooterLink(colIdx)} className="gap-1 text-xs h-6 w-full">
+                          <Plus className="w-3 h-3" /> Add Link
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-xl border border-border">
+                  <div>
+                    <Label className="text-xs font-semibold">Newsletter Section</Label>
+                    <p className="text-[10px] text-muted-foreground">Email signup in footer</p>
+                  </div>
+                  <Switch checked={config.footer.newsletterEnabled} onCheckedChange={v => updateFooter("newsletterEnabled", v)} />
+                </div>
+                {config.footer.newsletterEnabled && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><Label className="text-xs">Newsletter Title</Label><Input value={config.footer.newsletterTitle} onChange={e => updateFooter("newsletterTitle", e.target.value)} className="mt-1" /></div>
+                    <div><Label className="text-xs">Newsletter Subtitle</Label><Input value={config.footer.newsletterSubtitle} onChange={e => updateFooter("newsletterSubtitle", e.target.value)} className="mt-1" /></div>
+                  </div>
+                )}
+                <div>
+                  <Label className="text-xs">Copyright Text</Label>
+                  <Input value={config.footer.copyrightText} onChange={e => updateFooter("copyrightText", e.target.value)} className="mt-1" />
+                </div>
+              </div>
             </SectionEditor>
           );
 
