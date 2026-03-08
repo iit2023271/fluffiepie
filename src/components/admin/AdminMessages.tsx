@@ -24,6 +24,7 @@ export default function AdminMessages() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
   const [selected, setSelected] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id: string }>({ open: false, id: "" });
 
   const load = async () => {
     setLoading(true);
