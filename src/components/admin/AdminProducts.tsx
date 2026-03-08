@@ -76,6 +76,7 @@ export default function AdminProducts() {
       is_bestseller: product.is_bestseller,
       is_active: product.is_active,
       image_url: product.image_url,
+      images: (product as any).images || [],
       stock_quantity: (product as any).stock_quantity ?? 100,
       low_stock_threshold: (product as any).low_stock_threshold ?? 10,
       sku: (product as any).sku || "",
