@@ -17,6 +17,7 @@ const item = {
 };
 
 export default function Contact() {
+  const { user } = useAuth();
   const { storeInfo, loading } = useStoreInfo();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
