@@ -1,9 +1,43 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+// ─── Custom Section Types ───
+export type CustomSectionType = "text_block" | "cta_banner" | "feature_grid" | "faq" | "spacer" | "image_gallery";
+
+export interface CustomSectionData {
+  type: CustomSectionType;
+  // text_block
+  heading?: string;
+  body?: string;
+  alignment?: "left" | "center" | "right";
+  // cta_banner
+  ctaTitle?: string;
+  ctaSubtitle?: string;
+  ctaButtonText?: string;
+  ctaButtonLink?: string;
+  ctaBg?: "primary" | "blush" | "cream" | "muted";
+  // feature_grid
+  gridTitle?: string;
+  gridSubtitle?: string;
+  features?: { emoji: string; title: string; desc: string }[];
+  // faq
+  faqTitle?: string;
+  faqSubtitle?: string;
+  faqs?: { question: string; answer: string }[];
+  // spacer
+  spacerHeight?: number;
+  // image_gallery
+  galleryTitle?: string;
+  gallerySubtitle?: string;
+  images?: { url: string; caption: string }[];
+}
+
 export interface HomepageSection {
   id: string;
   visible: boolean;
+  label?: string; // custom label for custom sections
+  customType?: CustomSectionType;
+  customData?: CustomSectionData;
 }
 
 export interface HeroConfig {
@@ -48,6 +82,8 @@ export interface HomepageConfig {
   howItWorks: HowItWorksConfig;
   reviews: ReviewsConfig;
 }
+
+export const BUILTIN_SECTION_IDS = ["banners", "hero", "categories", "trending", "howItWorks", "reviews"];
 
 export const DEFAULT_HOMEPAGE_CONFIG: HomepageConfig = {
   sections: [
@@ -102,6 +138,40 @@ export const SECTION_LABELS: Record<string, string> = {
   reviews: "Customer Reviews",
 };
 
+export const CUSTOM_TYPE_LABELS: Record<CustomSectionType, { label: string; emoji: string; desc: string }> = {
+  text_block: { label: "Text Block", emoji: "📝", desc: "Heading + body text" },
+  cta_banner: { label: "CTA Banner", emoji: "📣", desc: "Call-to-action with button" },
+  feature_grid: { label: "Feature Grid", emoji: "🔲", desc: "Grid of features with icons" },
+  faq: { label: "FAQ Section", emoji: "❓", desc: "Frequently asked questions" },
+  spacer: { label: "Spacer", emoji: "↕️", desc: "Empty space divider" },
+  image_gallery: { label: "Image Gallery", emoji: "🖼️", desc: "Grid of images with captions" },
+};
+
+export function getDefaultCustomData(type: CustomSectionType): CustomSectionData {
+  switch (type) {
+    case "text_block":
+      return { type, heading: "Our Story", body: "Tell your customers about your bakery, values, or anything special.", alignment: "center" };
+    case "cta_banner":
+      return { type, ctaTitle: "Special Offer!", ctaSubtitle: "Get 20% off on your first order", ctaButtonText: "Shop Now", ctaButtonLink: "/shop", ctaBg: "primary" };
+    case "feature_grid":
+      return { type, gridTitle: "Why Choose Us", gridSubtitle: "What makes us special", features: [
+        { emoji: "🎂", title: "Fresh Daily", desc: "Baked every morning" },
+        { emoji: "💯", title: "Premium Quality", desc: "Only the best ingredients" },
+        { emoji: "🚚", title: "Fast Delivery", desc: "Same day delivery" },
+        { emoji: "💝", title: "Made with Love", desc: "Every cake is special" },
+      ]};
+    case "faq":
+      return { type, faqTitle: "Frequently Asked Questions", faqSubtitle: "Got questions? We've got answers", faqs: [
+        { question: "How do I place an order?", answer: "Simply browse our collection, pick your cake, choose the size and place your order." },
+        { question: "Do you deliver same day?", answer: "Yes! Orders placed before 2 PM qualify for same day delivery." },
+      ]};
+    case "spacer":
+      return { type, spacerHeight: 60 };
+    case "image_gallery":
+      return { type, galleryTitle: "Our Creations", gallerySubtitle: "Browse our latest masterpieces", images: [] };
+  }
+}
+
 export function useHomepageConfig() {
   const [config, setConfig] = useState<HomepageConfig>(DEFAULT_HOMEPAGE_CONFIG);
   const [loading, setLoading] = useState(true);
@@ -117,7 +187,6 @@ export function useHomepageConfig() {
       if (data?.value) {
         try {
           const parsed = JSON.parse(data.value);
-          // Merge with defaults to ensure new fields are present
           setConfig({
             ...DEFAULT_HOMEPAGE_CONFIG,
             ...parsed,
