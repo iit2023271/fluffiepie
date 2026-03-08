@@ -65,6 +65,7 @@ export default function AdminOrders() {
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [orderNotes, setOrderNotes] = useState<Record<string, any[]>>({});
   const [newNote, setNewNote] = useState("");
+  const [newNoteType, setNewNoteType] = useState<"internal" | "customer">("internal");
   const [deleteNoteConfirm, setDeleteNoteConfirm] = useState<{ open: boolean; noteId: string; orderId: string }>({ open: false, noteId: "", orderId: "" });
   const [bulkConfirm, setBulkConfirm] = useState<{ open: boolean; status: string }>({ open: false, status: "" });
   const [statusChangeConfirm, setStatusChangeConfirm] = useState<{ open: boolean; orderId: string; newStatus: string }>({ open: false, orderId: "", newStatus: "" });
