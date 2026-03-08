@@ -1046,8 +1046,24 @@ function CtaBannerEditor({ data, onChange }: { data: CustomSectionData; onChange
               <SelectItem value="medium">Medium (Default)</SelectItem>
               <SelectItem value="tall">Tall (Large)</SelectItem>
               <SelectItem value="full">Full Screen</SelectItem>
+              <SelectItem value="custom">Custom (px)</SelectItem>
             </SelectContent>
           </Select>
+          {data.ctaHeight === "custom" && (
+            <div className="mt-2">
+              <Input
+                type="number"
+                min={100}
+                max={1200}
+                step={10}
+                value={data.ctaCustomHeight || 400}
+                onChange={e => onChange({ ctaCustomHeight: parseInt(e.target.value) || 400 })}
+                className="h-8 text-sm"
+                placeholder="Height in px"
+              />
+              <p className="text-[9px] text-muted-foreground mt-0.5">100–1200px</p>
+            </div>
+          )}
         </div>
         <div>
           <Label className="text-xs">📍 Text Alignment</Label>
@@ -1089,6 +1105,47 @@ function CtaBannerEditor({ data, onChange }: { data: CustomSectionData; onChange
           <p className="text-[9px] text-muted-foreground">Controls how dark the overlay is over the background image</p>
         </div>
       )}
+
+      {/* Live Preview */}
+      <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview</p>
+        {(() => {
+          const bgMap: Record<string, string> = {
+            primary: "bg-primary text-primary-foreground",
+            blush: "bg-blush text-foreground",
+            cream: "bg-cream text-foreground",
+            muted: "bg-muted text-foreground",
+          };
+          const previewHeight = data.ctaHeight === "custom" ? `${Math.min((data.ctaCustomHeight || 400) / 4, 150)}px`
+            : data.ctaHeight === "compact" ? "60px" : data.ctaHeight === "tall" ? "120px" : data.ctaHeight === "full" ? "150px" : "80px";
+          const layoutAlign = data.ctaLayout === "left" ? "text-left items-start" : data.ctaLayout === "right" ? "text-right items-end" : "text-center items-center";
+          return (
+            <div
+              className={`relative overflow-hidden rounded-lg flex items-center ${data.ctaBgImage ? "" : bgMap[data.ctaBg || "primary"]}`}
+              style={{ minHeight: previewHeight }}
+            >
+              {data.ctaBgImage && (
+                <>
+                  <img src={data.ctaBgImage} alt="" className={`absolute inset-0 w-full h-full ${(data.ctaImageFit || "cover") === "contain" ? "object-contain" : "object-cover"}`} />
+                  <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--foreground) / ${(data.ctaOverlayOpacity ?? 50) / 100})` }} />
+                </>
+              )}
+              <div className={`relative z-10 w-full px-3 py-2 flex flex-col ${layoutAlign}`}>
+                {data.ctaTitle && <p className={`font-bold font-display text-[10px] ${data.ctaBgImage ? "text-background" : ""}`}>{data.ctaTitle}</p>}
+                {data.ctaSubtitle && <p className={`text-[8px] opacity-70 mt-0.5 ${data.ctaBgImage ? "text-background" : ""}`}>{data.ctaSubtitle}</p>}
+                {data.ctaButtonText && (
+                  <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[7px] font-medium ${data.ctaBgImage || data.ctaBg === "primary" ? "bg-background text-foreground" : "bg-primary text-primary-foreground"}`}>
+                    {data.ctaButtonText}
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+        <p className="text-[9px] text-muted-foreground mt-1.5">
+          Height: {data.ctaHeight === "custom" ? `${data.ctaCustomHeight || 400}px` : data.ctaHeight || "medium"} · Layout: {data.ctaLayout || "center"}
+        </p>
+      </div>
 
       {/* Background Image (optional) */}
       <div className="space-y-2">
