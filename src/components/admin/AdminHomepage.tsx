@@ -494,6 +494,46 @@ function SpacerEditor({ data, onChange }: { data: CustomSectionData; onChange: (
 
 function ImageGalleryEditor({ data, onChange }: { data: CustomSectionData; onChange: (u: Partial<CustomSectionData>) => void }) {
   const images = data.images || [];
+  const [uploading, setUploading] = useState<number | null>(null);
+  const [cropState, setCropState] = useState<{ open: boolean; idx: number; src: string }>({ open: false, idx: -1, src: "" });
+
+  const handleFileUpload = async (idx: number, file: File) => {
+    setUploading(idx);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `gallery/${Date.now()}_${idx}.${ext}`;
+      const { error } = await supabase.storage.from("homepage-assets").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from("homepage-assets").getPublicUrl(path);
+      const arr = [...images];
+      arr[idx] = { ...arr[idx], url: urlData.publicUrl };
+      onChange({ images: arr });
+      toast.success("Image uploaded");
+    } catch (e: any) {
+      toast.error("Upload failed: " + (e.message || "Unknown error"));
+    }
+    setUploading(null);
+  };
+
+  const handleCropComplete = async (blob: Blob) => {
+    const idx = cropState.idx;
+    setCropState({ open: false, idx: -1, src: "" });
+    setUploading(idx);
+    try {
+      const path = `gallery/${Date.now()}_cropped_${idx}.jpg`;
+      const { error } = await supabase.storage.from("homepage-assets").upload(path, blob, { contentType: "image/jpeg", upsert: true });
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from("homepage-assets").getPublicUrl(path);
+      const arr = [...images];
+      arr[idx] = { ...arr[idx], url: urlData.publicUrl };
+      onChange({ images: arr });
+      toast.success("Cropped image saved");
+    } catch (e: any) {
+      toast.error("Upload failed: " + (e.message || "Unknown error"));
+    }
+    setUploading(null);
+  };
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -505,13 +545,49 @@ function ImageGalleryEditor({ data, onChange }: { data: CustomSectionData; onCha
         <Button variant="outline" size="sm" onClick={() => onChange({ images: [...images, { url: "", caption: "" }] })} className="gap-1 text-xs h-7"><Plus className="w-3 h-3" /> Add</Button>
       </div>
       {images.map((img, idx) => (
-        <div key={idx} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end p-3 rounded-xl bg-muted/30 border border-border">
-          <div><Label className="text-[10px]">Image URL</Label><Input value={img.url} onChange={e => { const arr = [...images]; arr[idx] = { ...arr[idx], url: e.target.value }; onChange({ images: arr }); }} className="mt-1" placeholder="https://..." /></div>
-          <div><Label className="text-[10px]">Caption</Label><Input value={img.caption} onChange={e => { const arr = [...images]; arr[idx] = { ...arr[idx], caption: e.target.value }; onChange({ images: arr }); }} className="mt-1" /></div>
-          <Button variant="ghost" size="sm" onClick={() => onChange({ images: images.filter((_, i) => i !== idx) })} className="text-destructive hover:text-destructive h-9 px-2"><Trash2 className="w-3.5 h-3.5" /></Button>
+        <div key={idx} className="p-3 rounded-xl bg-muted/30 border border-border space-y-2">
+          <div className="flex items-start gap-3">
+            {/* Image Preview */}
+            <div className="w-20 h-20 rounded-lg bg-muted overflow-hidden shrink-0 flex items-center justify-center">
+              {img.url ? (
+                <img src={img.url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <Image className="w-5 h-5 text-muted-foreground" />
+              )}
+            </div>
+            <div className="flex-1 space-y-2">
+              <div><Label className="text-[10px]">Image URL</Label><Input value={img.url} onChange={e => { const arr = [...images]; arr[idx] = { ...arr[idx], url: e.target.value }; onChange({ images: arr }); }} className="mt-1" placeholder="https://... or upload below" /></div>
+              <div><Label className="text-[10px]">Caption (optional)</Label><Input value={img.caption} onChange={e => { const arr = [...images]; arr[idx] = { ...arr[idx], caption: e.target.value }; onChange({ images: arr }); }} className="mt-1" /></div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 pt-1">
+            <label className="inline-flex items-center gap-1.5 text-xs text-primary font-medium cursor-pointer hover:underline">
+              <Upload className="w-3 h-3" />
+              {uploading === idx ? "Uploading..." : "Upload Image"}
+              <input type="file" accept="image/*" className="hidden" disabled={uploading === idx} onChange={e => { const f = e.target.files?.[0]; if (f) handleFileUpload(idx, f); e.target.value = ""; }} />
+            </label>
+            {img.url && (
+              <button
+                onClick={() => setCropState({ open: true, idx, src: img.url })}
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground font-medium hover:text-foreground transition-colors"
+              >
+                <Crop className="w-3 h-3" /> Crop
+              </button>
+            )}
+            <div className="flex-1" />
+            <Button variant="ghost" size="sm" onClick={() => onChange({ images: images.filter((_, i) => i !== idx) })} className="text-destructive hover:text-destructive h-7 px-2"><Trash2 className="w-3.5 h-3.5" /></Button>
+          </div>
         </div>
       ))}
-      <p className="text-xs text-muted-foreground">Paste image URLs from your storage bucket or external URLs.</p>
+      <p className="text-xs text-muted-foreground">Upload images or paste URLs. Crop is optional.</p>
+
+      <ImageCropper
+        open={cropState.open}
+        imageSrc={cropState.src}
+        aspect={1}
+        onCropComplete={handleCropComplete}
+        onClose={() => setCropState({ open: false, idx: -1, src: "" })}
+      />
     </div>
   );
 }
