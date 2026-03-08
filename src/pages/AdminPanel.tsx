@@ -97,19 +97,27 @@ export default function AdminPanel() {
           </button>
         </aside>
 
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40 flex">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs ${
-                activeTab === tab.key ? "text-primary" : "text-muted-foreground"
-              }`}
-            >
-              <tab.icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          ))}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t border-border z-40 safe-area-bottom">
+          <div className="flex overflow-x-auto scrollbar-hide">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex-shrink-0 flex flex-col items-center justify-center gap-0.5 min-w-[4.5rem] py-2.5 px-2 text-[10px] font-medium transition-colors active:scale-95 ${
+                  activeTab === tab.key
+                    ? "text-primary"
+                    : "text-muted-foreground"
+                }`}
+              >
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
+                  activeTab === tab.key ? "bg-primary/10" : ""
+                }`}>
+                  <tab.icon className="w-[18px] h-[18px]" />
+                </div>
+                <span className="truncate max-w-[4rem]">{tab.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         <main className="flex-1 p-4 md:p-8 pb-20 md:pb-8">
