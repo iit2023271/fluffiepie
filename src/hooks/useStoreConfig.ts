@@ -13,7 +13,7 @@ interface ConfigItem {
 export const BUILTIN_FILTER_TYPES = ["category", "flavour", "occasion"];
 
 // Reserved config types that are NOT product filters
-const RESERVED_TYPES = ["homepage_config", "email_notification", "store_info", "filter_section"];
+const RESERVED_TYPES = ["homepage_config", "email_notification", "store_info", "filter_section", "product_tag", "delivery_settings", "active_theme"];
 
 export interface FilterSection {
   type: string;
