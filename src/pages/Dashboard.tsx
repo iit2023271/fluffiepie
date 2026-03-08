@@ -13,6 +13,7 @@ import { format, differenceInMinutes } from "date-fns";
 import { useStoreInfo } from "@/hooks/useStoreInfo";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useProducts } from "@/hooks/useProducts";
+import { useDeliveryConfig } from "@/hooks/useDeliveryConfig";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 
 interface OrderNote {
@@ -49,6 +50,7 @@ export default function Dashboard() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { storeInfo } = useStoreInfo();
+  const { config: deliveryConfig } = useDeliveryConfig();
   const { isWishlisted, toggle: toggleWishlist } = useWishlist();
   const { data: allProducts = [] } = useProducts();
   const [tab, setTab] = useState<"orders" | "profile" | "addresses" | "wishlist">("orders");
@@ -63,7 +65,6 @@ export default function Dashboard() {
   const [existingReviews, setExistingReviews] = useState<Set<string>>(new Set());
   const [orderNotes, setOrderNotes] = useState<Record<string, OrderNote[]>>({});
   const [cancelConfirm, setCancelConfirm] = useState<{ open: boolean; orderId: string }>({ open: false, orderId: "" });
-  const CANCEL_WINDOW_MINUTES = 30;
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
@@ -190,8 +191,14 @@ export default function Dashboard() {
 
   const canCancelOrder = (order: Order) => {
     if (order.status !== "placed") return false;
+    if (deliveryConfig.cancel_window_minutes <= 0) return false;
     const minutesSincePlaced = differenceInMinutes(new Date(), new Date(order.created_at));
-    return minutesSincePlaced <= CANCEL_WINDOW_MINUTES;
+    return minutesSincePlaced <= deliveryConfig.cancel_window_minutes;
+  };
+
+  const getRemainingCancelMinutes = (order: Order) => {
+    const minutesSincePlaced = differenceInMinutes(new Date(), new Date(order.created_at));
+    return Math.max(0, deliveryConfig.cancel_window_minutes - minutesSincePlaced);
   };
 
   const cancelOrder = async (orderId: string) => {
@@ -430,12 +437,17 @@ export default function Dashboard() {
                       <span className="font-semibold">Total: ₹{order.total.toLocaleString()}</span>
                       <div className="flex items-center gap-3">
                         {canCancelOrder(order) && (
-                          <button
-                            onClick={() => setCancelConfirm({ open: true, orderId: order.id })}
-                            className="flex items-center gap-1.5 text-xs font-medium text-destructive hover:underline"
-                          >
-                            <XCircle className="w-3.5 h-3.5" /> Cancel Order
-                          </button>
+                          <div className="flex flex-col items-end gap-1">
+                            <button
+                              onClick={() => setCancelConfirm({ open: true, orderId: order.id })}
+                              className="flex items-center gap-1.5 text-xs font-medium text-destructive hover:underline"
+                            >
+                              <XCircle className="w-3.5 h-3.5" /> Cancel Order
+                            </button>
+                            <span className="text-[10px] text-muted-foreground">
+                              ⏳ {getRemainingCancelMinutes(order)} min left to cancel
+                            </span>
+                          </div>
                         )}
                         {storeInfo.whatsappNumber && (
                           <button
