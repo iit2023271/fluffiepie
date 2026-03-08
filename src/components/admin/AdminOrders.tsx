@@ -197,8 +197,17 @@ export default function AdminOrders() {
   const bulkUpdateStatus = async (newStatus: string) => {
     if (selectedOrders.size === 0) return;
     const ids = Array.from(selectedOrders);
-    for (const id of ids) await supabase.from("orders").update({ status: newStatus }).eq("id", id);
-    toast.success(`${ids.length} order${ids.length > 1 ? "s" : ""} updated to "${STATUS_CONFIG[newStatus]?.label || newStatus}"`);
+    // Filter out finalized orders
+    const actionableIds = ids.filter(id => {
+      const order = orders.find(o => o.id === id);
+      return order && order.status !== "delivered" && order.status !== "cancelled";
+    });
+    if (actionableIds.length === 0) {
+      toast.error("No actionable orders selected");
+      return;
+    }
+    for (const id of actionableIds) await supabase.from("orders").update({ status: newStatus }).eq("id", id);
+    toast.success(`${actionableIds.length} order${actionableIds.length > 1 ? "s" : ""} updated to "${STATUS_CONFIG[newStatus]?.label || newStatus}"`);
     setSelectedOrders(new Set());
     loadOrders();
   };
