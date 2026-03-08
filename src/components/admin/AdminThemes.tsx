@@ -305,7 +305,7 @@ export default function AdminThemes() {
                   </div>
                 </button>
                 {preset.isCustom && (
-                  <button onClick={() => deleteCustomPreset(preset)}
+                  <button onClick={() => setDeletePresetConfirm({ open: true, preset })}
                     className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md active:scale-90"
                     title="Delete preset">
                     <Trash2 className="w-3 h-3" />
