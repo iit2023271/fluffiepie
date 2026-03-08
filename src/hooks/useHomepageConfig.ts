@@ -208,6 +208,8 @@ export const SECTION_LABELS: Record<string, string> = {
   trending: "Trending Products",
   howItWorks: "How It Works",
   reviews: "Customer Reviews",
+  sectionNav: "Section Navigation Bar",
+  footer: "Footer",
 };
 
 export const CUSTOM_TYPE_LABELS: Record<CustomSectionType, { label: string; emoji: string; desc: string }> = {
