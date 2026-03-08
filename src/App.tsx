@@ -50,6 +50,7 @@ const App = () => (
                   <Route path="/admin" element={<AdminPanel />} />
                   <Route path="/location" element={<Location />} />
                   <Route path="/social" element={<Social />} />
+                  <Route path="/install" element={<Install />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
