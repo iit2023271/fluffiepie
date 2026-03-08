@@ -279,64 +279,6 @@ export default function AdminHomepage() {
 
       {/* Section Editors */}
       <div className="space-y-3">
-        {/* Built-in Section Editors */}
-        <SectionEditor id="hero" label="Hero Section" expanded={expandedSection === "hero"} onToggle={() => toggleExpand("hero")} visible={isSectionVisible("hero")}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><Label className="text-xs">Badge Text</Label><Input value={config.hero.badge} onChange={e => updateHero("badge", e.target.value)} className="mt-1" /></div>
-            <div><Label className="text-xs">Title Line 1</Label><Input value={config.hero.titleLine1} onChange={e => updateHero("titleLine1", e.target.value)} className="mt-1" /></div>
-            <div><Label className="text-xs">Title Line 2 (highlighted)</Label><Input value={config.hero.titleLine2} onChange={e => updateHero("titleLine2", e.target.value)} className="mt-1" /></div>
-            <div className="md:col-span-2"><Label className="text-xs">Subtitle</Label><Textarea value={config.hero.subtitle} onChange={e => updateHero("subtitle", e.target.value)} className="mt-1" rows={2} /></div>
-            <div><Label className="text-xs">Primary CTA Text</Label><Input value={config.hero.ctaPrimaryText} onChange={e => updateHero("ctaPrimaryText", e.target.value)} className="mt-1" /></div>
-            <div><Label className="text-xs">Primary CTA Link</Label><Input value={config.hero.ctaPrimaryLink} onChange={e => updateHero("ctaPrimaryLink", e.target.value)} className="mt-1" /></div>
-            <div><Label className="text-xs">Secondary CTA Text</Label><Input value={config.hero.ctaSecondaryText} onChange={e => updateHero("ctaSecondaryText", e.target.value)} className="mt-1" /></div>
-            <div><Label className="text-xs">Secondary CTA Link</Label><Input value={config.hero.ctaSecondaryLink} onChange={e => updateHero("ctaSecondaryLink", e.target.value)} className="mt-1" /></div>
-          </div>
-        </SectionEditor>
-
-        <SectionEditor id="categories" label="Shop by Occasion" expanded={expandedSection === "categories"} onToggle={() => toggleExpand("categories")} visible={isSectionVisible("categories")}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><Label className="text-xs">Section Title</Label><Input value={config.categories.title} onChange={e => updateCategories("title", e.target.value)} className="mt-1" /></div>
-            <div><Label className="text-xs">Section Subtitle</Label><Input value={config.categories.subtitle} onChange={e => updateCategories("subtitle", e.target.value)} className="mt-1" /></div>
-          </div>
-        </SectionEditor>
-
-        <SectionEditor id="trending" label="Trending Products" expanded={expandedSection === "trending"} onToggle={() => toggleExpand("trending")} visible={isSectionVisible("trending")}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div><Label className="text-xs">Section Title</Label><Input value={config.trending.title} onChange={e => updateTrending("title", e.target.value)} className="mt-1" /></div>
-            <div><Label className="text-xs">Section Subtitle</Label><Input value={config.trending.subtitle} onChange={e => updateTrending("subtitle", e.target.value)} className="mt-1" /></div>
-            <div><Label className="text-xs">Products to Show</Label><Input type="number" min={2} max={12} value={config.trending.count} onChange={e => updateTrending("count", parseInt(e.target.value) || 4)} className="mt-1" /></div>
-          </div>
-        </SectionEditor>
-
-        <SectionEditor id="howItWorks" label="How It Works" expanded={expandedSection === "howItWorks"} onToggle={() => toggleExpand("howItWorks")} visible={isSectionVisible("howItWorks")}>
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div><Label className="text-xs">Section Title</Label><Input value={config.howItWorks.title} onChange={e => updateHowItWorks("title", e.target.value)} className="mt-1" /></div>
-              <div><Label className="text-xs">Section Subtitle</Label><Input value={config.howItWorks.subtitle} onChange={e => updateHowItWorks("subtitle", e.target.value)} className="mt-1" /></div>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between"><Label className="text-xs font-semibold uppercase tracking-wider">Steps</Label><Button variant="outline" size="sm" onClick={addStep} className="gap-1 text-xs h-7"><Plus className="w-3 h-3" /> Add Step</Button></div>
-              {config.howItWorks.steps.map((step, idx) => (
-                <div key={idx} className="grid grid-cols-[60px_1fr_1fr_auto] gap-2 items-end p-3 rounded-xl bg-muted/30 border border-border">
-                  <div><Label className="text-[10px]">Emoji</Label><Input value={step.emoji} onChange={e => updateStep(idx, "emoji", e.target.value)} className="mt-1 text-center" /></div>
-                  <div><Label className="text-[10px]">Title</Label><Input value={step.title} onChange={e => updateStep(idx, "title", e.target.value)} className="mt-1" /></div>
-                  <div><Label className="text-[10px]">Description</Label><Input value={step.desc} onChange={e => updateStep(idx, "desc", e.target.value)} className="mt-1" /></div>
-                  <Button variant="ghost" size="sm" onClick={() => removeStep(idx)} disabled={config.howItWorks.steps.length <= 1} className="text-destructive hover:text-destructive h-9 px-2"><Trash2 className="w-3.5 h-3.5" /></Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </SectionEditor>
-
-        <SectionEditor id="reviews" label="Customer Reviews" expanded={expandedSection === "reviews"} onToggle={() => toggleExpand("reviews")} visible={isSectionVisible("reviews")}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div><Label className="text-xs">Section Title</Label><Input value={config.reviews.title} onChange={e => updateReviews("title", e.target.value)} className="mt-1" /></div>
-            <div><Label className="text-xs">Section Subtitle</Label><Input value={config.reviews.subtitle} onChange={e => updateReviews("subtitle", e.target.value)} className="mt-1" /></div>
-            <div><Label className="text-xs">Reviews to Show</Label><Input type="number" min={1} max={9} value={config.reviews.count} onChange={e => updateReviews("count", parseInt(e.target.value) || 3)} className="mt-1" /></div>
-          </div>
-          <p className="text-xs text-muted-foreground mt-3">Reviews are automatically pulled from your database (4+ stars with comments).</p>
-        </SectionEditor>
-
         {/* Section Navigation Bar Editor */}
         <SectionEditor id="sectionNav" label="Section Navigation Bar" expanded={expandedSection === "sectionNav"} onToggle={() => toggleExpand("sectionNav")} visible={config.sectionNav.enabled}>
           <div className="space-y-4">
@@ -353,7 +295,6 @@ export default function AdminHomepage() {
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-semibold uppercase tracking-wider">Nav Items</Label>
                   <Button variant="outline" size="sm" onClick={() => {
-                    // Add from available sections not yet in nav
                     const existing = config.sectionNav.items.map(i => i.sectionId);
                     const available = config.sections.filter(s => !existing.includes(s.id) && s.id !== "banners" && s.id !== "hero");
                     if (available.length === 0) { toast.info("All sections are already in the nav"); return; }
@@ -425,6 +366,64 @@ export default function AdminHomepage() {
               </>
             )}
           </div>
+        </SectionEditor>
+
+        {/* Built-in Section Editors */}
+        <SectionEditor id="hero" label="Hero Section" expanded={expandedSection === "hero"} onToggle={() => toggleExpand("hero")} visible={isSectionVisible("hero")}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><Label className="text-xs">Badge Text</Label><Input value={config.hero.badge} onChange={e => updateHero("badge", e.target.value)} className="mt-1" /></div>
+            <div><Label className="text-xs">Title Line 1</Label><Input value={config.hero.titleLine1} onChange={e => updateHero("titleLine1", e.target.value)} className="mt-1" /></div>
+            <div><Label className="text-xs">Title Line 2 (highlighted)</Label><Input value={config.hero.titleLine2} onChange={e => updateHero("titleLine2", e.target.value)} className="mt-1" /></div>
+            <div className="md:col-span-2"><Label className="text-xs">Subtitle</Label><Textarea value={config.hero.subtitle} onChange={e => updateHero("subtitle", e.target.value)} className="mt-1" rows={2} /></div>
+            <div><Label className="text-xs">Primary CTA Text</Label><Input value={config.hero.ctaPrimaryText} onChange={e => updateHero("ctaPrimaryText", e.target.value)} className="mt-1" /></div>
+            <div><Label className="text-xs">Primary CTA Link</Label><Input value={config.hero.ctaPrimaryLink} onChange={e => updateHero("ctaPrimaryLink", e.target.value)} className="mt-1" /></div>
+            <div><Label className="text-xs">Secondary CTA Text</Label><Input value={config.hero.ctaSecondaryText} onChange={e => updateHero("ctaSecondaryText", e.target.value)} className="mt-1" /></div>
+            <div><Label className="text-xs">Secondary CTA Link</Label><Input value={config.hero.ctaSecondaryLink} onChange={e => updateHero("ctaSecondaryLink", e.target.value)} className="mt-1" /></div>
+          </div>
+        </SectionEditor>
+
+        <SectionEditor id="categories" label="Shop by Occasion" expanded={expandedSection === "categories"} onToggle={() => toggleExpand("categories")} visible={isSectionVisible("categories")}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><Label className="text-xs">Section Title</Label><Input value={config.categories.title} onChange={e => updateCategories("title", e.target.value)} className="mt-1" /></div>
+            <div><Label className="text-xs">Section Subtitle</Label><Input value={config.categories.subtitle} onChange={e => updateCategories("subtitle", e.target.value)} className="mt-1" /></div>
+          </div>
+        </SectionEditor>
+
+        <SectionEditor id="trending" label="Trending Products" expanded={expandedSection === "trending"} onToggle={() => toggleExpand("trending")} visible={isSectionVisible("trending")}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div><Label className="text-xs">Section Title</Label><Input value={config.trending.title} onChange={e => updateTrending("title", e.target.value)} className="mt-1" /></div>
+            <div><Label className="text-xs">Section Subtitle</Label><Input value={config.trending.subtitle} onChange={e => updateTrending("subtitle", e.target.value)} className="mt-1" /></div>
+            <div><Label className="text-xs">Products to Show</Label><Input type="number" min={2} max={12} value={config.trending.count} onChange={e => updateTrending("count", parseInt(e.target.value) || 4)} className="mt-1" /></div>
+          </div>
+        </SectionEditor>
+
+        <SectionEditor id="howItWorks" label="How It Works" expanded={expandedSection === "howItWorks"} onToggle={() => toggleExpand("howItWorks")} visible={isSectionVisible("howItWorks")}>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div><Label className="text-xs">Section Title</Label><Input value={config.howItWorks.title} onChange={e => updateHowItWorks("title", e.target.value)} className="mt-1" /></div>
+              <div><Label className="text-xs">Section Subtitle</Label><Input value={config.howItWorks.subtitle} onChange={e => updateHowItWorks("subtitle", e.target.value)} className="mt-1" /></div>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between"><Label className="text-xs font-semibold uppercase tracking-wider">Steps</Label><Button variant="outline" size="sm" onClick={addStep} className="gap-1 text-xs h-7"><Plus className="w-3 h-3" /> Add Step</Button></div>
+              {config.howItWorks.steps.map((step, idx) => (
+                <div key={idx} className="grid grid-cols-[60px_1fr_1fr_auto] gap-2 items-end p-3 rounded-xl bg-muted/30 border border-border">
+                  <div><Label className="text-[10px]">Emoji</Label><Input value={step.emoji} onChange={e => updateStep(idx, "emoji", e.target.value)} className="mt-1 text-center" /></div>
+                  <div><Label className="text-[10px]">Title</Label><Input value={step.title} onChange={e => updateStep(idx, "title", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-[10px]">Description</Label><Input value={step.desc} onChange={e => updateStep(idx, "desc", e.target.value)} className="mt-1" /></div>
+                  <Button variant="ghost" size="sm" onClick={() => removeStep(idx)} disabled={config.howItWorks.steps.length <= 1} className="text-destructive hover:text-destructive h-9 px-2"><Trash2 className="w-3.5 h-3.5" /></Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </SectionEditor>
+
+        <SectionEditor id="reviews" label="Customer Reviews" expanded={expandedSection === "reviews"} onToggle={() => toggleExpand("reviews")} visible={isSectionVisible("reviews")}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div><Label className="text-xs">Section Title</Label><Input value={config.reviews.title} onChange={e => updateReviews("title", e.target.value)} className="mt-1" /></div>
+            <div><Label className="text-xs">Section Subtitle</Label><Input value={config.reviews.subtitle} onChange={e => updateReviews("subtitle", e.target.value)} className="mt-1" /></div>
+            <div><Label className="text-xs">Reviews to Show</Label><Input type="number" min={1} max={9} value={config.reviews.count} onChange={e => updateReviews("count", parseInt(e.target.value) || 3)} className="mt-1" /></div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">Reviews are automatically pulled from your database (4+ stars with comments).</p>
         </SectionEditor>
 
         {/* Custom Section Editors */}
