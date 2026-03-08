@@ -62,6 +62,16 @@ export default function Dashboard() {
     ]);
     if (ordersRes.data) setOrders(ordersRes.data);
     if (profileRes.data) setProfile(profileRes.data);
+    // Load existing reviews by this user
+    if (user) {
+      const { data: reviews } = await supabase
+        .from("reviews")
+        .select("product_id, order_id")
+        .eq("user_id", user.id);
+      if (reviews) {
+        setExistingReviews(new Set(reviews.map((r: any) => `${r.product_id}-${r.order_id}`)));
+      }
+    }
     setLoading(false);
   };
 
