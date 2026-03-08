@@ -376,10 +376,17 @@ export default function Checkout() {
               </div>
             </div>
 
+            <div className="mt-4 p-3 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 flex items-start gap-2.5">
+              <MessageCircle className="w-4 h-4 text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-green-700 dark:text-green-300 leading-relaxed">
+                After placing, you'll be redirected to <strong>WhatsApp</strong> to confirm your order with us. Order is confirmed only after WhatsApp confirmation.
+              </p>
+            </div>
+
             <button
               onClick={handlePlaceOrder}
               disabled={placing}
-              className="w-full mt-6 py-3.5 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="w-full mt-4 py-3.5 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               {placing ? "Placing Order..." : `Place Order — ₹${finalTotal.toLocaleString()}`}
             </button>
