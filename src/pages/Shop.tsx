@@ -41,11 +41,16 @@ export default function Shop() {
 
   const hasFilters = selectedCategory || selectedOccasion || selectedFlavour || searchQuery;
 
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginatedProducts = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  // Reset page when filters change
   const clearFilters = () => {
     setSearchQuery("");
     setSelectedCategory("");
     setSelectedOccasion("");
     setSelectedFlavour("");
+    setCurrentPage(1);
   };
 
   const FilterSection = ({ title, options, selected, onSelect }: { title: string; options: string[]; selected: string; onSelect: (v: string) => void }) => (
