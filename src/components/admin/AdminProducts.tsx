@@ -5,12 +5,119 @@ import { format } from "date-fns";
 import Pagination from "@/components/Pagination";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
-import { useStoreConfig, BUILTIN_FILTER_TYPES } from "@/hooks/useStoreConfig";
-import { Badge } from "@/components/ui/badge";
+import { useStoreConfig } from "@/hooks/useStoreConfig";
 import ImageCropper from "@/components/admin/ImageCropper";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 
 const ITEMS_PER_PAGE = 10;
+
+type Product = Tables<"products">;
+
+/* ── Draggable Image List ────────────────────────────────── */
+interface DraggableImageListProps {
+  images: string[];
+  pendingFiles: File[];
+  onReorder: (images: string[]) => void;
+  onRemoveImage: (index: number) => void;
+  onRemovePending: (index: number) => void;
+  onReorderPending: (files: File[]) => void;
+  onAddImage: (file: File) => void;
+}
+
+function DraggableImageList({ images, pendingFiles, onReorder, onRemoveImage, onRemovePending, onReorderPending, onAddImage }: DraggableImageListProps) {
+  const dragItem = useRef<{ type: "saved" | "pending"; index: number } | null>(null);
+  const dragOver = useRef<{ type: "saved" | "pending"; index: number } | null>(null);
+  const [dragging, setDragging] = useState(false);
+
+  const handleDragStart = (type: "saved" | "pending", index: number) => {
+    dragItem.current = { type, index };
+    setDragging(true);
+  };
+
+  const handleDragEnter = (type: "saved" | "pending", index: number) => {
+    dragOver.current = { type, index };
+  };
+
+  const handleDragEnd = () => {
+    if (!dragItem.current || !dragOver.current) { setDragging(false); return; }
+    const from = dragItem.current;
+    const to = dragOver.current;
+
+    // Only support reordering within same type
+    if (from.type === to.type && from.index !== to.index) {
+      if (from.type === "saved") {
+        const arr = [...images];
+        const [moved] = arr.splice(from.index, 1);
+        arr.splice(to.index, 0, moved);
+        onReorder(arr);
+      } else {
+        const arr = [...pendingFiles];
+        const [moved] = arr.splice(from.index, 1);
+        arr.splice(to.index, 0, moved);
+        onReorderPending(arr);
+      }
+    }
+
+    dragItem.current = null;
+    dragOver.current = null;
+    setDragging(false);
+  };
+
+  return (
+    <div>
+      <label className="text-xs font-medium mb-1 block">Additional Images</label>
+      <div className="flex flex-wrap gap-2 mb-2">
+        {images.map((url, i) => (
+          <div
+            key={`saved-${i}`}
+            draggable
+            onDragStart={() => handleDragStart("saved", i)}
+            onDragEnter={() => handleDragEnter("saved", i)}
+            onDragEnd={handleDragEnd}
+            onDragOver={(e) => e.preventDefault()}
+            className={`relative group cursor-grab active:cursor-grabbing transition-transform ${dragging ? "opacity-80" : ""}`}
+          >
+            <div className="absolute top-0.5 left-0.5 z-10 w-5 h-5 rounded bg-foreground/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <GripVertical className="w-3 h-3 text-background" />
+            </div>
+            <img src={url} alt={`Additional ${i + 1}`} className="w-16 h-16 rounded-lg object-cover border-2 border-transparent hover:border-primary/30" />
+            <button onClick={() => onRemoveImage(i)} className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <X className="w-3 h-3" />
+            </button>
+            <span className="absolute bottom-0.5 right-0.5 text-[9px] bg-foreground/60 text-background px-1 rounded">{i + 1}</span>
+          </div>
+        ))}
+        {pendingFiles.map((file, i) => (
+          <div
+            key={`pending-${i}`}
+            draggable
+            onDragStart={() => handleDragStart("pending", i)}
+            onDragEnter={() => handleDragEnter("pending", i)}
+            onDragEnd={handleDragEnd}
+            onDragOver={(e) => e.preventDefault()}
+            className={`relative group cursor-grab active:cursor-grabbing transition-transform ${dragging ? "opacity-80" : ""}`}
+          >
+            <div className="absolute top-0.5 left-0.5 z-10 w-5 h-5 rounded bg-foreground/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <GripVertical className="w-3 h-3 text-background" />
+            </div>
+            <img src={URL.createObjectURL(file)} alt={`Pending ${i + 1}`} className="w-16 h-16 rounded-lg object-cover opacity-70 border-2 border-dashed border-primary/30" />
+            <button onClick={() => onRemovePending(i)} className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        ))}
+      </div>
+      <label className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm cursor-pointer hover:bg-secondary">
+        <Plus className="w-4 h-4" /> Add Image
+        <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) onAddImage(file);
+        }} />
+      </label>
+      <p className="text-xs text-muted-foreground mt-1">Drag to reorder · Hover to remove</p>
+    </div>
+  );
+}
 
 type Product = Tables<"products">;
 
