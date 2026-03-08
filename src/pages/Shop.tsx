@@ -272,40 +272,6 @@ export default function Shop() {
             </div>
 
             <div ref={filterScrollRef} className="flex-1 overflow-y-auto px-4">
-              {/* Price Range Slider */}
-              <div className="py-4 border-b border-border/50">
-                <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-4 px-2 flex items-center gap-1.5">
-                  <span className="w-1 h-4 rounded-full bg-accent/60" />
-                  Price Range
-                </h4>
-                <div className="px-2">
-                  <Slider
-                    min={priceExtents.min}
-                    max={priceExtents.max}
-                    step={50}
-                    value={priceRange}
-                    onValueChange={(val) => setPriceRange([val[0], val[1]])}
-                    className="mb-3"
-                  />
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="flex items-center gap-0.5 font-semibold text-foreground bg-secondary px-2.5 py-1 rounded-lg">
-                      <IndianRupee className="w-3 h-3" />{priceRange[0]}
-                    </span>
-                    <span className="text-xs text-muted-foreground">to</span>
-                    <span className="flex items-center gap-0.5 font-semibold text-foreground bg-secondary px-2.5 py-1 rounded-lg">
-                      <IndianRupee className="w-3 h-3" />{priceRange[1]}
-                    </span>
-                  </div>
-                  {isPriceFiltered && (
-                    <button
-                      onClick={() => setPriceRange([priceExtents.min, priceExtents.max])}
-                      className="mt-2 text-xs text-primary hover:underline"
-                    >
-                      Reset price
-                    </button>
-                  )}
-                </div>
-              </div>
 
               {/* Product Tag Filter */}
               {productTags.length > 0 && (
