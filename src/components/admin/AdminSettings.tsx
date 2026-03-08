@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, X, Trash2, Tag, Layers, Palette, Calendar, Pencil, Upload, Image, Eye, EyeOff, BarChart3, Crop, Mail, Bell, BellOff, Send, CheckCircle2, AlertCircle } from "lucide-react";
+import { Plus, X, Trash2, Tag, Layers, Palette, Calendar, Pencil, Upload, Image, Eye, EyeOff, BarChart3, Crop, Mail, Bell, BellOff, Send, CheckCircle2, AlertCircle, MapPin, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import ImageCropper from "@/components/admin/ImageCropper";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
+import { DEFAULT_STORE_INFO, type StoreInfo } from "@/hooks/useStoreInfo";
 
 interface ConfigItem {
   id: string;
@@ -62,7 +63,10 @@ export default function AdminSettings() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [newValues, setNewValues] = useState<Record<string, string>>({ category: "", flavour: "", occasion: "" });
-  const [activeSection, setActiveSection] = useState<"config" | "coupons" | "banners" | "notifications">("config");
+  const [activeSection, setActiveSection] = useState<"config" | "coupons" | "banners" | "notifications" | "storeinfo">("config");
+  const [storeInfoForm, setStoreInfoForm] = useState<StoreInfo>(DEFAULT_STORE_INFO);
+  const [storeInfoId, setStoreInfoId] = useState<string | null>(null);
+  const [savingStoreInfo, setSavingStoreInfo] = useState(false);
   const [showCouponForm, setShowCouponForm] = useState(false);
   const [couponForm, setCouponForm] = useState(emptyCoupon);
   const [editingCoupon, setEditingCoupon] = useState<string | null>(null);
@@ -101,6 +105,14 @@ export default function AdminSettings() {
         const settings: Record<string, boolean> = {};
         emailConfigs.forEach(c => { settings[c.value] = c.is_active; });
         setEmailSettings(prev => ({ ...prev, ...settings }));
+      }
+      // Load store info
+      const storeInfoRow = (configRes.data as ConfigItem[]).find(c => c.config_type === "store_info");
+      if (storeInfoRow) {
+        try {
+          setStoreInfoForm({ ...DEFAULT_STORE_INFO, ...JSON.parse(storeInfoRow.value) });
+          setStoreInfoId(storeInfoRow.id);
+        } catch { /* use defaults */ }
       }
     }
     if (couponRes.data) setCoupons(couponRes.data as Coupon[]);
@@ -277,6 +289,7 @@ export default function AdminSettings() {
       <div className="flex gap-2 mb-6 flex-wrap">
         {[
           { key: "config" as const, label: "Store Config", icon: Layers },
+          { key: "storeinfo" as const, label: "Store Info", icon: MapPin },
           { key: "coupons" as const, label: "Coupons", icon: Tag },
           { key: "banners" as const, label: "Banners", icon: Image },
           { key: "notifications" as const, label: "Notifications", icon: Bell },
@@ -628,6 +641,89 @@ export default function AdminSettings() {
                 );
               })}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Store Info */}
+      {activeSection === "storeinfo" && (
+        <div className="bg-card rounded-2xl p-6 shadow-soft space-y-4">
+          <div className="flex items-center gap-3 mb-2">
+            <MapPin className="w-5 h-5 text-primary" />
+            <div>
+              <h3 className="font-display font-semibold text-lg">Store Information</h3>
+              <p className="text-xs text-muted-foreground">Location details and contact numbers shown on the Location page</p>
+            </div>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-medium mb-1 block">Store Name</label>
+              <input value={storeInfoForm.storeName} onChange={e => setStoreInfoForm(p => ({ ...p, storeName: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block">Email</label>
+              <input value={storeInfoForm.email} onChange={e => setStoreInfoForm(p => ({ ...p, email: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" placeholder="hello@store.com" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block">Phone Number</label>
+              <input value={storeInfoForm.phone} onChange={e => setStoreInfoForm(p => ({ ...p, phone: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" placeholder="+91 98765 43210" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block">Alternate Phone</label>
+              <input value={storeInfoForm.phone2} onChange={e => setStoreInfoForm(p => ({ ...p, phone2: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" placeholder="+91 12345 67890" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="text-xs font-medium mb-1 block">Address</label>
+              <input value={storeInfoForm.address} onChange={e => setStoreInfoForm(p => ({ ...p, address: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" placeholder="123 Baker Street" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block">City</label>
+              <input value={storeInfoForm.city} onChange={e => setStoreInfoForm(p => ({ ...p, city: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block">State</label>
+              <input value={storeInfoForm.state} onChange={e => setStoreInfoForm(p => ({ ...p, state: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block">Pincode</label>
+              <input value={storeInfoForm.pincode} onChange={e => setStoreInfoForm(p => ({ ...p, pincode: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block">Opening Hours</label>
+              <input value={storeInfoForm.openingHours} onChange={e => setStoreInfoForm(p => ({ ...p, openingHours: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" placeholder="Mon-Sat: 9AM - 9PM" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="text-xs font-medium mb-1 block">Google Maps Embed URL</label>
+              <input value={storeInfoForm.mapUrl} onChange={e => setStoreInfoForm(p => ({ ...p, mapUrl: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" placeholder="https://www.google.com/maps/embed?..." />
+              <p className="text-xs text-muted-foreground mt-1">Paste the embed URL from Google Maps (Share → Embed a map → Copy src)</p>
+            </div>
+          </div>
+          <div className="pt-2">
+            <Button disabled={savingStoreInfo} onClick={async () => {
+              setSavingStoreInfo(true);
+              const payload = { config_type: "store_info", value: JSON.stringify(storeInfoForm), is_active: true, sort_order: 0 };
+              if (storeInfoId) {
+                const { error } = await supabase.from("store_config").update(payload).eq("id", storeInfoId);
+                error ? toast.error("Failed to save") : toast.success("Store info updated!");
+              } else {
+                const { error, data } = await supabase.from("store_config").insert(payload).select().single();
+                if (error) toast.error("Failed to save");
+                else { toast.success("Store info saved!"); if (data) setStoreInfoId(data.id); }
+              }
+              setSavingStoreInfo(false);
+            }}>
+              {savingStoreInfo ? "Saving..." : "Save Store Info"}
+            </Button>
           </div>
         </div>
       )}

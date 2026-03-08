@@ -9,8 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const navLinks = [
   { label: "Home", path: "/" },
   { label: "Shop", path: "/shop" },
-  { label: "Birthday", path: "/shop?occasion=Birthday" },
-  { label: "Wedding", path: "/shop?occasion=Wedding" },
+  { label: "Location", path: "/location" },
 ];
 
 export default function Navbar() {
