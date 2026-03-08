@@ -243,9 +243,9 @@ export default function Index() {
               </div>
             </motion.div>
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
+              transition={{ duration: 0.5, delay: 0.1, ease: [0.32, 0.72, 0, 1] }}
               className="relative"
             >
               <div className="relative rounded-3xl overflow-hidden shadow-elevated">
