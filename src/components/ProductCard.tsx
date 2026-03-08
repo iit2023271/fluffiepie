@@ -128,8 +128,11 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
               <span className="text-sm font-medium">{product.rating}</span>
               <span className="text-xs text-muted-foreground">({product.reviewCount})</span>
             </div>
-            <div className="flex items-baseline gap-1">
+            <div className="flex items-baseline gap-2">
               <span className="text-lg font-bold text-foreground">₹{product.basePrice}</span>
+              {product.originalPrice && product.originalPrice > product.basePrice && (
+                <span className="text-sm text-muted-foreground line-through">₹{product.originalPrice}</span>
+              )}
               <span className="text-xs text-muted-foreground">onwards</span>
             </div>
           </div>

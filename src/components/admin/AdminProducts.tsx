@@ -637,7 +637,12 @@ export default function AdminProducts() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-sm text-muted-foreground hidden md:table-cell">{product.category}</td>
-                      <td className="px-4 py-3 text-sm font-medium">₹{product.base_price}</td>
+                      <td className="px-4 py-3 text-sm font-medium">
+                        ₹{product.base_price}
+                        {(product as any).original_price && (product as any).original_price > product.base_price && (
+                          <span className="ml-1.5 text-xs text-muted-foreground line-through">₹{(product as any).original_price}</span>
+                        )}
+                      </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <input type="number" value={stock} onChange={(e) => updateStock(product.id, parseInt(e.target.value) || 0)}
