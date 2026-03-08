@@ -36,6 +36,32 @@ export default function AdminUsers() {
   const [allTags, setAllTags] = useState<string[]>([]);
   const [removeTagConfirm, setRemoveTagConfirm] = useState<{ open: boolean; userId: string; tag: string }>({ open: false, userId: "", tag: "" });
   const [adminConfirm, setAdminConfirm] = useState<{ open: boolean; userId: string; isAdmin: boolean; name: string }>({ open: false, userId: "", isAdmin: false, name: "" });
+  const [waDialog, setWaDialog] = useState<{ open: boolean; phone: string; name: string }>({ open: false, phone: "", name: "" });
+  const [waMessage, setWaMessage] = useState("");
+  const { storeInfo } = useStoreInfo();
+
+  const waTemplates = [
+    { label: "🎁 Coupon Offer", text: `Hi {name}! 🎉 Here's an exclusive coupon just for you! Use code *SPECIAL10* to get 10% off on your next order at ${storeInfo.storeName}. Order now! 🍰` },
+    { label: "🆕 New Arrival", text: `Hey {name}! 👋 We've added some delicious new cakes to our menu at ${storeInfo.storeName}! Check them out and treat yourself 🎂` },
+    { label: "💝 Thank You", text: `Hi {name}! Thank you so much for your order from ${storeInfo.storeName}! We hope you loved it. Come back soon for more treats! ❤️🍰` },
+    { label: "🎂 Festival Offer", text: `Hi {name}! 🎊 Celebrate this festive season with ${storeInfo.storeName}! Get *20% off* on all cakes. Limited time offer! 🎉` },
+    { label: "⭐ Feedback", text: `Hi {name}! We'd love to hear your feedback on your recent order from ${storeInfo.storeName}. Your opinion matters to us! 🙏` },
+  ];
+
+  const openWhatsApp = (phone: string, name: string) => {
+    setWaDialog({ open: true, phone, name });
+    setWaMessage(waTemplates[0].text.replace(/{name}/g, name || "there"));
+  };
+
+  const sendWhatsApp = () => {
+    const phone = waDialog.phone.replace(/\D/g, "");
+    if (!phone) { toast.error("No phone number available for this customer"); return; }
+    const fullPhone = phone.startsWith("91") ? phone : `91${phone}`;
+    const url = `https://wa.me/${fullPhone}?text=${encodeURIComponent(waMessage)}`;
+    window.open(url, "_blank");
+    setWaDialog({ open: false, phone: "", name: "" });
+    toast.success("WhatsApp opened!");
+  };
 
   useEffect(() => { loadUsers(); }, []);
 
