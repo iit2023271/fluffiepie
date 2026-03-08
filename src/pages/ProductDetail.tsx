@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect, useRef } from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, ShoppingCart, Heart, Minus, Plus, ChevronLeft, Truck, Shield, Clock, X, ChevronRight, ZoomIn } from "lucide-react";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSEO } from "@/hooks/useSEO";
 import { useCart } from "@/context/CartContext";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import ProductCard from "@/components/ProductCard";
