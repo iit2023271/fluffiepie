@@ -16,6 +16,7 @@ export interface CustomSectionData {
   ctaButtonText?: string;
   ctaButtonLink?: string;
   ctaBg?: "primary" | "blush" | "cream" | "muted";
+  ctaBgImage?: string;
   // feature_grid
   gridTitle?: string;
   gridSubtitle?: string;
