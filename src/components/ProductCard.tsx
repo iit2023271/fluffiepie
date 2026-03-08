@@ -63,7 +63,7 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
     >
-      <Link to={`/product/${product.slug}`} className="group block">
+      <Link to={isSoldOut ? "#" : `/product/${product.slug}`} className="group block" onClick={isSoldOut ? (e: React.MouseEvent) => { e.preventDefault(); toast.error("This product is currently sold out"); } : undefined}>
         <div className="relative rounded-2xl overflow-hidden bg-card shadow-soft hover:shadow-card transition-shadow duration-300">
           {/* Image */}
           <div className="relative aspect-square overflow-hidden">
