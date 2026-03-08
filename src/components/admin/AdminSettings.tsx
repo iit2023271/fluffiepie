@@ -152,6 +152,16 @@ export default function AdminSettings() {
     else { toast.success("Deleted"); loadAll(); }
   };
 
+  const renameConfigItem = async (id: string, newValue: string) => {
+    if (!newValue.trim()) { toast.error("Value cannot be empty"); return; }
+    const { error } = await supabase.from("store_config").update({ value: newValue.trim() }).eq("id", id);
+    if (error) { error.code === "23505" ? toast.error("Already exists") : toast.error("Failed to rename"); return; }
+    toast.success("Renamed!");
+    setEditingConfigItem(null);
+    setEditingConfigValue("");
+    loadAll();
+  };
+
   // Coupon functions
   const openCouponCreate = () => { setEditingCoupon(null); setCouponForm(emptyCoupon); setShowCouponForm(true); };
   const openCouponEdit = (c: Coupon) => {
