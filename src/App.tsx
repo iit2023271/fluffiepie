@@ -22,6 +22,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const AdminPanel = lazy(() => import("./pages/AdminPanel"));
 const Location = lazy(() => import("./pages/Location"));
 const Social = lazy(() => import("./pages/Social"));
+const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Install = lazy(() => import("./pages/Install"));
 
@@ -52,6 +53,7 @@ const App = () => (
                   <Route path="/admin" element={<AdminPanel />} />
                   <Route path="/location" element={<Location />} />
                   <Route path="/social" element={<Social />} />
+                  <Route path="/contact" element={<Contact />} />
                   <Route path="/install" element={<Install />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
