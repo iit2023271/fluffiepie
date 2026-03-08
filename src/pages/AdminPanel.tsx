@@ -7,7 +7,8 @@ import AdminProducts from "@/components/admin/AdminProducts";
 import AdminOrders from "@/components/admin/AdminOrders";
 import AdminUsers from "@/components/admin/AdminUsers";
 import AdminSettings from "@/components/admin/AdminSettings";
-import { LayoutDashboard, Package, ShoppingCart, Users, LogOut, ChevronLeft, Settings } from "lucide-react";
+import AdminKitchen from "@/components/admin/AdminKitchen";
+import { LayoutDashboard, Package, ShoppingCart, Users, LogOut, ChevronLeft, Settings, ChefHat } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -15,6 +16,7 @@ const tabs = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { key: "products", label: "Products", icon: Package },
   { key: "orders", label: "Orders", icon: ShoppingCart },
+  { key: "kitchen", label: "Kitchen", icon: ChefHat },
   { key: "users", label: "Customers", icon: Users },
   { key: "settings", label: "Settings", icon: Settings },
 ] as const;
@@ -108,6 +110,7 @@ export default function AdminPanel() {
           {activeTab === "dashboard" && <AdminDashboard />}
           {activeTab === "products" && <AdminProducts />}
           {activeTab === "orders" && <AdminOrders />}
+          {activeTab === "kitchen" && <AdminKitchen />}
           {activeTab === "users" && <AdminUsers />}
           {activeTab === "settings" && <AdminSettings />}
         </main>
