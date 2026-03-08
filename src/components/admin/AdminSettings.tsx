@@ -71,6 +71,8 @@ export default function AdminSettings() {
   const [editingBanner, setEditingBanner] = useState<string | null>(null);
   const [savingBanner, setSavingBanner] = useState(false);
   const [bannerImage, setBannerImage] = useState<File | null>(null);
+  const [bannerCropSrc, setBannerCropSrc] = useState<string | null>(null);
+  const [showBannerCropper, setShowBannerCropper] = useState(false);
 
   // Coupon analytics
   const [orders, setOrders] = useState<any[]>([]);
