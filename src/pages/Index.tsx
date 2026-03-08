@@ -210,47 +210,91 @@ export default function Index() {
         <div className="container mx-auto px-4 py-16 md:py-24">
           <div className="grid md:grid-cols-2 gap-10 items-center">
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -40 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+              transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
             >
-              <span className="inline-block px-4 py-1.5 bg-blush text-primary text-sm font-medium rounded-full mb-6">
+              <motion.span
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                className="inline-block px-4 py-1.5 bg-blush text-primary text-sm font-medium rounded-full mb-6"
+              >
                 {config.hero.badge}
-              </span>
+              </motion.span>
               <h1 className="text-4xl md:text-6xl font-display font-bold text-foreground leading-tight mb-6">
-                {config.hero.titleLine1}
-                <br />
-                <span className="text-primary">{config.hero.titleLine2}</span>
+                <motion.span
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                  className="block"
+                >
+                  {config.hero.titleLine1}
+                </motion.span>
+                <motion.span
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.45, duration: 0.6 }}
+                  className="block text-primary"
+                >
+                  {config.hero.titleLine2}
+                </motion.span>
               </h1>
-              <p className="text-lg text-muted-foreground mb-8 max-w-md">
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+                className="text-lg text-muted-foreground mb-8 max-w-md"
+              >
                 {config.hero.subtitle}
-              </p>
-              <div className="flex flex-wrap gap-4">
+              </motion.p>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.75, duration: 0.5 }}
+                className="flex flex-wrap gap-4"
+              >
                 <Link
                   to={config.hero.ctaPrimaryLink}
-                  className="inline-flex items-center gap-2 px-8 py-3.5 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 transition-opacity shadow-card"
+                  className="group inline-flex items-center gap-2 px-8 py-3.5 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 transition-all shadow-card hover:shadow-elevated hover:scale-[1.02]"
                 >
-                  {config.hero.ctaPrimaryText} <ArrowRight className="w-4 h-4" />
+                  {config.hero.ctaPrimaryText}
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </Link>
                 {config.hero.ctaSecondaryText && (
                   <Link
                     to={config.hero.ctaSecondaryLink}
-                    className="inline-flex items-center gap-2 px-8 py-3.5 bg-background text-foreground rounded-xl font-medium border border-border hover:bg-secondary transition-colors"
+                    className="inline-flex items-center gap-2 px-8 py-3.5 bg-background text-foreground rounded-xl font-medium border border-border hover:bg-secondary transition-all hover:scale-[1.02]"
                   >
                     {config.hero.ctaSecondaryText}
                   </Link>
                 )}
-              </div>
+              </motion.div>
             </motion.div>
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.1, ease: [0.32, 0.72, 0, 1] }}
+              initial={{ opacity: 0, scale: 0.85, rotate: -3 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              transition={{ duration: 0.8, delay: 0.2, ease: [0.32, 0.72, 0, 1] }}
               className="relative"
             >
-              <div className="relative rounded-3xl overflow-hidden shadow-elevated">
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="relative rounded-3xl overflow-hidden shadow-elevated"
+              >
                 <img src={config.hero.heroImage || heroCake} alt="Premium cake" className="w-full" loading="eager" decoding="async" />
-              </div>
+              </motion.div>
+              {/* Decorative floating elements */}
+              <motion.div
+                animate={{ y: [0, -12, 0], x: [0, 5, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                className="absolute -top-4 -right-4 w-20 h-20 bg-accent/20 rounded-full blur-xl"
+              />
+              <motion.div
+                animate={{ y: [0, 10, 0], x: [0, -8, 0] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="absolute -bottom-6 -left-6 w-28 h-28 bg-primary/15 rounded-full blur-xl"
+              />
             </motion.div>
           </div>
         </div>
@@ -260,18 +304,23 @@ export default function Index() {
       const displayOccasions = occasions.length > 0 ? occasions.filter(o => categoryImages[o]) : Object.keys(categoryImages);
       return (
         <section key="categories" className="container mx-auto px-4 py-16">
-          <div className="text-center mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
             <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{config.categories.title}</h2>
             <p className="text-muted-foreground">{config.categories.subtitle}</p>
-          </div>
+          </motion.div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {displayOccasions.slice(0, 4).map((name, i) => (
               <motion.div
                 key={name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 40, scale: 0.9 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
+                transition={{ delay: i * 0.12, type: "spring", stiffness: 100 }}
               >
                 <Link
                   to={`/shop?occasion=${name}`}
@@ -280,14 +329,18 @@ export default function Index() {
                   <img
                     src={categoryImages[name] || catCustom}
                     alt={name}
-                    className="w-full h-full object-cover transition-transform duration-500 will-change-transform group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-700 will-change-transform group-hover:scale-110"
                     loading="lazy"
                     decoding="async"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 to-transparent" />
-                  <div className="absolute bottom-4 left-4">
+                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent group-hover:from-foreground/80 transition-all duration-500" />
+                  <motion.div
+                    className="absolute bottom-4 left-4"
+                    whileHover={{ x: 5 }}
+                  >
                     <h3 className="text-lg font-display font-bold text-background">{name}</h3>
-                  </div>
+                    <span className="text-xs text-background/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Shop Now →</span>
+                  </motion.div>
                 </Link>
               </motion.div>
             ))}
@@ -297,21 +350,34 @@ export default function Index() {
     },
     trending: () => (
       <section key="trending" className="container mx-auto px-4 py-16 bg-cream rounded-3xl mx-4">
-        <div className="flex items-center justify-between mb-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="flex items-center justify-between mb-10"
+        >
           <div>
             <h2 className="text-3xl font-display font-bold mb-2">{config.trending.title}</h2>
             <p className="text-muted-foreground">{config.trending.subtitle}</p>
           </div>
           <Link
             to="/shop"
-            className="hidden md:inline-flex items-center gap-1 text-primary font-medium text-sm hover:underline"
+            className="hidden md:inline-flex items-center gap-1 text-primary font-medium text-sm hover:underline group"
           >
-            View All <ArrowRight className="w-4 h-4" />
+            View All <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
-        </div>
+        </motion.div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {featured.map((product, i) => (
-            <ProductCard key={product.id} product={product} index={i} />
+            <motion.div
+              key={product.id}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, type: "spring", stiffness: 100 }}
+            >
+              <ProductCard product={product} index={i} />
+            </motion.div>
           ))}
         </div>
         <div className="mt-8 text-center md:hidden">
@@ -323,23 +389,33 @@ export default function Index() {
     ),
     howItWorks: () => (
       <section key="howItWorks" className="container mx-auto px-4 py-20">
-        <div className="text-center mb-14">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-14"
+        >
           <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{config.howItWorks.title}</h2>
           <p className="text-muted-foreground">{config.howItWorks.subtitle}</p>
-        </div>
+        </motion.div>
         <div className={`grid md:grid-cols-${config.howItWorks.steps.length} gap-8`}>
           {config.howItWorks.steps.map((step, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 40, scale: 0.9 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.15 }}
-              className="text-center p-8 rounded-2xl bg-card shadow-soft hover:shadow-card transition-shadow"
+              transition={{ delay: i * 0.15, type: "spring", stiffness: 100 }}
+              whileHover={{ y: -8, transition: { duration: 0.3 } }}
+              className="text-center p-8 rounded-2xl bg-card shadow-soft hover:shadow-elevated transition-shadow cursor-default"
             >
-              <div className="w-16 h-16 rounded-2xl bg-blush flex items-center justify-center mx-auto mb-5 text-2xl">
+              <motion.div
+                whileHover={{ scale: 1.15, rotate: [0, -10, 10, 0] }}
+                transition={{ duration: 0.5 }}
+                className="w-16 h-16 rounded-2xl bg-blush flex items-center justify-center mx-auto mb-5 text-2xl"
+              >
                 {step.emoji}
-              </div>
+              </motion.div>
               <h3 className="text-lg font-display font-semibold mb-2">{step.title}</h3>
               <p className="text-sm text-muted-foreground">{step.desc}</p>
             </motion.div>
@@ -349,12 +425,17 @@ export default function Index() {
     ),
     reviews: () =>
       reviews.length > 0 ? (
-        <section key="reviews" className="bg-blush py-20">
+        <section key="reviews" className="bg-blush py-20 overflow-hidden">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-14">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-14"
+            >
               <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{config.reviews.title}</h2>
               <p className="text-muted-foreground">{config.reviews.subtitle}</p>
-            </div>
+            </motion.div>
             <div className="grid md:grid-cols-3 gap-6">
               {reviews.slice(0, config.reviews.count).map((r, i) => {
                 const name = r.author_name || "Customer";
@@ -362,15 +443,24 @@ export default function Index() {
                 return (
                   <motion.div
                     key={r.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 30, rotateX: 15 }}
+                    whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: i * 0.1 }}
-                    className="bg-background rounded-2xl p-6 shadow-soft"
+                    transition={{ delay: i * 0.15, type: "spring", stiffness: 80 }}
+                    whileHover={{ y: -5, scale: 1.02, transition: { duration: 0.25 } }}
+                    className="bg-background rounded-2xl p-6 shadow-soft hover:shadow-elevated transition-shadow"
                   >
                     <div className="flex items-center gap-1 mb-3">
                       {Array.from({ length: r.rating }).map((_, j) => (
-                        <Star key={j} className="w-4 h-4 fill-accent text-accent" />
+                        <motion.div
+                          key={j}
+                          initial={{ opacity: 0, scale: 0 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: i * 0.15 + j * 0.08 }}
+                        >
+                          <Star className="w-4 h-4 fill-accent text-accent" />
+                        </motion.div>
                       ))}
                     </div>
                     <p className="text-sm text-foreground mb-4 leading-relaxed">"{r.comment}"</p>
