@@ -53,7 +53,6 @@ export default function AdminUsers() {
       profile: p,
       addresses: addresses.filter((a) => a.user_id === p.user_id),
       orders: orders.filter((o) => o.user_id === p.user_id),
-      roles: roles.filter((r) => r.user_id === p.user_id),
       tags: tags.filter((t: any) => t.user_id === p.user_id).map((t: any) => t.tag),
     }));
 
