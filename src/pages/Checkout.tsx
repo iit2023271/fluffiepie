@@ -189,14 +189,47 @@ export default function Checkout() {
             <h3 className="font-display font-semibold text-lg mb-4 flex items-center gap-2">
               <MapPin className="w-5 h-5 text-primary" /> Delivery Address
             </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <input placeholder="First Name" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} className="col-span-1 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
-              <input placeholder="Last Name" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} className="col-span-1 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
-              <input placeholder="Phone Number" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="col-span-2 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
-              <input placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="col-span-2 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
-              <input placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
-              <input placeholder="Pincode" value={form.pincode} onChange={(e) => setForm({ ...form, pincode: e.target.value })} className="px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
-            </div>
+
+            {user && (
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => setAddressMode("saved")}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    addressMode === "saved" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-primary/10"
+                  }`}
+                >
+                  Saved Addresses
+                </button>
+                <button
+                  onClick={() => setAddressMode("new")}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    addressMode === "new" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-primary/10"
+                  }`}
+                >
+                  New Address
+                </button>
+              </div>
+            )}
+
+            {addressMode === "saved" && user ? (
+              <SavedAddresses
+                mode="select"
+                selectedId={selectedAddressId}
+                onSelect={(addr) => {
+                  setSelectedAddressId(addr.id);
+                  setSelectedAddress(addr);
+                }}
+              />
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <input placeholder="First Name" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} className="col-span-1 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+                <input placeholder="Last Name" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} className="col-span-1 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+                <input placeholder="Phone Number" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="col-span-2 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+                <input placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="col-span-2 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+                <input placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+                <input placeholder="Pincode" value={form.pincode} onChange={(e) => setForm({ ...form, pincode: e.target.value })} className="px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+              </div>
+            )}
           </div>
 
           <div className="p-6 rounded-2xl bg-card shadow-soft">
