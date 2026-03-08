@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import ImageCropper from "@/components/admin/ImageCropper";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { DEFAULT_STORE_INFO, type StoreInfo } from "@/hooks/useStoreInfo";
+import { DEFAULT_DELIVERY_CONFIG, type DeliveryConfig } from "@/hooks/useDeliveryConfig";
 
 interface ConfigItem {
   id: string;
