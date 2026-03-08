@@ -7,11 +7,6 @@ import { format } from "date-fns";
 import ImageCropper from "@/components/admin/ImageCropper";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { DEFAULT_STORE_INFO, type StoreInfo } from "@/hooks/useStoreInfo";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
-import ImageCropper from "@/components/admin/ImageCropper";
-import ConfirmDialog from "@/components/admin/ConfirmDialog";
 
 interface ConfigItem {
   id: string;
