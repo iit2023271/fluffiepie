@@ -40,7 +40,7 @@ export default function AdminProducts() {
   const [currentPage, setCurrentPage] = useState(1);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [showCropper, setShowCropper] = useState(false);
-  const [cropTarget, setCropTarget] = useState<"main" | number>("main");
+  const [cropTarget, setCropTarget] = useState<"main" | "additional">("main");
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id: string; name: string }>({ open: false, id: "", name: "" });
 
   useEffect(() => { loadProducts(); }, []);
