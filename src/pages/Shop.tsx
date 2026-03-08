@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 
-import { Slider } from "@/components/ui/slider";
+
 
 const ITEMS_PER_PAGE = 12;
 
