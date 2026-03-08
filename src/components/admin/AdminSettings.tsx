@@ -848,6 +848,37 @@ export default function AdminSettings() {
               <p className="text-xs text-muted-foreground mt-1">Paste the embed URL from Google Maps (Share → Embed a map → Copy src)</p>
             </div>
           </div>
+
+          {/* Social Media Links */}
+          <div className="border-t border-border pt-4 mt-4">
+            <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">🔗 Social Media Links</h4>
+            <div className="space-y-2 mb-3">
+              {(storeInfoForm.socialLinks || []).map((link, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <select value={link.platform} onChange={e => {
+                    const updated = [...(storeInfoForm.socialLinks || [])];
+                    updated[i] = { ...updated[i], platform: e.target.value };
+                    setStoreInfoForm(p => ({ ...p, socialLinks: updated }));
+                  }} className="w-32 px-2 py-2 rounded-xl border border-border text-sm bg-background">
+                    {["Instagram", "Facebook", "WhatsApp", "YouTube", "Twitter", "X", "TikTok", "Pinterest", "LinkedIn", "Telegram"].map(p => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
+                  <input value={link.url} onChange={e => {
+                    const updated = [...(storeInfoForm.socialLinks || [])];
+                    updated[i] = { ...updated[i], url: e.target.value };
+                    setStoreInfoForm(p => ({ ...p, socialLinks: updated }));
+                  }} placeholder="https://..." className="flex-1 px-3 py-2 rounded-xl border border-border text-sm bg-background" />
+                  <button onClick={() => {
+                    const updated = (storeInfoForm.socialLinks || []).filter((_, idx) => idx !== i);
+                    setStoreInfoForm(p => ({ ...p, socialLinks: updated }));
+                  }} className="p-2 text-muted-foreground hover:text-destructive"><X className="w-4 h-4" /></button>
+                </div>
+              ))}
+            </div>
+            <button onClick={() => setStoreInfoForm(p => ({ ...p, socialLinks: [...(p.socialLinks || []), { platform: "Instagram", url: "" }] }))}
+              className="text-xs text-primary hover:underline flex items-center gap-1"><Plus className="w-3 h-3" /> Add Social Link</button>
+          </div>
           <div className="pt-2">
             <Button disabled={savingStoreInfo} onClick={async () => {
               setSavingStoreInfo(true);
