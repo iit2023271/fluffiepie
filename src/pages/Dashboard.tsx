@@ -191,8 +191,14 @@ export default function Dashboard() {
 
   const canCancelOrder = (order: Order) => {
     if (order.status !== "placed") return false;
+    if (deliveryConfig.cancel_window_minutes <= 0) return false;
     const minutesSincePlaced = differenceInMinutes(new Date(), new Date(order.created_at));
-    return minutesSincePlaced <= CANCEL_WINDOW_MINUTES;
+    return minutesSincePlaced <= deliveryConfig.cancel_window_minutes;
+  };
+
+  const getRemainingCancelMinutes = (order: Order) => {
+    const minutesSincePlaced = differenceInMinutes(new Date(), new Date(order.created_at));
+    return Math.max(0, deliveryConfig.cancel_window_minutes - minutesSincePlaced);
   };
 
   const cancelOrder = async (orderId: string) => {
