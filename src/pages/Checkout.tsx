@@ -98,16 +98,30 @@ export default function Checkout() {
       image: item.product.image,
     }));
 
+    const deliveryAddress = addressMode === "saved" && selectedAddress
+      ? {
+          name: selectedAddress.full_name,
+          phone: selectedAddress.phone,
+          address: selectedAddress.address_line,
+          city: selectedAddress.city,
+          pincode: selectedAddress.pincode,
+        }
+      : {
+          name: `${form.firstName} ${form.lastName}`,
+          phone: form.phone,
+          address: form.address,
+          city: form.city,
+          pincode: form.pincode,
+        };
+
+    const customerName = addressMode === "saved" && selectedAddress
+      ? selectedAddress.full_name
+      : `${form.firstName} ${form.lastName}`.trim();
+
     const { data: orderData, error } = await supabase.from("orders").insert({
       user_id: user.id,
       items: orderItems,
-      delivery_address: {
-        name: `${form.firstName} ${form.lastName}`,
-        phone: form.phone,
-        address: form.address,
-        city: form.city,
-        pincode: form.pincode,
-      },
+      delivery_address: deliveryAddress,
       delivery_slot: `${deliveryDay}, ${deliverySlot}`,
       subtotal: totalPrice,
       discount,
