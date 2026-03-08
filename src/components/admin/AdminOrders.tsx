@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, formatDistanceToNow, startOfDay, endOfDay, isToday, isTomorrow, isYesterday } from "date-fns";
-import { Search, MessageSquare, Send, Download, ChevronDown, ChevronUp, Trash2, Calendar as CalendarIcon, X, Clock, MapPin, Phone, Package, Truck, CheckCircle2, Timer, Copy } from "lucide-react";
+import { Search, MessageSquare, Send, Download, ChevronDown, ChevronUp, Trash2, Calendar as CalendarIcon, X, Clock, MapPin, Phone, Package, Truck, CheckCircle2, Timer, Copy, Undo2 } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -197,6 +197,15 @@ export default function AdminOrders() {
     if (idx === -1 || idx >= STATUS_STEP_ORDER.length - 1) return null;
     return STATUS_STEP_ORDER[idx + 1];
   };
+
+  // Get previous status for undo
+  const getPrevStatus = (currentStatus: string): string | null => {
+    const idx = STATUS_STEP_ORDER.indexOf(currentStatus);
+    if (idx <= 0) return null;
+    return STATUS_STEP_ORDER[idx - 1];
+  };
+
+  const [undoConfirm, setUndoConfirm] = useState<{ open: boolean; orderId: string; prevStatus: string }>({ open: false, orderId: "", prevStatus: "" });
 
   // Today's stats
   const todayStats = useMemo(() => {
@@ -470,15 +479,40 @@ export default function AdminOrders() {
                           )}
                         </div>
                         <div className="flex items-center gap-2">
-                          {/* Quick next-step button */}
-                          {nextStatus && (
+                          {/* Undo / Go back button for delivered or cancelled */}
+                          {getPrevStatus(order.status) && !nextStatus && (
                             <Button
                               size="sm"
-                              className="text-xs h-8 gap-1.5 rounded-xl"
-                              onClick={() => handleStatusChange(order.id, nextStatus)}
+                              variant="outline"
+                              className="text-xs h-8 gap-1.5 rounded-xl border-amber-300 text-amber-700 hover:bg-amber-50"
+                              onClick={() => setUndoConfirm({ open: true, orderId: order.id, prevStatus: getPrevStatus(order.status)! })}
                             >
-                              {STATUS_CONFIG[nextStatus].emoji} Mark {STATUS_CONFIG[nextStatus].label}
+                              <Undo2 className="w-3.5 h-3.5" /> Undo to {STATUS_CONFIG[getPrevStatus(order.status)!]?.label}
                             </Button>
+                          )}
+
+                          {/* Quick next-step button */}
+                          {nextStatus && (
+                            <>
+                              {getPrevStatus(order.status) && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="text-xs h-8 px-2 rounded-xl text-muted-foreground hover:text-amber-700"
+                                  onClick={() => setUndoConfirm({ open: true, orderId: order.id, prevStatus: getPrevStatus(order.status)! })}
+                                  title={`Undo to ${STATUS_CONFIG[getPrevStatus(order.status)!]?.label}`}
+                                >
+                                  <Undo2 className="w-3.5 h-3.5" />
+                                </Button>
+                              )}
+                              <Button
+                                size="sm"
+                                className="text-xs h-8 gap-1.5 rounded-xl"
+                                onClick={() => handleStatusChange(order.id, nextStatus)}
+                              >
+                                {STATUS_CONFIG[nextStatus].emoji} Mark {STATUS_CONFIG[nextStatus].label}
+                              </Button>
+                            </>
                           )}
 
                           {/* Status dropdown for manual selection */}
@@ -645,6 +679,15 @@ export default function AdminOrders() {
         description="Are you sure you want to cancel this order? The customer will be notified if email notifications are enabled."
         confirmLabel="Cancel Order"
         onConfirm={() => { updateStatus(statusChangeConfirm.orderId, statusChangeConfirm.newStatus); setStatusChangeConfirm({ open: false, orderId: "", newStatus: "" }); }}
+      />
+      <ConfirmDialog
+        open={undoConfirm.open}
+        onOpenChange={(open) => setUndoConfirm(prev => ({ ...prev, open }))}
+        title="Undo Status Change"
+        description={`Are you sure you want to move this order back to "${STATUS_CONFIG[undoConfirm.prevStatus]?.label || undoConfirm.prevStatus}"? The customer will be notified if email notifications are enabled.`}
+        confirmLabel={`Revert to ${STATUS_CONFIG[undoConfirm.prevStatus]?.label || undoConfirm.prevStatus}`}
+        variant="default"
+        onConfirm={() => { updateStatus(undoConfirm.orderId, undoConfirm.prevStatus); setUndoConfirm({ open: false, orderId: "", prevStatus: "" }); }}
       />
     </div>
   );
