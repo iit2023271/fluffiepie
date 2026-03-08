@@ -275,55 +275,58 @@ export default function AdminDashboard() {
   return (
     <div>
       {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-display font-bold">📊 Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-1">Your store performance at a glance</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={exportCSV}>
-            <Download className="w-3.5 h-3.5" /> Download Report
-          </Button>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant={timeRange === "custom" ? "default" : "outline"} size="sm" className={cn("text-xs gap-1.5")}>
-                <CalendarDays className="w-3.5 h-3.5" />
-                {timeRange === "custom" ? dateLabel : "📅 Pick Dates"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <div className="p-3 space-y-3">
-                <p className="text-sm font-medium">Select date range</p>
-                <div className="flex gap-3">
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-1.5">Start Date</p>
-                    <Calendar mode="single" selected={dateFrom} onSelect={(d) => handleDateSelect("from", d)} disabled={(date) => date > new Date()} className={cn("p-2 pointer-events-auto")} />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={exportCSV}>
+              <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Download</span> Report
+            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant={timeRange === "custom" ? "default" : "outline"} size="sm" className={cn("text-xs gap-1.5")}>
+                  <CalendarDays className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{timeRange === "custom" ? dateLabel : "📅 Pick Dates"}</span>
+                  <span className="sm:hidden">📅</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <div className="p-3 space-y-3">
+                  <p className="text-sm font-medium">Select date range</p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-1.5">Start Date</p>
+                      <Calendar mode="single" selected={dateFrom} onSelect={(d) => handleDateSelect("from", d)} disabled={(date) => date > new Date()} className={cn("p-2 pointer-events-auto")} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-1.5">End Date</p>
+                      <Calendar mode="single" selected={dateTo} onSelect={(d) => handleDateSelect("to", d)} disabled={(date) => date > new Date() || (dateFrom ? date < dateFrom : false)} className={cn("p-2 pointer-events-auto")} />
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-1.5">End Date</p>
-                    <Calendar mode="single" selected={dateTo} onSelect={(d) => handleDateSelect("to", d)} disabled={(date) => date > new Date() || (dateFrom ? date < dateFrom : false)} className={cn("p-2 pointer-events-auto")} />
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+                    {[
+                      { label: "Today", fn: () => { const t = new Date(); setDateFrom(t); setDateTo(t); setTimeRange("custom"); } },
+                      { label: "Yesterday", fn: () => { const y = subDays(new Date(), 1); setDateFrom(y); setDateTo(y); setTimeRange("custom"); } },
+                      { label: "Last 7 days", fn: () => { setDateFrom(subDays(new Date(), 6)); setDateTo(new Date()); setTimeRange("custom"); } },
+                      { label: "This month", fn: () => { setDateFrom(startOfMonth(new Date())); setDateTo(new Date()); setTimeRange("custom"); } },
+                    ].map((preset) => (
+                      <Button key={preset.label} variant="ghost" size="sm" className="text-xs" onClick={preset.fn}>{preset.label}</Button>
+                    ))}
                   </div>
                 </div>
-                <div className="flex gap-2 pt-2 border-t border-border">
-                  {[
-                    { label: "Today", fn: () => { const t = new Date(); setDateFrom(t); setDateTo(t); setTimeRange("custom"); } },
-                    { label: "Yesterday", fn: () => { const y = subDays(new Date(), 1); setDateFrom(y); setDateTo(y); setTimeRange("custom"); } },
-                    { label: "Last 7 days", fn: () => { setDateFrom(subDays(new Date(), 6)); setDateTo(new Date()); setTimeRange("custom"); } },
-                    { label: "This month", fn: () => { setDateFrom(startOfMonth(new Date())); setDateTo(new Date()); setTimeRange("custom"); } },
-                  ].map((preset) => (
-                    <Button key={preset.label} variant="ghost" size="sm" className="text-xs" onClick={preset.fn}>{preset.label}</Button>
-                  ))}
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-          {timeRange === "custom" && (
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={clearDateFilter} title="Clear date filter"><X className="w-3.5 h-3.5" /></Button>
-          )}
+              </PopoverContent>
+            </Popover>
+            {timeRange === "custom" && (
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={clearDateFilter} title="Clear date filter"><X className="w-3.5 h-3.5" /></Button>
+            )}
+          </div>
           <div className="flex gap-1 bg-secondary rounded-xl p-1">
-            {([["7d", "7 Days"], ["30d", "30 Days"], ["90d", "90 Days"], ["12m", "1 Year"]] as [TimeRange, string][]).map(([key, label]) => (
+            {([["7d", "7D"], ["30d", "30D"], ["90d", "90D"], ["12m", "1Y"]] as [TimeRange, string][]).map(([key, label]) => (
               <button key={key} onClick={() => { setTimeRange(key); setDateFrom(undefined); setDateTo(undefined); }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${timeRange === key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${timeRange === key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
                 {label}
               </button>
             ))}
