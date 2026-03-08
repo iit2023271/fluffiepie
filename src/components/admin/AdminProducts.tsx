@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, X, Upload, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Upload, Search, AlertTriangle, Package } from "lucide-react";
 import Pagination from "@/components/Pagination";
-
-const ITEMS_PER_PAGE = 10;
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 import { useStoreConfig } from "@/hooks/useStoreConfig";
+import { Badge } from "@/components/ui/badge";
+
+const ITEMS_PER_PAGE = 10;
 
 type Product = Tables<"products">;
 
@@ -14,6 +15,7 @@ const emptyProduct = {
   name: "", slug: "", description: "", category: "Classic", occasion: [] as string[],
   flavour: "Vanilla", base_price: 0, weights: [{ label: "500g", price: 0 }] as { label: string; price: number }[],
   is_new: false, is_bestseller: false, is_active: true, image_url: null as string | null,
+  stock_quantity: 100, low_stock_threshold: 10, sku: "",
 };
 
 export default function AdminProducts() {
@@ -27,6 +29,9 @@ export default function AdminProducts() {
   const [saving, setSaving] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => { loadProducts(); }, []);
 
@@ -61,6 +66,9 @@ export default function AdminProducts() {
       is_bestseller: product.is_bestseller,
       is_active: product.is_active,
       image_url: product.image_url,
+      stock_quantity: (product as any).stock_quantity ?? 100,
+      low_stock_threshold: (product as any).low_stock_threshold ?? 10,
+      sku: (product as any).sku || "",
     });
     setImageFile(null);
     setShowForm(true);
@@ -79,22 +87,14 @@ export default function AdminProducts() {
   const handleSave = async () => {
     if (!form.name || !form.slug) { toast.error("Name and slug are required"); return; }
     setSaving(true);
-
     const imageUrl = await uploadImage();
-
-    const payload = {
-      name: form.name,
-      slug: form.slug,
-      description: form.description,
-      category: form.category,
-      occasion: form.occasion,
-      flavour: form.flavour,
-      base_price: form.base_price,
-      weights: form.weights as any,
-      is_new: form.is_new,
-      is_bestseller: form.is_bestseller,
-      is_active: form.is_active,
-      image_url: imageUrl,
+    const payload: any = {
+      name: form.name, slug: form.slug, description: form.description, category: form.category,
+      occasion: form.occasion, flavour: form.flavour, base_price: form.base_price,
+      weights: form.weights as any, is_new: form.is_new, is_bestseller: form.is_bestseller,
+      is_active: form.is_active, image_url: imageUrl,
+      stock_quantity: form.stock_quantity, low_stock_threshold: form.low_stock_threshold,
+      sku: form.sku || null,
     };
 
     if (editing) {
@@ -106,7 +106,6 @@ export default function AdminProducts() {
       if (error) toast.error(error.message);
       else toast.success("Product created!");
     }
-
     setSaving(false);
     setShowForm(false);
     loadProducts();
@@ -119,38 +118,37 @@ export default function AdminProducts() {
     else { toast.success("Product deleted"); loadProducts(); }
   };
 
+  const updateStock = async (id: string, newStock: number) => {
+    const { error } = await supabase.from("products").update({ stock_quantity: newStock } as any).eq("id", id);
+    if (error) toast.error("Failed to update stock");
+    else {
+      toast.success("Stock updated");
+      setProducts(prev => prev.map(p => p.id === id ? { ...p, stock_quantity: newStock } as any : p));
+    }
+  };
+
   const toggleOccasion = (occ: string) => {
-    setForm((f) => ({
-      ...f,
-      occasion: f.occasion.includes(occ) ? f.occasion.filter((o) => o !== occ) : [...f.occasion, occ],
-    }));
+    setForm(f => ({ ...f, occasion: f.occasion.includes(occ) ? f.occasion.filter(o => o !== occ) : [...f.occasion, occ] }));
   };
 
   const updateWeight = (index: number, field: "label" | "price", value: string | number) => {
-    setForm((f) => {
-      const weights = [...f.weights];
-      weights[index] = { ...weights[index], [field]: value };
-      return { ...f, weights };
-    });
+    setForm(f => { const w = [...f.weights]; w[index] = { ...w[index], [field]: value }; return { ...f, weights: w }; });
   };
 
-  const addWeight = () => setForm((f) => ({ ...f, weights: [...f.weights, { label: "", price: 0 }] }));
-  const removeWeight = (i: number) => setForm((f) => ({ ...f, weights: f.weights.filter((_, idx) => idx !== i) }));
-
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-
-  const [currentPage, setCurrentPage] = useState(1);
+  const addWeight = () => setForm(f => ({ ...f, weights: [...f.weights, { label: "", price: 0 }] }));
+  const removeWeight = (i: number) => setForm(f => ({ ...f, weights: f.weights.filter((_, idx) => idx !== i) }));
 
   const filtered = useMemo(() => {
-    return products.filter((p) => {
-      const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
+    return products.filter(p => {
+      const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || ((p as any).sku || "").toLowerCase().includes(search.toLowerCase());
       const matchCategory = !categoryFilter || p.category === categoryFilter;
-      const matchStatus = !statusFilter || 
-        (statusFilter === "active" && p.is_active) || 
+      const matchStatus = !statusFilter ||
+        (statusFilter === "active" && p.is_active) ||
         (statusFilter === "inactive" && !p.is_active) ||
         (statusFilter === "bestseller" && p.is_bestseller) ||
-        (statusFilter === "new" && p.is_new);
+        (statusFilter === "new" && p.is_new) ||
+        (statusFilter === "low_stock" && (p as any).stock_quantity < (p as any).low_stock_threshold) ||
+        (statusFilter === "out_of_stock" && (p as any).stock_quantity === 0);
       return matchSearch && matchCategory && matchStatus;
     });
   }, [products, search, categoryFilter, statusFilter]);
@@ -160,38 +158,55 @@ export default function AdminProducts() {
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
+  const lowStockCount = products.filter(p => (p as any).stock_quantity < (p as any).low_stock_threshold).length;
+  const outOfStockCount = products.filter(p => (p as any).stock_quantity === 0).length;
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-display font-bold">Products</h1>
         <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90">
           <Plus className="w-4 h-4" /> Add Product
         </button>
       </div>
 
+      {/* Stock alerts */}
+      {(lowStockCount > 0 || outOfStockCount > 0) && (
+        <div className="flex gap-3 mb-4">
+          {outOfStockCount > 0 && (
+            <button onClick={() => setStatusFilter("out_of_stock")} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-destructive/10 border border-destructive/20 text-sm">
+              <AlertTriangle className="w-4 h-4 text-destructive" />
+              <span className="font-medium text-destructive">{outOfStockCount} out of stock</span>
+            </button>
+          )}
+          {lowStockCount > 0 && (
+            <button onClick={() => setStatusFilter("low_stock")} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-accent/10 border border-accent/20 text-sm">
+              <Package className="w-4 h-4 text-accent" />
+              <span className="font-medium">{lowStockCount} low stock</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Search & Filters */}
       <div className="flex flex-wrap gap-3 mb-4">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            placeholder="Search products..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary"
-          />
+          <input placeholder="Search by name or SKU..." value={search} onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
         </div>
-        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}
-          className="px-3 py-2 rounded-xl border border-border text-sm bg-background">
+        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="px-3 py-2 rounded-xl border border-border text-sm bg-background">
           <option value="">All Categories</option>
-          {categoryOptions.map((c) => <option key={c} value={c}>{c}</option>)}
+          {categoryOptions.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 rounded-xl border border-border text-sm bg-background">
-          <option value="">All Statuses</option>
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-2 rounded-xl border border-border text-sm bg-background">
+          <option value="">All</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
           <option value="bestseller">Bestseller</option>
           <option value="new">New</option>
+          <option value="low_stock">Low Stock</option>
+          <option value="out_of_stock">Out of Stock</option>
         </select>
       </div>
 
@@ -203,82 +218,84 @@ export default function AdminProducts() {
               <h2 className="text-xl font-display font-bold">{editing ? "Edit Product" : "New Product"}</h2>
               <button onClick={() => setShowForm(false)} className="p-2 hover:bg-secondary rounded-full"><X className="w-5 h-5" /></button>
             </div>
-
             <div className="space-y-4">
-              {/* Name & Slug */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-medium mb-1 block">Product Name *</label>
                   <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value, slug: editing ? form.slug : generateSlug(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+                    className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
                 </div>
                 <div>
                   <label className="text-xs font-medium mb-1 block">Slug *</label>
                   <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+                    className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
                 </div>
               </div>
-
-              {/* Description */}
               <div>
                 <label className="text-xs font-medium mb-1 block">Description</label>
                 <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3}
-                  className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary resize-none" />
+                  className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary resize-none bg-background" />
               </div>
-
-              {/* Image */}
               <div>
                 <label className="text-xs font-medium mb-1 block">Product Image</label>
                 <div className="flex items-center gap-3">
-                  {(form.image_url || imageFile) && (
-                    <img src={imageFile ? URL.createObjectURL(imageFile) : form.image_url!} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
-                  )}
+                  {(form.image_url || imageFile) && <img src={imageFile ? URL.createObjectURL(imageFile) : form.image_url!} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />}
                   <label className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm cursor-pointer hover:bg-secondary">
                     <Upload className="w-4 h-4" /> Upload Image
                     <input type="file" accept="image/*" className="hidden" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
                   </label>
                 </div>
               </div>
-
-              {/* Category, Flavour, Price */}
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="text-xs font-medium mb-1 block">Category</label>
-                  <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background">
-                    {categoryOptions.map((c) => <option key={c} value={c}>{c}</option>)}
+                  <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background">
+                    {categoryOptions.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="text-xs font-medium mb-1 block">Flavour</label>
-                  <select value={form.flavour} onChange={(e) => setForm({ ...form, flavour: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background">
-                    {flavourOptions.map((f) => <option key={f} value={f}>{f}</option>)}
+                  <select value={form.flavour} onChange={(e) => setForm({ ...form, flavour: e.target.value })} className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background">
+                    {flavourOptions.map(f => <option key={f} value={f}>{f}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="text-xs font-medium mb-1 block">Base Price (₹)</label>
                   <input type="number" value={form.base_price} onChange={(e) => setForm({ ...form, base_price: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+                    className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
                 </div>
               </div>
 
-              {/* Occasions */}
+              {/* SKU & Stock */}
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="text-xs font-medium mb-1 block">SKU</label>
+                  <input value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} placeholder="e.g. CAKE-001"
+                    className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium mb-1 block">Stock Quantity</label>
+                  <input type="number" value={form.stock_quantity} onChange={(e) => setForm({ ...form, stock_quantity: parseInt(e.target.value) || 0 })}
+                    className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium mb-1 block">Low Stock Alert</label>
+                  <input type="number" value={form.low_stock_threshold} onChange={(e) => setForm({ ...form, low_stock_threshold: parseInt(e.target.value) || 0 })}
+                    className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
+                </div>
+              </div>
+
               <div>
                 <label className="text-xs font-medium mb-1 block">Occasions</label>
                 <div className="flex flex-wrap gap-2">
-                  {occasionOptions.map((occ) => (
+                  {occasionOptions.map(occ => (
                     <button key={occ} type="button" onClick={() => toggleOccasion(occ)}
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        form.occasion.includes(occ) ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
-                      }`}>
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${form.occasion.includes(occ) ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
                       {occ}
                     </button>
                   ))}
                 </div>
               </div>
-
-              {/* Weights */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-medium">Weight Variants</label>
@@ -288,43 +305,32 @@ export default function AdminProducts() {
                   {form.weights.map((w, i) => (
                     <div key={i} className="flex items-center gap-2">
                       <input placeholder="e.g. 500g" value={w.label} onChange={(e) => updateWeight(i, "label", e.target.value)}
-                        className="flex-1 px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+                        className="flex-1 px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
                       <input type="number" placeholder="Price" value={w.price} onChange={(e) => updateWeight(i, "price", parseInt(e.target.value) || 0)}
-                        className="w-24 px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
-                      {form.weights.length > 1 && (
-                        <button onClick={() => removeWeight(i)} className="p-1 text-muted-foreground hover:text-destructive"><X className="w-4 h-4" /></button>
-                      )}
+                        className="w-24 px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
+                      {form.weights.length > 1 && <button onClick={() => removeWeight(i)} className="p-1 text-muted-foreground hover:text-destructive"><X className="w-4 h-4" /></button>}
                     </div>
                   ))}
                 </div>
               </div>
-
-              {/* Toggles */}
               <div className="flex gap-6">
-                <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} className="rounded" />
-                  Active
-                </label>
-                <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={form.is_new} onChange={(e) => setForm({ ...form, is_new: e.target.checked })} className="rounded" />
-                  New
-                </label>
-                <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={form.is_bestseller} onChange={(e) => setForm({ ...form, is_bestseller: e.target.checked })} className="rounded" />
-                  Bestseller
-                </label>
+                {[
+                  { key: "is_active", label: "Active" },
+                  { key: "is_new", label: "New" },
+                  { key: "is_bestseller", label: "Bestseller" },
+                ].map(toggle => (
+                  <label key={toggle.key} className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" checked={(form as any)[toggle.key]} onChange={(e) => setForm({ ...form, [toggle.key]: e.target.checked })} className="rounded" />
+                    {toggle.label}
+                  </label>
+                ))}
               </div>
-
-              {/* Actions */}
               <div className="flex gap-3 pt-4">
                 <button onClick={handleSave} disabled={saving}
                   className="flex-1 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 disabled:opacity-50">
                   {saving ? "Saving..." : editing ? "Update Product" : "Create Product"}
                 </button>
-                <button onClick={() => setShowForm(false)}
-                  className="px-6 py-2.5 border border-border rounded-xl text-sm font-medium hover:bg-secondary">
-                  Cancel
-                </button>
+                <button onClick={() => setShowForm(false)} className="px-6 py-2.5 border border-border rounded-xl text-sm font-medium hover:bg-secondary">Cancel</button>
               </div>
             </div>
           </div>
@@ -333,7 +339,7 @@ export default function AdminProducts() {
 
       {/* Products Table */}
       {loading ? (
-        <div className="space-y-3">{[1,2,3].map((i) => <div key={i} className="h-16 bg-secondary rounded-xl animate-pulse" />)}</div>
+        <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-16 bg-secondary rounded-xl animate-pulse" />)}</div>
       ) : (
         <div className="bg-card rounded-2xl shadow-soft overflow-hidden">
           <div className="overflow-x-auto">
@@ -343,58 +349,67 @@ export default function AdminProducts() {
                   <th className="px-4 py-3 text-xs font-semibold text-muted-foreground">Product</th>
                   <th className="px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell">Category</th>
                   <th className="px-4 py-3 text-xs font-semibold text-muted-foreground">Price</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted-foreground">Stock</th>
                   <th className="px-4 py-3 text-xs font-semibold text-muted-foreground hidden md:table-cell">Status</th>
                   <th className="px-4 py-3 text-xs font-semibold text-muted-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {paginated.map((product) => (
-                  <tr key={product.id} className="border-b border-border last:border-0 hover:bg-secondary/50">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        {product.image_url ? (
-                          <img src={product.image_url} alt={product.name} className="w-10 h-10 rounded-lg object-cover" />
-                        ) : (
-                          <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-xs text-muted-foreground">🧁</div>
-                        )}
-                        <div>
-                          <p className="text-sm font-medium">{product.name}</p>
-                          <p className="text-xs text-muted-foreground">{product.flavour}</p>
+                {paginated.map((product) => {
+                  const stock = (product as any).stock_quantity ?? 0;
+                  const threshold = (product as any).low_stock_threshold ?? 10;
+                  const isLow = stock > 0 && stock < threshold;
+                  const isOut = stock === 0;
+
+                  return (
+                    <tr key={product.id} className="border-b border-border last:border-0 hover:bg-secondary/50">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          {product.image_url ? (
+                            <img src={product.image_url} alt={product.name} className="w-10 h-10 rounded-lg object-cover" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-xs text-muted-foreground">🧁</div>
+                          )}
+                          <div>
+                            <p className="text-sm font-medium">{product.name}</p>
+                            <p className="text-xs text-muted-foreground">{product.flavour}{(product as any).sku ? ` · ${(product as any).sku}` : ""}</p>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground hidden md:table-cell">{product.category}</td>
-                    <td className="px-4 py-3 text-sm font-medium">₹{product.base_price}</td>
-                    <td className="px-4 py-3 hidden md:table-cell">
-                      <div className="flex gap-1">
-                        {product.is_active ? (
-                          <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary">Active</span>
-                        ) : (
-                          <span className="px-2 py-0.5 text-xs rounded-full bg-destructive/10 text-destructive">Inactive</span>
-                        )}
-                        {product.is_bestseller && <span className="px-2 py-0.5 text-xs rounded-full bg-accent/10 text-accent">Best</span>}
-                        {product.is_new && <span className="px-2 py-0.5 text-xs rounded-full bg-secondary text-secondary-foreground">New</span>}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
-                        <button onClick={() => openEdit(product)} className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground">
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => handleDelete(product.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground hidden md:table-cell">{product.category}</td>
+                      <td className="px-4 py-3 text-sm font-medium">₹{product.base_price}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <input type="number" value={stock} onChange={(e) => updateStock(product.id, parseInt(e.target.value) || 0)}
+                            className={`w-16 px-2 py-1 rounded-lg border text-xs text-center ${isOut ? "border-destructive bg-destructive/5" : isLow ? "border-accent bg-accent/5" : "border-border"}`} />
+                          {isOut && <AlertTriangle className="w-3.5 h-3.5 text-destructive" />}
+                          {isLow && !isOut && <AlertTriangle className="w-3.5 h-3.5 text-accent" />}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell">
+                        <div className="flex gap-1">
+                          {product.is_active ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary">Active</span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-secondary text-muted-foreground">Inactive</span>
+                          )}
+                          {product.is_bestseller && <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-accent/10 text-accent">Best</span>}
+                          {product.is_new && <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary">New</span>}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-1">
+                          <button onClick={() => openEdit(product)} className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-foreground"><Pencil className="w-4 h-4" /></button>
+                          <button onClick={() => handleDelete(product.id)} className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
-          {filtered.length === 0 && (
-            <div className="py-10 text-center text-sm text-muted-foreground">No products found.</div>
-          )}
-          <div className="px-4 pb-4">
+          <div className="p-4 border-t border-border">
             <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filtered.length} itemsPerPage={ITEMS_PER_PAGE} />
           </div>
         </div>

@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, X, Trash2, Tag, Layers, Palette, Calendar, Pencil } from "lucide-react";
+import { Plus, X, Trash2, Tag, Layers, Palette, Calendar, Pencil, Upload, Image, Eye, EyeOff, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
 
 interface ConfigItem {
   id: string;
@@ -24,6 +26,18 @@ interface Coupon {
   expires_at: string | null;
 }
 
+interface Banner {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  image_url: string | null;
+  link_url: string | null;
+  is_active: boolean;
+  sort_order: number;
+  starts_at: string | null;
+  ends_at: string | null;
+}
+
 const configSections = [
   { type: "category", label: "Categories", icon: Layers, description: "Product categories like Classic, Premium, etc." },
   { type: "flavour", label: "Flavours", icon: Palette, description: "Available cake flavours" },
@@ -32,31 +46,48 @@ const configSections = [
 
 const emptyCoupon = {
   code: "", discount_type: "percentage", discount_value: 10, min_order_amount: 0,
-  max_discount: null as number | null, is_active: true, usage_limit: null as number | null,
-  expires_at: "",
+  max_discount: null as number | null, is_active: true, usage_limit: null as number | null, expires_at: "",
+};
+
+const emptyBanner = {
+  title: "", subtitle: "", image_url: null as string | null, link_url: "",
+  is_active: true, sort_order: 0, starts_at: "", ends_at: "",
 };
 
 export default function AdminSettings() {
   const [configItems, setConfigItems] = useState<ConfigItem[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [newValues, setNewValues] = useState<Record<string, string>>({ category: "", flavour: "", occasion: "" });
-  const [activeSection, setActiveSection] = useState<"config" | "coupons">("config");
+  const [activeSection, setActiveSection] = useState<"config" | "coupons" | "banners">("config");
   const [showCouponForm, setShowCouponForm] = useState(false);
   const [couponForm, setCouponForm] = useState(emptyCoupon);
   const [editingCoupon, setEditingCoupon] = useState<string | null>(null);
   const [savingCoupon, setSavingCoupon] = useState(false);
+  const [showBannerForm, setShowBannerForm] = useState(false);
+  const [bannerForm, setBannerForm] = useState(emptyBanner);
+  const [editingBanner, setEditingBanner] = useState<string | null>(null);
+  const [savingBanner, setSavingBanner] = useState(false);
+  const [bannerImage, setBannerImage] = useState<File | null>(null);
+
+  // Coupon analytics
+  const [orders, setOrders] = useState<any[]>([]);
 
   useEffect(() => { loadAll(); }, []);
 
   const loadAll = async () => {
     setLoading(true);
-    const [configRes, couponRes] = await Promise.all([
+    const [configRes, couponRes, bannerRes, ordersRes] = await Promise.all([
       supabase.from("store_config").select("*").order("sort_order", { ascending: true }),
       supabase.from("coupons").select("*").order("created_at", { ascending: false }),
+      supabase.from("banners").select("*").order("sort_order", { ascending: true }),
+      supabase.from("orders").select("coupon_code, discount, total").not("coupon_code", "is", null),
     ]);
     if (configRes.data) setConfigItems(configRes.data as ConfigItem[]);
     if (couponRes.data) setCoupons(couponRes.data as Coupon[]);
+    if (bannerRes.data) setBanners(bannerRes.data as Banner[]);
+    if (ordersRes.data) setOrders(ordersRes.data);
     setLoading(false);
   };
 
@@ -64,14 +95,8 @@ export default function AdminSettings() {
     const val = newValues[type]?.trim();
     if (!val) { toast.error("Enter a value"); return; }
     const maxOrder = configItems.filter(c => c.config_type === type).reduce((m, c) => Math.max(m, c.sort_order), 0);
-    const { error } = await supabase.from("store_config").insert({
-      config_type: type, value: val, sort_order: maxOrder + 1,
-    });
-    if (error) {
-      if (error.code === "23505") toast.error("Already exists");
-      else toast.error("Failed to add");
-      return;
-    }
+    const { error } = await supabase.from("store_config").insert({ config_type: type, value: val, sort_order: maxOrder + 1 });
+    if (error) { error.code === "23505" ? toast.error("Already exists") : toast.error("Failed to add"); return; }
     toast.success(`${val} added!`);
     setNewValues(prev => ({ ...prev, [type]: "" }));
     loadAll();
@@ -84,71 +109,90 @@ export default function AdminSettings() {
   };
 
   const deleteConfig = async (id: string, value: string) => {
-    if (!confirm(`Delete "${value}"? Products using this will keep their existing value.`)) return;
+    if (!confirm(`Delete "${value}"?`)) return;
     const { error } = await supabase.from("store_config").delete().eq("id", id);
     if (error) toast.error("Failed to delete");
     else { toast.success("Deleted"); loadAll(); }
   };
 
-  const openCouponCreate = () => {
-    setEditingCoupon(null);
-    setCouponForm(emptyCoupon);
-    setShowCouponForm(true);
-  };
-
+  // Coupon functions
+  const openCouponCreate = () => { setEditingCoupon(null); setCouponForm(emptyCoupon); setShowCouponForm(true); };
   const openCouponEdit = (c: Coupon) => {
     setEditingCoupon(c.id);
-    setCouponForm({
-      code: c.code,
-      discount_type: c.discount_type,
-      discount_value: c.discount_value,
-      min_order_amount: c.min_order_amount,
-      max_discount: c.max_discount,
-      is_active: c.is_active,
-      usage_limit: c.usage_limit,
-      expires_at: c.expires_at ? c.expires_at.split("T")[0] : "",
-    });
+    setCouponForm({ code: c.code, discount_type: c.discount_type, discount_value: c.discount_value, min_order_amount: c.min_order_amount, max_discount: c.max_discount, is_active: c.is_active, usage_limit: c.usage_limit, expires_at: c.expires_at ? c.expires_at.split("T")[0] : "" });
     setShowCouponForm(true);
   };
 
   const saveCoupon = async () => {
-    if (!couponForm.code.trim()) { toast.error("Coupon code is required"); return; }
+    if (!couponForm.code.trim()) { toast.error("Code is required"); return; }
     setSavingCoupon(true);
-
-    const payload: any = {
-      code: couponForm.code.toUpperCase().trim(),
-      discount_type: couponForm.discount_type,
-      discount_value: couponForm.discount_value,
-      min_order_amount: couponForm.min_order_amount,
-      max_discount: couponForm.max_discount || null,
-      is_active: couponForm.is_active,
-      usage_limit: couponForm.usage_limit || null,
-      expires_at: couponForm.expires_at ? new Date(couponForm.expires_at).toISOString() : null,
-    };
-
+    const payload: any = { code: couponForm.code.toUpperCase().trim(), discount_type: couponForm.discount_type, discount_value: couponForm.discount_value, min_order_amount: couponForm.min_order_amount, max_discount: couponForm.max_discount || null, is_active: couponForm.is_active, usage_limit: couponForm.usage_limit || null, expires_at: couponForm.expires_at ? new Date(couponForm.expires_at).toISOString() : null };
     if (editingCoupon) {
       const { error } = await supabase.from("coupons").update(payload).eq("id", editingCoupon);
-      if (error) toast.error("Failed to update coupon");
-      else toast.success("Coupon updated!");
+      error ? toast.error("Failed to update") : toast.success("Coupon updated!");
     } else {
       const { error } = await supabase.from("coupons").insert(payload);
-      if (error) {
-        if (error.code === "23505") toast.error("Coupon code already exists");
-        else toast.error("Failed to create coupon");
-      } else toast.success("Coupon created!");
+      error ? (error.code === "23505" ? toast.error("Code already exists") : toast.error("Failed")) : toast.success("Coupon created!");
     }
-
-    setSavingCoupon(false);
-    setShowCouponForm(false);
-    loadAll();
+    setSavingCoupon(false); setShowCouponForm(false); loadAll();
   };
 
   const deleteCoupon = async (id: string) => {
     if (!confirm("Delete this coupon?")) return;
-    const { error } = await supabase.from("coupons").delete().eq("id", id);
-    if (error) toast.error("Failed to delete");
-    else { toast.success("Coupon deleted"); loadAll(); }
+    await supabase.from("coupons").delete().eq("id", id);
+    toast.success("Deleted"); loadAll();
   };
+
+  // Banner functions
+  const openBannerCreate = () => { setEditingBanner(null); setBannerForm(emptyBanner); setBannerImage(null); setShowBannerForm(true); };
+  const openBannerEdit = (b: Banner) => {
+    setEditingBanner(b.id);
+    setBannerForm({ title: b.title, subtitle: b.subtitle || "", image_url: b.image_url, link_url: b.link_url || "", is_active: b.is_active, sort_order: b.sort_order, starts_at: b.starts_at ? b.starts_at.split("T")[0] : "", ends_at: b.ends_at ? b.ends_at.split("T")[0] : "" });
+    setBannerImage(null); setShowBannerForm(true);
+  };
+
+  const saveBanner = async () => {
+    if (!bannerForm.title.trim()) { toast.error("Title is required"); return; }
+    setSavingBanner(true);
+    let imageUrl = bannerForm.image_url;
+    if (bannerImage) {
+      const ext = bannerImage.name.split(".").pop();
+      const path = `banners/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("product-images").upload(path, bannerImage);
+      if (!error) {
+        const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+        imageUrl = data.publicUrl;
+      }
+    }
+    const payload: any = { title: bannerForm.title, subtitle: bannerForm.subtitle || null, image_url: imageUrl, link_url: bannerForm.link_url || null, is_active: bannerForm.is_active, sort_order: bannerForm.sort_order, starts_at: bannerForm.starts_at ? new Date(bannerForm.starts_at).toISOString() : null, ends_at: bannerForm.ends_at ? new Date(bannerForm.ends_at).toISOString() : null };
+    if (editingBanner) {
+      const { error } = await supabase.from("banners").update(payload).eq("id", editingBanner);
+      error ? toast.error("Failed") : toast.success("Banner updated!");
+    } else {
+      const { error } = await supabase.from("banners").insert(payload);
+      error ? toast.error("Failed") : toast.success("Banner created!");
+    }
+    setSavingBanner(false); setShowBannerForm(false); loadAll();
+  };
+
+  const deleteBanner = async (id: string) => {
+    if (!confirm("Delete this banner?")) return;
+    await supabase.from("banners").delete().eq("id", id);
+    toast.success("Deleted"); loadAll();
+  };
+
+  const toggleBanner = async (id: string, active: boolean) => {
+    await supabase.from("banners").update({ is_active: !active }).eq("id", id);
+    loadAll();
+  };
+
+  // Coupon analytics
+  const couponStats = coupons.map(c => {
+    const couponOrders = orders.filter(o => o.coupon_code === c.code);
+    const totalRevenue = couponOrders.reduce((s, o) => s + (o.total || 0), 0);
+    const totalDiscount = couponOrders.reduce((s, o) => s + (o.discount || 0), 0);
+    return { ...c, orderCount: couponOrders.length, totalRevenue, totalDiscount };
+  });
 
   if (loading) {
     return (
@@ -163,29 +207,23 @@ export default function AdminSettings() {
     <div>
       <h1 className="text-2xl font-display font-bold mb-6">Settings</h1>
 
-      {/* Sub-tabs */}
-      <div className="flex gap-2 mb-6">
-        <button
-          onClick={() => setActiveSection("config")}
-          className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-            activeSection === "config" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-primary/10"
-          }`}
-        >
-          Store Config
-        </button>
-        <button
-          onClick={() => setActiveSection("coupons")}
-          className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 ${
-            activeSection === "coupons" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-primary/10"
-          }`}
-        >
-          <Tag className="w-4 h-4" /> Coupons
-        </button>
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {[
+          { key: "config" as const, label: "Store Config", icon: Layers },
+          { key: "coupons" as const, label: "Coupons", icon: Tag },
+          { key: "banners" as const, label: "Banners", icon: Image },
+        ].map(tab => (
+          <button key={tab.key} onClick={() => setActiveSection(tab.key)}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 ${activeSection === tab.key ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-primary/10"}`}>
+            <tab.icon className="w-4 h-4" /> {tab.label}
+          </button>
+        ))}
       </div>
 
+      {/* Store Config */}
       {activeSection === "config" && (
         <div className="space-y-6">
-          {configSections.map((section) => {
+          {configSections.map(section => {
             const items = configItems.filter(c => c.config_type === section.type);
             return (
               <div key={section.type} className="bg-card rounded-2xl p-6 shadow-soft">
@@ -194,45 +232,22 @@ export default function AdminSettings() {
                   <h3 className="font-display font-semibold text-lg">{section.label}</h3>
                 </div>
                 <p className="text-xs text-muted-foreground mb-4">{section.description}</p>
-
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {items.map((item) => (
-                    <div
-                      key={item.id}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border transition-colors ${
-                        item.is_active
-                          ? "border-primary/30 bg-primary/5 text-foreground"
-                          : "border-border bg-secondary/50 text-muted-foreground line-through"
-                      }`}
-                    >
+                  {items.map(item => (
+                    <div key={item.id} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border transition-colors ${item.is_active ? "border-primary/30 bg-primary/5 text-foreground" : "border-border bg-secondary/50 text-muted-foreground line-through"}`}>
                       <span>{item.value}</span>
-                      <button
-                        onClick={() => toggleConfig(item.id, item.is_active)}
-                        className={`w-4 h-4 rounded-full border-2 transition-colors ${
-                          item.is_active ? "border-primary bg-primary" : "border-muted-foreground"
-                        }`}
-                        title={item.is_active ? "Deactivate" : "Activate"}
-                      />
-                      <button onClick={() => deleteConfig(item.id, item.value)} className="text-muted-foreground hover:text-destructive">
-                        <X className="w-3 h-3" />
-                      </button>
+                      <button onClick={() => toggleConfig(item.id, item.is_active)} className={`w-4 h-4 rounded-full border-2 transition-colors ${item.is_active ? "border-primary bg-primary" : "border-muted-foreground"}`} />
+                      <button onClick={() => deleteConfig(item.id, item.value)} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
                     </div>
                   ))}
                   {items.length === 0 && <p className="text-sm text-muted-foreground">No items yet.</p>}
                 </div>
-
                 <div className="flex gap-2">
-                  <input
-                    placeholder={`Add new ${section.type}...`}
-                    value={newValues[section.type] || ""}
+                  <input placeholder={`Add new ${section.type}...`} value={newValues[section.type] || ""}
                     onChange={(e) => setNewValues(prev => ({ ...prev, [section.type]: e.target.value }))}
                     onKeyDown={(e) => e.key === "Enter" && addConfigItem(section.type)}
-                    className="flex-1 max-w-xs px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary"
-                  />
-                  <button
-                    onClick={() => addConfigItem(section.type)}
-                    className="flex items-center gap-1 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90"
-                  >
+                    className="flex-1 max-w-xs px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
+                  <button onClick={() => addConfigItem(section.type)} className="flex items-center gap-1 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90">
                     <Plus className="w-4 h-4" /> Add
                   </button>
                 </div>
@@ -242,6 +257,7 @@ export default function AdminSettings() {
         </div>
       )}
 
+      {/* Coupons */}
       {activeSection === "coupons" && (
         <div>
           <div className="flex items-center justify-between mb-4">
@@ -251,7 +267,6 @@ export default function AdminSettings() {
             </button>
           </div>
 
-          {/* Coupon Form Modal */}
           {showCouponForm && (
             <div className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-50 flex items-start justify-center pt-10 px-4 overflow-y-auto">
               <div className="bg-card rounded-2xl shadow-elevated w-full max-w-lg p-6 mb-10">
@@ -259,123 +274,209 @@ export default function AdminSettings() {
                   <h2 className="text-xl font-display font-bold">{editingCoupon ? "Edit Coupon" : "New Coupon"}</h2>
                   <button onClick={() => setShowCouponForm(false)} className="p-2 hover:bg-secondary rounded-full"><X className="w-5 h-5" /></button>
                 </div>
-
                 <div className="space-y-4">
                   <div>
                     <label className="text-xs font-medium mb-1 block">Coupon Code *</label>
-                    <input value={couponForm.code} onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })}
-                      placeholder="e.g. SWEET20"
-                      className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary uppercase" />
+                    <input value={couponForm.code} onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })} placeholder="e.g. SWEET20"
+                      className="w-full px-3 py-2 rounded-xl border border-border text-sm uppercase bg-background" />
                   </div>
-
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-medium mb-1 block">Discount Type</label>
-                      <select value={couponForm.discount_type} onChange={(e) => setCouponForm({ ...couponForm, discount_type: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background">
+                      <label className="text-xs font-medium mb-1 block">Type</label>
+                      <select value={couponForm.discount_type} onChange={(e) => setCouponForm({ ...couponForm, discount_type: e.target.value })} className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background">
                         <option value="percentage">Percentage (%)</option>
-                        <option value="fixed">Fixed Amount (₹)</option>
+                        <option value="fixed">Fixed (₹)</option>
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs font-medium mb-1 block">
-                        Discount Value {couponForm.discount_type === "percentage" ? "(%)" : "(₹)"}
-                      </label>
-                      <input type="number" value={couponForm.discount_value}
-                        onChange={(e) => setCouponForm({ ...couponForm, discount_value: parseInt(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+                      <label className="text-xs font-medium mb-1 block">Value</label>
+                      <input type="number" value={couponForm.discount_value} onChange={(e) => setCouponForm({ ...couponForm, discount_value: parseInt(e.target.value) || 0 })}
+                        className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" />
                     </div>
                   </div>
-
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-medium mb-1 block">Min Order Amount (₹)</label>
-                      <input type="number" value={couponForm.min_order_amount}
-                        onChange={(e) => setCouponForm({ ...couponForm, min_order_amount: parseInt(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+                      <label className="text-xs font-medium mb-1 block">Min Order (₹)</label>
+                      <input type="number" value={couponForm.min_order_amount} onChange={(e) => setCouponForm({ ...couponForm, min_order_amount: parseInt(e.target.value) || 0 })}
+                        className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" />
                     </div>
                     <div>
                       <label className="text-xs font-medium mb-1 block">Max Discount (₹)</label>
-                      <input type="number" value={couponForm.max_discount ?? ""}
-                        onChange={(e) => setCouponForm({ ...couponForm, max_discount: e.target.value ? parseInt(e.target.value) : null })}
-                        placeholder="No limit"
-                        className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+                      <input type="number" value={couponForm.max_discount ?? ""} onChange={(e) => setCouponForm({ ...couponForm, max_discount: e.target.value ? parseInt(e.target.value) : null })} placeholder="No limit"
+                        className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" />
                     </div>
                   </div>
-
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs font-medium mb-1 block">Usage Limit</label>
-                      <input type="number" value={couponForm.usage_limit ?? ""}
-                        onChange={(e) => setCouponForm({ ...couponForm, usage_limit: e.target.value ? parseInt(e.target.value) : null })}
-                        placeholder="Unlimited"
-                        className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+                      <input type="number" value={couponForm.usage_limit ?? ""} onChange={(e) => setCouponForm({ ...couponForm, usage_limit: e.target.value ? parseInt(e.target.value) : null })} placeholder="Unlimited"
+                        className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" />
                     </div>
                     <div>
                       <label className="text-xs font-medium mb-1 block">Expires At</label>
-                      <input type="date" value={couponForm.expires_at}
-                        onChange={(e) => setCouponForm({ ...couponForm, expires_at: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+                      <input type="date" value={couponForm.expires_at} onChange={(e) => setCouponForm({ ...couponForm, expires_at: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" />
                     </div>
                   </div>
-
                   <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={couponForm.is_active}
-                      onChange={(e) => setCouponForm({ ...couponForm, is_active: e.target.checked })} className="rounded" />
+                    <input type="checkbox" checked={couponForm.is_active} onChange={(e) => setCouponForm({ ...couponForm, is_active: e.target.checked })} className="rounded" />
                     Active
                   </label>
-
                   <div className="flex gap-3 pt-4">
-                    <button onClick={saveCoupon} disabled={savingCoupon}
-                      className="flex-1 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 disabled:opacity-50">
-                      {savingCoupon ? "Saving..." : editingCoupon ? "Update Coupon" : "Create Coupon"}
+                    <button onClick={saveCoupon} disabled={savingCoupon} className="flex-1 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 disabled:opacity-50">
+                      {savingCoupon ? "Saving..." : editingCoupon ? "Update" : "Create"}
                     </button>
-                    <button onClick={() => setShowCouponForm(false)}
-                      className="px-6 py-2.5 border border-border rounded-xl text-sm font-medium hover:bg-secondary">
-                      Cancel
-                    </button>
+                    <button onClick={() => setShowCouponForm(false)} className="px-6 py-2.5 border border-border rounded-xl text-sm font-medium hover:bg-secondary">Cancel</button>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Coupons List */}
           <div className="space-y-3">
-            {coupons.map((c) => (
+            {couponStats.map(c => (
               <div key={c.id} className="bg-card rounded-2xl p-5 shadow-soft">
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-mono font-bold text-lg">{c.code}</span>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                        c.is_active ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"
-                      }`}>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${c.is_active ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"}`}>
                         {c.is_active ? "Active" : "Inactive"}
                       </span>
                     </div>
                     <p className="text-sm text-muted-foreground">
                       {c.discount_type === "percentage" ? `${c.discount_value}% off` : `₹${c.discount_value} off`}
                       {c.max_discount && ` (max ₹${c.max_discount})`}
-                      {c.min_order_amount > 0 && ` • Min order ₹${c.min_order_amount}`}
+                      {c.min_order_amount > 0 && ` · Min ₹${c.min_order_amount}`}
                     </p>
-                    <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
+                    <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
                       {c.usage_limit && <span>Used: {c.used_count}/{c.usage_limit}</span>}
                       {c.expires_at && <span>Expires: {new Date(c.expires_at).toLocaleDateString()}</span>}
+                      <span className="flex items-center gap-1"><BarChart3 className="w-3 h-3" /> {c.orderCount} orders · ₹{c.totalRevenue.toLocaleString()} revenue · ₹{c.totalDiscount.toLocaleString()} discounted</span>
                     </div>
                   </div>
                   <div className="flex gap-1">
-                    <button onClick={() => openCouponEdit(c)} className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-foreground">
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => deleteCoupon(c.id)} className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-destructive">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <button onClick={() => openCouponEdit(c)} className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-foreground"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => deleteCoupon(c.id)} className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </div>
               </div>
             ))}
-            {coupons.length === 0 && <p className="text-center py-10 text-sm text-muted-foreground">No coupons yet.</p>}
+          </div>
+        </div>
+      )}
+
+      {/* Banners */}
+      {activeSection === "banners" && (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-sm text-muted-foreground">{banners.length} banner(s)</p>
+            <button onClick={openBannerCreate} className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90">
+              <Plus className="w-4 h-4" /> New Banner
+            </button>
+          </div>
+
+          {showBannerForm && (
+            <div className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-50 flex items-start justify-center pt-10 px-4 overflow-y-auto">
+              <div className="bg-card rounded-2xl shadow-elevated w-full max-w-lg p-6 mb-10">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-display font-bold">{editingBanner ? "Edit Banner" : "New Banner"}</h2>
+                  <button onClick={() => setShowBannerForm(false)} className="p-2 hover:bg-secondary rounded-full"><X className="w-5 h-5" /></button>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-medium mb-1 block">Title *</label>
+                    <input value={bannerForm.title} onChange={(e) => setBannerForm({ ...bannerForm, title: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium mb-1 block">Subtitle</label>
+                    <input value={bannerForm.subtitle} onChange={(e) => setBannerForm({ ...bannerForm, subtitle: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium mb-1 block">Banner Image</label>
+                    <div className="flex items-center gap-3">
+                      {(bannerForm.image_url || bannerImage) && (
+                        <img src={bannerImage ? URL.createObjectURL(bannerImage) : bannerForm.image_url!} alt="" className="w-24 h-12 rounded-lg object-cover" />
+                      )}
+                      <label className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm cursor-pointer hover:bg-secondary">
+                        <Upload className="w-4 h-4" /> Upload
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => setBannerImage(e.target.files?.[0] || null)} />
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium mb-1 block">Link URL</label>
+                    <input value={bannerForm.link_url} onChange={(e) => setBannerForm({ ...bannerForm, link_url: e.target.value })} placeholder="/shop or https://..."
+                      className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" />
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-xs font-medium mb-1 block">Sort Order</label>
+                      <input type="number" value={bannerForm.sort_order} onChange={(e) => setBannerForm({ ...bannerForm, sort_order: parseInt(e.target.value) || 0 })}
+                        className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium mb-1 block">Starts At</label>
+                      <input type="date" value={bannerForm.starts_at} onChange={(e) => setBannerForm({ ...bannerForm, starts_at: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium mb-1 block">Ends At</label>
+                      <input type="date" value={bannerForm.ends_at} onChange={(e) => setBannerForm({ ...bannerForm, ends_at: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background" />
+                    </div>
+                  </div>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" checked={bannerForm.is_active} onChange={(e) => setBannerForm({ ...bannerForm, is_active: e.target.checked })} className="rounded" />
+                    Active
+                  </label>
+                  <div className="flex gap-3 pt-4">
+                    <button onClick={saveBanner} disabled={savingBanner} className="flex-1 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 disabled:opacity-50">
+                      {savingBanner ? "Saving..." : editingBanner ? "Update" : "Create"}
+                    </button>
+                    <button onClick={() => setShowBannerForm(false)} className="px-6 py-2.5 border border-border rounded-xl text-sm font-medium hover:bg-secondary">Cancel</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            {banners.map(b => (
+              <div key={b.id} className="bg-card rounded-2xl shadow-soft overflow-hidden">
+                <div className="flex items-center gap-4 p-4">
+                  {b.image_url ? (
+                    <img src={b.image_url} alt={b.title} className="w-24 h-14 rounded-lg object-cover shrink-0" />
+                  ) : (
+                    <div className="w-24 h-14 rounded-lg bg-secondary flex items-center justify-center shrink-0"><Image className="w-6 h-6 text-muted-foreground" /></div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <p className="font-semibold text-sm truncate">{b.title}</p>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${b.is_active ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"}`}>
+                        {b.is_active ? "Active" : "Inactive"}
+                      </span>
+                    </div>
+                    {b.subtitle && <p className="text-xs text-muted-foreground truncate">{b.subtitle}</p>}
+                    <div className="flex gap-3 mt-1 text-[10px] text-muted-foreground">
+                      {b.link_url && <span>→ {b.link_url}</span>}
+                      {b.starts_at && <span>From: {format(new Date(b.starts_at), "dd MMM")}</span>}
+                      {b.ends_at && <span>Until: {format(new Date(b.ends_at), "dd MMM")}</span>}
+                    </div>
+                  </div>
+                  <div className="flex gap-1 shrink-0">
+                    <button onClick={() => toggleBanner(b.id, b.is_active)} className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-foreground">
+                      {b.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                    <button onClick={() => openBannerEdit(b)} className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-foreground"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => deleteBanner(b.id)} className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {banners.length === 0 && <p className="text-center py-8 text-sm text-muted-foreground">No banners yet. Create one to promote offers!</p>}
           </div>
         </div>
       )}
