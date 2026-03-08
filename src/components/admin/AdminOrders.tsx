@@ -652,7 +652,7 @@ export default function AdminOrders() {
                       {order.updated_at !== order.created_at && (
                         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                           <CheckCircle2 className="w-3 h-3" />
-                          <span>Last updated {getRelativeDate(updatedDate)}</span>
+                          <span>Last updated {getRelativeDate(new Date(order.updated_at))}</span>
                         </div>
                       )}
                     </div>
