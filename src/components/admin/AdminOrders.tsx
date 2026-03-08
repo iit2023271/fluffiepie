@@ -69,13 +69,45 @@ export default function AdminOrders() {
   const [deleteNoteConfirm, setDeleteNoteConfirm] = useState<{ open: boolean; noteId: string; orderId: string }>({ open: false, noteId: "", orderId: "" });
   const [bulkConfirm, setBulkConfirm] = useState<{ open: boolean; status: string }>({ open: false, status: "" });
   const [statusChangeConfirm, setStatusChangeConfirm] = useState<{ open: boolean; orderId: string; newStatus: string }>({ open: false, orderId: "", newStatus: "" });
+  const [notificationSettings, setNotificationSettings] = useState<Record<string, boolean>>({
+    placed: true,
+    confirmed: true,
+    baking: true,
+    out_for_delivery: true,
+    delivered: true,
+    cancelled: true,
+  });
 
   useEffect(() => { loadOrders(); }, []);
 
   const loadOrders = async () => {
     setLoading(true);
-    const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
-    if (data) setOrders(data);
+    const [ordersRes, notificationsRes] = await Promise.all([
+      supabase.from("orders").select("*").order("created_at", { ascending: false }),
+      supabase.from("store_config").select("value, is_active").eq("config_type", "email_notification"),
+    ]);
+
+    if (ordersRes.data) setOrders(ordersRes.data);
+
+    if (notificationsRes.data) {
+      const nextSettings: Record<string, boolean> = {
+        placed: true,
+        confirmed: true,
+        baking: true,
+        out_for_delivery: true,
+        delivered: true,
+        cancelled: true,
+      };
+
+      notificationsRes.data.forEach((item) => {
+        if (item.value in nextSettings) {
+          nextSettings[item.value] = item.is_active;
+        }
+      });
+
+      setNotificationSettings(nextSettings);
+    }
+
     setLoading(false);
   };
 
