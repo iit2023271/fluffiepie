@@ -519,7 +519,7 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        <div className="bg-card rounded-2xl p-6 shadow-soft">
+        <div className="bg-card rounded-2xl p-4 md:p-6 shadow-soft">
           <h3 className="font-display font-semibold text-lg mb-1">🕐 Recent Orders</h3>
           <p className="text-xs text-muted-foreground mb-4">Latest orders from your store</p>
           {recentOrders.length === 0 ? (
