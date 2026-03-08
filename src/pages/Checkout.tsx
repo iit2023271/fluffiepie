@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronLeft, Tag, MapPin } from "lucide-react";
 import { toast } from "sonner";
+import SavedAddresses from "@/components/SavedAddresses";
 
 export default function Checkout() {
   const { state, totalPrice, dispatch } = useCart();
@@ -13,6 +14,9 @@ export default function Checkout() {
   const [coupon, setCoupon] = useState("");
   const [discount, setDiscount] = useState(0);
   const [placing, setPlacing] = useState(false);
+  const [addressMode, setAddressMode] = useState<"saved" | "new">(user ? "saved" : "new");
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [selectedAddress, setSelectedAddress] = useState<any>(null);
   const [form, setForm] = useState({
     firstName: "", lastName: "", phone: "", address: "", city: "", pincode: "",
   });
@@ -64,9 +68,16 @@ export default function Checkout() {
   const finalTotal = totalPrice - discount + deliveryFee;
 
   const handlePlaceOrder = async () => {
-    if (!form.firstName || !form.phone || !form.address || !form.city || !form.pincode) {
-      toast.error("Please fill in all address fields");
-      return;
+    if (addressMode === "saved") {
+      if (!selectedAddress) {
+        toast.error("Please select a saved address");
+        return;
+      }
+    } else {
+      if (!form.firstName || !form.phone || !form.address || !form.city || !form.pincode) {
+        toast.error("Please fill in all address fields");
+        return;
+      }
     }
 
     if (!user) {
@@ -87,16 +98,30 @@ export default function Checkout() {
       image: item.product.image,
     }));
 
+    const deliveryAddress = addressMode === "saved" && selectedAddress
+      ? {
+          name: selectedAddress.full_name,
+          phone: selectedAddress.phone,
+          address: selectedAddress.address_line,
+          city: selectedAddress.city,
+          pincode: selectedAddress.pincode,
+        }
+      : {
+          name: `${form.firstName} ${form.lastName}`,
+          phone: form.phone,
+          address: form.address,
+          city: form.city,
+          pincode: form.pincode,
+        };
+
+    const customerName = addressMode === "saved" && selectedAddress
+      ? selectedAddress.full_name
+      : `${form.firstName} ${form.lastName}`.trim();
+
     const { data: orderData, error } = await supabase.from("orders").insert({
       user_id: user.id,
       items: orderItems,
-      delivery_address: {
-        name: `${form.firstName} ${form.lastName}`,
-        phone: form.phone,
-        address: form.address,
-        city: form.city,
-        pincode: form.pincode,
-      },
+      delivery_address: deliveryAddress,
       delivery_slot: `${deliveryDay}, ${deliverySlot}`,
       subtotal: totalPrice,
       discount,
@@ -119,7 +144,7 @@ export default function Checkout() {
         body: {
           orderId: orderData.id,
           newStatus: "placed",
-          customerName: `${form.firstName} ${form.lastName}`.trim(),
+          customerName,
           orderTotal: finalTotal,
           items: orderItems,
           userId: user.id,
@@ -164,14 +189,47 @@ export default function Checkout() {
             <h3 className="font-display font-semibold text-lg mb-4 flex items-center gap-2">
               <MapPin className="w-5 h-5 text-primary" /> Delivery Address
             </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <input placeholder="First Name" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} className="col-span-1 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
-              <input placeholder="Last Name" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} className="col-span-1 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
-              <input placeholder="Phone Number" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="col-span-2 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
-              <input placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="col-span-2 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
-              <input placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
-              <input placeholder="Pincode" value={form.pincode} onChange={(e) => setForm({ ...form, pincode: e.target.value })} className="px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
-            </div>
+
+            {user && (
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => setAddressMode("saved")}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    addressMode === "saved" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-primary/10"
+                  }`}
+                >
+                  Saved Addresses
+                </button>
+                <button
+                  onClick={() => setAddressMode("new")}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    addressMode === "new" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-primary/10"
+                  }`}
+                >
+                  New Address
+                </button>
+              </div>
+            )}
+
+            {addressMode === "saved" && user ? (
+              <SavedAddresses
+                mode="select"
+                selectedId={selectedAddressId}
+                onSelect={(addr) => {
+                  setSelectedAddressId(addr.id);
+                  setSelectedAddress(addr);
+                }}
+              />
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <input placeholder="First Name" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} className="col-span-1 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+                <input placeholder="Last Name" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} className="col-span-1 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+                <input placeholder="Phone Number" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="col-span-2 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+                <input placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="col-span-2 px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+                <input placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+                <input placeholder="Pincode" value={form.pincode} onChange={(e) => setForm({ ...form, pincode: e.target.value })} className="px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary" />
+              </div>
+            )}
           </div>
 
           <div className="p-6 rounded-2xl bg-card shadow-soft">

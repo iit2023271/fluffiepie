@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Package, User, LogOut, Clock, CheckCircle, Truck, ChefHat, Search, Shield, Star, MessageSquare } from "lucide-react";
+import { Package, User, LogOut, Clock, CheckCircle, Truck, ChefHat, Search, Shield, Star, MessageSquare, MapPin } from "lucide-react";
+import SavedAddresses from "@/components/SavedAddresses";
 import ReviewForm from "@/components/ReviewForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
@@ -35,7 +36,7 @@ const statusConfig: Record<string, { label: string; icon: any; color: string }> 
 export default function Dashboard() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<"orders" | "profile">("orders");
+  const [tab, setTab] = useState<"orders" | "profile" | "addresses">("orders");
   const [orders, setOrders] = useState<Order[]>([]);
   const [profile, setProfile] = useState<Profile>({ full_name: "", phone: "" });
   const [loading, setLoading] = useState(true);
@@ -136,6 +137,7 @@ export default function Dashboard() {
         <div className="flex gap-2 mb-8">
           {[
             { key: "orders" as const, icon: Package, label: "My Orders" },
+            { key: "addresses" as const, icon: MapPin, label: "Addresses" },
             { key: "profile" as const, icon: User, label: "Profile" },
           ].map((t) => (
             <button
@@ -308,6 +310,14 @@ export default function Dashboard() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Addresses */}
+        {tab === "addresses" && (
+          <div className="p-6 rounded-2xl bg-card shadow-soft max-w-lg">
+            <h3 className="font-display font-semibold text-lg mb-4">Saved Addresses</h3>
+            <SavedAddresses mode="manage" />
+          </div>
+        )}
 
         {/* Profile */}
         {tab === "profile" && (
