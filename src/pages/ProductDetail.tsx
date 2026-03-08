@@ -43,7 +43,7 @@ export default function ProductDetail() {
     toast.success(`${product.name} added to cart!`);
   };
 
-  const related = products.filter((p) => p.id !== product.id && p.category === product.category).slice(0, 4);
+  const related = allProducts.filter((p) => p.id !== product.id && p.category === product.category).slice(0, 4);
 
   return (
     <div className="container mx-auto px-4 py-8">
