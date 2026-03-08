@@ -108,11 +108,11 @@ export default function AdminReviews() {
         </div>
         <div className="p-4 rounded-2xl bg-card shadow-soft">
           <p className="text-xs text-muted-foreground">5-Star</p>
-          <p className="text-2xl font-bold text-green-600">{reviews.filter(r => r.rating === 5).length}</p>
+          <p className="text-2xl font-bold">{reviews.filter(r => r.rating === 5).length}</p>
         </div>
         <div className="p-4 rounded-2xl bg-card shadow-soft">
           <p className="text-xs text-muted-foreground">1-Star</p>
-          <p className="text-2xl font-bold text-red-500">{reviews.filter(r => r.rating === 1).length}</p>
+          <p className="text-2xl font-bold">{reviews.filter(r => r.rating === 1).length}</p>
         </div>
       </div>
 
