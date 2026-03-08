@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { SlidersHorizontal, X, Search, Sparkles, Check, IndianRupee } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
