@@ -20,6 +20,7 @@ import {
   normalizeHomepageSections,
 } from "@/hooks/useHomepageConfig";
 import type { HomepageSection, CustomSectionType, CustomSectionData, FooterColumn } from "@/hooks/useHomepageConfig";
+import { useStoreConfig } from "@/hooks/useStoreConfig";
 
 const CUSTOM_TYPE_ICONS: Record<CustomSectionType, typeof Type> = {
   text_block: Type,
