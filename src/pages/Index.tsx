@@ -184,19 +184,21 @@ export default function Index() {
 
   const isVisible = (id: string) => config.sections.find(s => s.id === id)?.visible ?? true;
 
-  // Get categories from store_config
-  const [occasions, setOccasions] = useState<string[]>([]);
+  // Get filter items from store_config based on categories.filterType
+  const [filterItems, setFilterItems] = useState<string[]>([]);
   useEffect(() => {
+    const filterType = config.categories.filterType || "occasion";
+    if (filterType === "custom") return; // custom items come from config
     supabase
       .from("store_config")
       .select("value")
-      .eq("config_type", "occasion")
+      .eq("config_type", filterType)
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
       .then(({ data }) => {
-        if (data) setOccasions(data.map(d => d.value));
+        if (data) setFilterItems(data.map(d => d.value));
       });
-  }, []);
+  }, [config.categories.filterType]);
 
   // Build section renderers
   const sectionRenderers: Record<string, () => React.ReactNode> = {
