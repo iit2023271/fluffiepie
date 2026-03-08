@@ -234,7 +234,7 @@ export const DEFAULT_HOMEPAGE_CONFIG: HomepageConfig = {
 export const SECTION_LABELS: Record<string, string> = {
   banners: "Banner Carousel",
   hero: "Hero Section",
-  categories: "Shop by Occasion",
+  categories: "Shop by Category",
   trending: "Trending Products",
   howItWorks: "How It Works",
   reviews: "Customer Reviews",
