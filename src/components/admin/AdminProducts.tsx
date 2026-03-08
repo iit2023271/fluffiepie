@@ -557,49 +557,27 @@ export default function AdminProducts() {
                   ))}
                 </div>
               </div>
-              <div className="flex gap-6 flex-wrap">
-                {[
-                  { key: "is_active", label: "Active" },
-                  { key: "is_new", label: "New" },
-                  { key: "is_bestseller", label: "Bestseller" },
-                ].map(toggle => (
-                  <label key={toggle.key} className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={(form as any)[toggle.key]} onChange={(e) => setForm({ ...form, [toggle.key]: e.target.checked })} className="rounded" />
-                    {toggle.label}
-                  </label>
-                ))}
-              </div>
-              {/* Dynamic Tags */}
-              {tagOptions.length > 0 && (
-                <div>
-                  <label className="text-xs font-medium mb-2 block">Product Tags</label>
-                  <div className="flex flex-wrap gap-2">
-                    {tagOptions.map(tag => {
-                      const isSelected = form.tags.includes(tag);
-                      return (
-                        <button
-                          key={tag}
-                          type="button"
-                          onClick={() => {
-                            setForm(prev => ({
-                              ...prev,
-                              tags: isSelected ? prev.tags.filter(t => t !== tag) : [...prev.tags, tag],
-                            }));
-                          }}
-                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
-                            isSelected
-                              ? "bg-primary text-primary-foreground border-primary"
-                              : "bg-secondary text-secondary-foreground border-border hover:border-primary/40"
-                          }`}
-                        >
-                          {tag}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">Manage tags in Settings → Product Tags</p>
+              <div className="flex gap-6 flex-wrap items-end">
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} className="rounded" />
+                  Active
+                </label>
+                {/* Single Product Tag selector */}
+                <div className="flex-1 max-w-xs">
+                  <label className="text-xs font-medium mb-1 block">Product Tag</label>
+                  <select
+                    value={form.tags[0] || ""}
+                    onChange={(e) => setForm({ ...form, tags: e.target.value ? [e.target.value] : [], is_new: false, is_bestseller: false })}
+                    className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background focus:outline-none focus:border-primary"
+                  >
+                    <option value="">No tag</option>
+                    {tagOptions.map(tag => (
+                      <option key={tag.name} value={tag.name}>{tag.name}</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-muted-foreground mt-1">Manage tags & colors in Settings → Product Tags</p>
                 </div>
-              )}
+              </div>
               <div className="flex gap-3 pt-4">
                 <button onClick={handleSave} disabled={saving}
                   className="flex-1 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 disabled:opacity-50">
