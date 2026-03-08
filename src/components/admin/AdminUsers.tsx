@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { ChevronDown, ChevronUp, MapPin, ShoppingBag, User, Search, Tag, X, Download, Clock, Truck, CheckCircle2, Shield, ShieldOff, MessageCircle, Send } from "lucide-react";
+import { ChevronDown, ChevronUp, MapPin, ShoppingBag, User, Search, Tag, X, Download, Clock, Truck, CheckCircle2, Shield, ShieldOff, MessageCircle, Send, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/components/Pagination";
