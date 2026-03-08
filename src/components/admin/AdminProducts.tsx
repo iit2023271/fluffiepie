@@ -345,7 +345,7 @@ export default function AdminProducts() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((product) => (
+                {paginated.map((product) => (
                   <tr key={product.id} className="border-b border-border last:border-0 hover:bg-secondary/50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
