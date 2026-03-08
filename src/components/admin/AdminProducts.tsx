@@ -327,17 +327,17 @@ export default function AdminProducts() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <h1 className="text-2xl font-display font-bold">Products</h1>
         <div className="flex items-center gap-2">
           <button onClick={loadProducts} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Refresh">
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
           <button onClick={exportProductsCSV} className="flex items-center gap-2 px-3 py-2 border border-border rounded-xl text-xs font-medium hover:bg-secondary transition-colors">
-            <Download className="w-3.5 h-3.5" /> Export CSV
+            <Download className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Export</span>
           </button>
           <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90">
-            <Plus className="w-4 h-4" /> Add Product
+            <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Add Product</span><span className="sm:hidden">Add</span>
           </button>
         </div>
       </div>
