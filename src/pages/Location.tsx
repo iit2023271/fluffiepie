@@ -26,11 +26,21 @@ export default function Location() {
           <div className="grid md:grid-cols-2 gap-6">
             {/* Location Card */}
             {hasAddress && (
-              <div className="bg-card rounded-2xl p-6 shadow-soft border border-border">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, type: "spring", stiffness: 120 }}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className="bg-card rounded-2xl p-6 shadow-soft border border-border"
+              >
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <motion.div
+                    whileHover={{ rotate: [0, -10, 10, 0] }}
+                    transition={{ duration: 0.4 }}
+                    className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"
+                  >
                     <MapPin className="w-5 h-5 text-primary" />
-                  </div>
+                  </motion.div>
                   <h2 className="text-lg font-display font-semibold text-foreground">Address</h2>
                 </div>
                 <p className="text-foreground leading-relaxed">
@@ -39,16 +49,26 @@ export default function Location() {
                   {storeInfo.state && <>, {storeInfo.state}</>}
                   {storeInfo.pincode && <> - {storeInfo.pincode}</>}
                 </p>
-              </div>
+              </motion.div>
             )}
 
             {/* Contact Card */}
             {hasContact && (
-              <div className="bg-card rounded-2xl p-6 shadow-soft border border-border">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 120 }}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className="bg-card rounded-2xl p-6 shadow-soft border border-border"
+              >
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <motion.div
+                    whileHover={{ rotate: [0, -10, 10, 0] }}
+                    transition={{ duration: 0.4 }}
+                    className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"
+                  >
                     <Phone className="w-5 h-5 text-primary" />
-                  </div>
+                  </motion.div>
                   <h2 className="text-lg font-display font-semibold text-foreground">Contact</h2>
                 </div>
                 <div className="space-y-3">
@@ -68,26 +88,41 @@ export default function Location() {
                     </a>
                   )}
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* Hours Card */}
             {storeInfo.openingHours && (
-              <div className="bg-card rounded-2xl p-6 shadow-soft border border-border">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, type: "spring", stiffness: 120 }}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className="bg-card rounded-2xl p-6 shadow-soft border border-border"
+              >
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <motion.div
+                    whileHover={{ rotate: [0, -10, 10, 0] }}
+                    transition={{ duration: 0.4 }}
+                    className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"
+                  >
                     <Clock className="w-5 h-5 text-primary" />
-                  </div>
+                  </motion.div>
                   <h2 className="text-lg font-display font-semibold text-foreground">Opening Hours</h2>
                 </div>
                 <p className="text-foreground whitespace-pre-line">{storeInfo.openingHours}</p>
-              </div>
+              </motion.div>
             )}
           </div>
 
           {/* Map Embed */}
           {storeInfo.mapUrl && (
-            <div className="mt-8 rounded-2xl overflow-hidden border border-border shadow-soft">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, type: "spring", stiffness: 120 }}
+              className="mt-8 rounded-2xl overflow-hidden border border-border shadow-soft"
+            >
               <iframe
                 src={storeInfo.mapUrl}
                 width="100%"
@@ -98,7 +133,7 @@ export default function Location() {
                 referrerPolicy="no-referrer-when-downgrade"
                 title="Store Location"
               />
-            </div>
+            </motion.div>
           )}
 
           {!hasAddress && !hasContact && (
