@@ -31,6 +31,7 @@ export function useProducts() {
           occasion: p.occasion || [],
           flavour: p.flavour,
           image: p.image_url || mock?.image || "",
+          images: (p as any).images || [],
           basePrice: p.base_price,
           rating: Number(p.rating),
           reviewCount: p.review_count,
