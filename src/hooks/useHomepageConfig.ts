@@ -87,6 +87,25 @@ export interface SectionNavConfig {
   items: SectionNavItem[];
 }
 
+export interface FooterLink {
+  label: string;
+  url: string;
+}
+
+export interface FooterColumn {
+  title: string;
+  links: FooterLink[];
+}
+
+export interface FooterConfig {
+  brandDescription: string;
+  columns: FooterColumn[];
+  newsletterEnabled: boolean;
+  newsletterTitle: string;
+  newsletterSubtitle: string;
+  copyrightText: string;
+}
+
 export interface HomepageConfig {
   sections: HomepageSection[];
   hero: HeroConfig;
@@ -95,6 +114,7 @@ export interface HomepageConfig {
   howItWorks: HowItWorksConfig;
   reviews: ReviewsConfig;
   sectionNav: SectionNavConfig;
+  footer: FooterConfig;
 }
 
 export const BUILTIN_SECTION_IDS = ["banners", "hero", "categories", "trending", "howItWorks", "reviews"];
