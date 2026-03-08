@@ -735,7 +735,7 @@ export default function AdminOrders() {
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4 text-2xl">📋</div>
               <p className="text-lg font-semibold mb-1">No orders found</p>
               <p className="text-sm text-muted-foreground">
-                {search || statusFilter || hasDateFilter ? "Try adjusting your filters." : "Orders will appear here when customers place them."}
+                {search || statusFilter || hasDateFilter ? "Try adjusting your filters." : !showAllOrders ? "No orders today. Tap \"All Orders\" to see past orders." : "Orders will appear here when customers place them."}
               </p>
             </div>
           )}
