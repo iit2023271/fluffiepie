@@ -55,17 +55,22 @@ export interface HeroConfig {
   ctaSecondaryText: string;
   ctaSecondaryLink: string;
   heroImage?: string;
+  imagePosition?: "left" | "right";
+  heroHeight?: "compact" | "default" | "tall";
 }
 
 export interface CategoriesConfig {
   title: string;
   subtitle: string;
+  columns?: number;
+  cardAspect?: "portrait" | "square" | "landscape";
 }
 
 export interface TrendingConfig {
   title: string;
   subtitle: string;
   count: number;
+  columns?: number;
 }
 
 export interface HowItWorksConfig {
@@ -78,6 +83,7 @@ export interface ReviewsConfig {
   title: string;
   subtitle: string;
   count: number;
+  columns?: number;
 }
 
 export interface SectionNavItem {
