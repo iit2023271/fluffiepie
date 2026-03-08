@@ -53,6 +53,45 @@ export type Database = {
         }
         Relationships: []
       }
+      banners: {
+        Row: {
+          created_at: string
+          ends_at: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          link_url: string | null
+          sort_order: number
+          starts_at: string | null
+          subtitle: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          link_url?: string | null
+          sort_order?: number
+          starts_at?: string | null
+          subtitle?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          link_url?: string | null
+          sort_order?: number
+          starts_at?: string | null
+          subtitle?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       coupons: {
         Row: {
           code: string
@@ -95,8 +134,65 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_tags: {
+        Row: {
+          created_at: string
+          id: string
+          tag: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          tag: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          tag?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      order_notes: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          id: string
+          note: string
+          note_type: string
+          order_id: string
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          note: string
+          note_type?: string
+          order_id: string
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          note?: string
+          note_type?: string
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_notes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
+          admin_notes: string | null
           coupon_code: string | null
           created_at: string
           delivery_address: Json
@@ -106,6 +202,9 @@ export type Database = {
           id: string
           items: Json
           payment_status: string
+          refund_amount: number
+          refund_reason: string | null
+          refund_status: string | null
           status: string
           subtotal: number
           total: number
@@ -113,6 +212,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          admin_notes?: string | null
           coupon_code?: string | null
           created_at?: string
           delivery_address: Json
@@ -122,6 +222,9 @@ export type Database = {
           id?: string
           items: Json
           payment_status?: string
+          refund_amount?: number
+          refund_reason?: string | null
+          refund_status?: string | null
           status?: string
           subtotal: number
           total: number
@@ -129,6 +232,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          admin_notes?: string | null
           coupon_code?: string | null
           created_at?: string
           delivery_address?: Json
@@ -138,6 +242,9 @@ export type Database = {
           id?: string
           items?: Json
           payment_status?: string
+          refund_amount?: number
+          refund_reason?: string | null
+          refund_status?: string | null
           status?: string
           subtotal?: number
           total?: number
@@ -158,11 +265,14 @@ export type Database = {
           is_active: boolean
           is_bestseller: boolean
           is_new: boolean
+          low_stock_threshold: number
           name: string
           occasion: string[]
           rating: number
           review_count: number
+          sku: string | null
           slug: string
+          stock_quantity: number
           updated_at: string
           weights: Json
         }
@@ -177,11 +287,14 @@ export type Database = {
           is_active?: boolean
           is_bestseller?: boolean
           is_new?: boolean
+          low_stock_threshold?: number
           name: string
           occasion?: string[]
           rating?: number
           review_count?: number
+          sku?: string | null
           slug: string
+          stock_quantity?: number
           updated_at?: string
           weights?: Json
         }
@@ -196,11 +309,14 @@ export type Database = {
           is_active?: boolean
           is_bestseller?: boolean
           is_new?: boolean
+          low_stock_threshold?: number
           name?: string
           occasion?: string[]
           rating?: number
           review_count?: number
+          sku?: string | null
           slug?: string
+          stock_quantity?: number
           updated_at?: string
           weights?: Json
         }
