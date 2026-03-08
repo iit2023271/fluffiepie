@@ -178,6 +178,7 @@ export default function AdminProducts() {
       occasion: product.occasion || [],
       flavour: product.flavour || "",
       base_price: product.base_price,
+      original_price: (product as any).original_price || null,
       weights: (product.weights as any) || [{ label: "500g", price: 0 }],
       is_new: product.is_new,
       is_bestseller: product.is_bestseller,
