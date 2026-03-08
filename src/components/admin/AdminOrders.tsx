@@ -99,13 +99,31 @@ export default function AdminOrders() {
     else { toast.success("Note deleted"); loadNotes(orderId); }
   };
 
+  const STATUS_LABELS: Record<string, string> = {
+    placed: "Order Placed", confirmed: "Order Confirmed", baking: "Being Prepared",
+    out_for_delivery: "Out for Delivery", delivered: "Delivered", cancelled: "Cancelled",
+  };
+
   const sendNotification = async (order: any, newStatus: string) => {
     try {
+      // Fetch customer email from profiles
+      const { data: profile } = await supabase.from("profiles").select("email, full_name").eq("user_id", order.user_id).maybeSingle();
+      const email = profile?.email;
+      if (!email) {
+        toast.error("Customer email not found — cannot send notification");
+        return;
+      }
       const deliveryAddr = order.delivery_address as any;
-      const customerName = deliveryAddr?.name || "Customer";
-      await supabase.functions.invoke("send-order-notification", {
-        body: { orderId: order.id, newStatus, customerName, orderTotal: order.total, items: order.items, userId: order.user_id },
-      });
+      const customerName = deliveryAddr?.name || profile?.full_name || "Customer";
+      const shortId = order.id.slice(0, 8).toUpperCase();
+      const statusLabel = STATUS_LABELS[newStatus] || newStatus;
+      const itemsList = Array.isArray(order.items) ? (order.items as any[]).map((i: any) => `• ${i.name || "Item"} (${i.weight || ""}) x${i.quantity || 1}`).join("\n") : "";
+
+      const subject = `Order #${shortId} — ${statusLabel}`;
+      const body = `Hi ${customerName},\n\nYour order #${shortId} status has been updated to: ${statusLabel}.\n\n${itemsList ? `Order Items:\n${itemsList}\n\n` : ""}Total: ₹${Number(order.total).toLocaleString()}\n\nThank you for ordering with us!`;
+
+      const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.open(gmailUrl, "_blank");
     } catch (e) { console.error("Notification failed:", e); }
   };
 

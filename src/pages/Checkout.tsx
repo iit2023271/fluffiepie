@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -144,11 +144,8 @@ export default function Checkout() {
           pincode: form.pincode,
         };
 
-    const customerName = addressMode === "saved" && selectedAddress
-      ? selectedAddress.full_name
-      : `${form.firstName} ${form.lastName}`.trim();
 
-    const { data: orderData, error } = await supabase.from("orders").insert({
+    const { error } = await supabase.from("orders").insert({
       user_id: user.id,
       items: orderItems,
       delivery_address: deliveryAddress,
@@ -168,19 +165,7 @@ export default function Checkout() {
       return;
     }
 
-    // Send order confirmation email
-    if (orderData) {
-      supabase.functions.invoke("send-order-notification", {
-        body: {
-          orderId: orderData.id,
-          newStatus: "placed",
-          customerName,
-          orderTotal: finalTotal,
-          items: orderItems,
-          userId: user.id,
-        },
-      }).catch(console.error);
-    }
+    // Order notification will be handled via Gmail from admin panel
 
     toast.success("Order placed successfully! 🎉");
     dispatch({ type: "CLEAR_CART" });

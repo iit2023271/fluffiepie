@@ -365,26 +365,18 @@ export default function AdminSettings() {
     loadAll();
   };
 
-  const sendTestEmail = async (status: string) => {
-    setTestingEmail(status);
-    try {
-      const { data, error } = await supabase.functions.invoke("send-order-notification", {
-        body: {
-          orderId: "test-00000000",
-          newStatus: status,
-          customerName: "Test Customer",
-          orderTotal: 999,
-          items: [{ name: "Test Cake", weight: "1kg", quantity: 1, price: 999 }],
-          isTest: true,
-        },
-      });
-      if (error) throw error;
-      if (data?.success) toast.success("Test email sent! Check your inbox.");
-      else toast.error(data?.error || "Failed to send test email");
-    } catch (e: any) {
-      toast.error("Failed to send test email");
-    }
-    setTestingEmail(null);
+  const sendTestEmail = (status: string) => {
+    const STATUS_LABELS: Record<string, string> = {
+      placed: "Order Placed", confirmed: "Order Confirmed", baking: "Being Prepared",
+      out_for_delivery: "Out for Delivery", delivered: "Delivered", cancelled: "Cancelled",
+    };
+    const statusLabel = STATUS_LABELS[status] || status;
+    const subject = `[TEST] Order #TEST0000 — ${statusLabel}`;
+    const body = `Hi Test Customer,\n\nYour order #TEST0000 status has been updated to: ${statusLabel}.\n\nOrder Items:\n• Test Cake (1kg) x1\n\nTotal: ₹999\n\nThank you for ordering with us!\n\n⚠️ This is a test email — no real order was placed`;
+
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(gmailUrl, "_blank");
+    toast.success("Gmail compose opened with test email");
   };
 
   // Coupon analytics
@@ -1000,12 +992,11 @@ export default function AdminSettings() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => sendTestEmail(status)}
-                        disabled={testingEmail === status}
-                        className="px-3 py-1.5 rounded-lg text-xs border border-border hover:bg-secondary transition-colors disabled:opacity-50 flex items-center gap-1.5"
-                        title="Send test email to your admin email"
+                        className="px-3 py-1.5 rounded-lg text-xs border border-border hover:bg-secondary transition-colors flex items-center gap-1.5"
+                        title="Open Gmail compose with test email"
                       >
                         <Send className="w-3 h-3" />
-                        {testingEmail === status ? "Sending..." : "Test"}
+                        Test via Gmail
                       </button>
                       <button
                         onClick={() => toggleEmailStatus(status)}
