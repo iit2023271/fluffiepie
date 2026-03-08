@@ -11,7 +11,8 @@ import AdminKitchen from "@/components/admin/AdminKitchen";
 import AdminHomepage from "@/components/admin/AdminHomepage";
 import AdminReviews from "@/components/admin/AdminReviews";
 import AdminThemes from "@/components/admin/AdminThemes";
-import { LayoutDashboard, Package, ShoppingCart, Users, LogOut, ChevronLeft, Settings, ChefHat, Home, MessageSquare, Palette } from "lucide-react";
+import AdminMessages from "@/components/admin/AdminMessages";
+import { LayoutDashboard, Package, ShoppingCart, Users, LogOut, ChevronLeft, Settings, ChefHat, Home, MessageSquare, Palette, Inbox } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
