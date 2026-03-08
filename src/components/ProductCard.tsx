@@ -131,9 +131,14 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
             <div className="flex items-baseline gap-2">
               <span className="text-lg font-bold text-foreground">₹{product.basePrice}</span>
               {product.originalPrice && product.originalPrice > product.basePrice && (
-                <span className="text-sm text-muted-foreground line-through">₹{product.originalPrice}</span>
+                <>
+                  <span className="text-sm text-muted-foreground line-through">₹{product.originalPrice}</span>
+                  <span className="text-xs font-semibold text-green-600">{Math.round(((product.originalPrice - product.basePrice) / product.originalPrice) * 100)}% off</span>
+                </>
               )}
-              <span className="text-xs text-muted-foreground">onwards</span>
+              {!(product.originalPrice && product.originalPrice > product.basePrice) && (
+                <span className="text-xs text-muted-foreground">onwards</span>
+              )}
             </div>
           </div>
         </div>
