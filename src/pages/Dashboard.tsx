@@ -296,16 +296,29 @@ export default function Dashboard() {
                     className="w-full pl-9 pr-4 py-2 rounded-xl border border-border text-sm bg-background focus:outline-none focus:border-primary"
                   />
                 </div>
-                <select value={orderStatusFilter} onChange={(e) => setOrderStatusFilter(e.target.value)}
-                  className="px-3 py-2 rounded-xl border border-border text-sm bg-background">
-                  <option value="">All Statuses</option>
-                  <option value="placed">Placed</option>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="baking">Baking</option>
-                  <option value="out_for_delivery">Out for Delivery</option>
-                  <option value="delivered">Delivered</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { value: "", label: "All" },
+                  { value: "placed", label: "Placed" },
+                  { value: "confirmed", label: "Confirmed" },
+                  { value: "baking", label: "Baking" },
+                  { value: "out_for_delivery", label: "On the Way" },
+                  { value: "delivered", label: "Delivered" },
+                  { value: "cancelled", label: "Cancelled" },
+                ].map((s) => (
+                  <button
+                    key={s.value}
+                    onClick={() => setOrderStatusFilter(orderStatusFilter === s.value ? "" : s.value)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                      orderStatusFilter === s.value
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-secondary-foreground hover:bg-primary/10"
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
               </div>
             )}
             {orders.length === 0 ? (
