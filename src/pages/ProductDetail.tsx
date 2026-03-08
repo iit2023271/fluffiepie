@@ -300,7 +300,7 @@ function Lightbox({ images, initialIndex, onClose }: { images: string[]; initial
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     e.preventDefault();
     if (e.touches.length === 2 && isPinching.current) {
-      const dist = getTouchDist(e.touches);
+      const dist = getTouchDist(e.touches[0], e.touches[1]);
       const newScale = Math.min(Math.max(pinchStartScale.current * (dist / pinchStartDist.current), 1), 4);
       setScale(newScale);
       if (newScale <= 1) setTranslate({ x: 0, y: 0 });
