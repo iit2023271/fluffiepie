@@ -278,12 +278,14 @@ export default function AdminProducts() {
                 <div>
                   <label className="text-xs font-medium mb-1 block">Category</label>
                   <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background">
+                    <option value="">None</option>
                     {categoryOptions.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="text-xs font-medium mb-1 block">Flavour</label>
                   <select value={form.flavour} onChange={(e) => setForm({ ...form, flavour: e.target.value })} className="w-full px-3 py-2 rounded-xl border border-border text-sm bg-background">
+                    <option value="">None</option>
                     {flavourOptions.map(f => <option key={f} value={f}>{f}</option>)}
                   </select>
                 </div>
@@ -324,6 +326,44 @@ export default function AdminProducts() {
                   ))}
                 </div>
               </div>
+
+              {/* Custom filter sections */}
+              {customSectionDefs.map(def => {
+                const sectionValues = filterSections.find(s => s.type === def.type)?.values || [];
+                if (!sectionValues.length) return null;
+                const currentVal = form.custom_attributes[def.type];
+
+                if (def.isMulti) {
+                  const selected = Array.isArray(currentVal) ? currentVal : [];
+                  return (
+                    <div key={def.type}>
+                      <label className="text-xs font-medium mb-1 block">{def.label}</label>
+                      <div className="flex flex-wrap gap-2">
+                        {sectionValues.map(val => (
+                          <button key={val} type="button" onClick={() => {
+                            const newSel = selected.includes(val) ? selected.filter(v => v !== val) : [...selected, val];
+                            setForm(f => ({ ...f, custom_attributes: { ...f.custom_attributes, [def.type]: newSel } }));
+                          }}
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${selected.includes(val) ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
+                            {val}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div key={def.type}>
+                      <label className="text-xs font-medium mb-1 block">{def.label}</label>
+                      <select value={(currentVal as string) || ""} onChange={(e) => setForm(f => ({ ...f, custom_attributes: { ...f.custom_attributes, [def.type]: e.target.value } }))}
+                        className="w-full max-w-xs px-3 py-2 rounded-xl border border-border text-sm bg-background">
+                        <option value="">None</option>
+                        {sectionValues.map(v => <option key={v} value={v}>{v}</option>)}
+                      </select>
+                    </div>
+                  );
+                }
+              })}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-medium">Weight Variants</label>
