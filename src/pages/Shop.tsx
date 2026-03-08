@@ -73,6 +73,17 @@ export default function Shop() {
         <p className="text-muted-foreground">{filtered.length} products found</p>
       </div>
 
+      {/* Search Bar */}
+      <div className="relative mb-6 max-w-lg">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <input
+          placeholder="Search cakes by name..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border text-sm bg-background focus:outline-none focus:border-primary transition-colors"
+        />
+      </div>
+
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-6 gap-4">
         <button

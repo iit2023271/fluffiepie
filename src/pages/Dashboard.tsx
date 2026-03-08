@@ -160,7 +160,14 @@ export default function Dashboard() {
                 </Link>
               </div>
             ) : (
-              orders.map((order) => {
+              orders
+                .filter((order) => {
+                  const matchSearch = !orderSearch || order.id.toLowerCase().includes(orderSearch.toLowerCase()) ||
+                    (order.items as any[])?.some((item: any) => item.name?.toLowerCase().includes(orderSearch.toLowerCase()));
+                  const matchStatus = !orderStatusFilter || order.status === orderStatusFilter;
+                  return matchSearch && matchStatus;
+                })
+                .map((order) => {
                 const status = statusConfig[order.status] || statusConfig.placed;
                 const StatusIcon = status.icon;
                 return (

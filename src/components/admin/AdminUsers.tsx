@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { ChevronDown, ChevronUp, MapPin, ShoppingBag, User, Phone, Calendar, Mail } from "lucide-react";
+import { ChevronDown, ChevronUp, MapPin, ShoppingBag, User, Phone, Calendar, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface UserDetail {
@@ -9,19 +9,20 @@ interface UserDetail {
   addresses: any[];
   orders: any[];
   roles: any[];
-  email?: string;
 }
 
 export default function AdminUsers() {
   const [users, setUsers] = useState<UserDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
 
   useEffect(() => { loadUsers(); }, []);
 
   const loadUsers = async () => {
     setLoading(true);
-
     const [profilesRes, addressesRes, ordersRes, rolesRes] = await Promise.all([
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("addresses").select("*"),
@@ -45,6 +46,31 @@ export default function AdminUsers() {
     setLoading(false);
   };
 
+  const filtered = useMemo(() => {
+    let result = [...users];
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter((u) =>
+        (u.profile.full_name || "").toLowerCase().includes(q) ||
+        (u.profile.phone || "").includes(q)
+      );
+    }
+    if (roleFilter) {
+      result = result.filter((u) =>
+        roleFilter === "no_role"
+          ? u.roles.length === 0
+          : u.roles.some((r) => r.role === roleFilter)
+      );
+    }
+    switch (sortBy) {
+      case "oldest": result.sort((a, b) => new Date(a.profile.created_at).getTime() - new Date(b.profile.created_at).getTime()); break;
+      case "most_orders": result.sort((a, b) => b.orders.length - a.orders.length); break;
+      case "highest_spent": result.sort((a, b) => b.orders.reduce((s, o) => s + (o.total || 0), 0) - a.orders.reduce((s, o) => s + (o.total || 0), 0)); break;
+      default: result.sort((a, b) => new Date(b.profile.created_at).getTime() - new Date(a.profile.created_at).getTime());
+    }
+    return result;
+  }, [users, search, roleFilter, sortBy]);
+
   const toggleExpand = (userId: string) => {
     setExpandedUser(expandedUser === userId ? null : userId);
   };
@@ -60,20 +86,47 @@ export default function AdminUsers() {
 
   return (
     <div>
-      <h1 className="text-2xl font-display font-bold mb-6">Customers</h1>
-      <p className="text-sm text-muted-foreground mb-4">{users.length} registered customers</p>
+      <h1 className="text-2xl font-display font-bold mb-2">Customers</h1>
+      <p className="text-sm text-muted-foreground mb-4">{filtered.length} of {users.length} customers</p>
+
+      {/* Search & Filters */}
+      <div className="flex flex-wrap gap-3 mb-4">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <input
+            placeholder="Search by name or phone..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary"
+          />
+        </div>
+        <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}
+          className="px-3 py-2 rounded-xl border border-border text-sm bg-background">
+          <option value="">All Roles</option>
+          <option value="admin">Admin</option>
+          <option value="moderator">Moderator</option>
+          <option value="user">User</option>
+          <option value="no_role">No Role</option>
+        </select>
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
+          className="px-3 py-2 rounded-xl border border-border text-sm bg-background">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="most_orders">Most Orders</option>
+          <option value="highest_spent">Highest Spent</option>
+        </select>
+      </div>
 
       {loading ? (
         <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-20 bg-secondary rounded-xl animate-pulse" />)}</div>
       ) : (
         <div className="space-y-3">
-          {users.map((u) => {
+          {filtered.map((u) => {
             const isExpanded = expandedUser === u.profile.user_id;
             const totalSpent = u.orders.reduce((sum, o) => sum + (o.total || 0), 0);
 
             return (
               <div key={u.profile.id} className="bg-card rounded-2xl shadow-soft overflow-hidden border border-border">
-                {/* Summary row */}
                 <button
                   onClick={() => toggleExpand(u.profile.user_id)}
                   className="w-full flex items-center justify-between px-4 py-4 hover:bg-accent/50 transition-colors text-left"
@@ -89,7 +142,6 @@ export default function AdminUsers() {
                       </p>
                     </div>
                   </div>
-
                   <div className="flex items-center gap-4">
                     <div className="hidden sm:flex items-center gap-4 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
@@ -105,10 +157,8 @@ export default function AdminUsers() {
                   </div>
                 </button>
 
-                {/* Expanded details */}
                 {isExpanded && (
                   <div className="border-t border-border px-4 py-4 space-y-5 bg-muted/30">
-                    {/* Profile Info */}
                     <div>
                       <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
                         <User className="w-3.5 h-3.5" /> Profile
@@ -138,7 +188,6 @@ export default function AdminUsers() {
                       </div>
                     </div>
 
-                    {/* Addresses */}
                     <div>
                       <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
                         <MapPin className="w-3.5 h-3.5" /> Addresses ({u.addresses.length})
@@ -163,7 +212,6 @@ export default function AdminUsers() {
                       )}
                     </div>
 
-                    {/* Orders */}
                     <div>
                       <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
                         <ShoppingBag className="w-3.5 h-3.5" /> Orders ({u.orders.length})
@@ -182,15 +230,11 @@ export default function AdminUsers() {
                                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${getStatusColor(order.status)}`}>
                                       {order.status}
                                     </span>
-                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${getStatusColor(order.payment_status)}`}>
-                                      {order.payment_status}
-                                    </span>
                                   </div>
                                   <span className="font-semibold">₹{order.total}</span>
                                 </div>
                                 <div className="text-xs text-muted-foreground mb-1">
                                   {format(new Date(order.created_at), "dd MMM yyyy, hh:mm a")}
-                                  {order.delivery_slot && ` • Slot: ${order.delivery_slot}`}
                                 </div>
                                 {items.length > 0 && (
                                   <div className="mt-2 space-y-1">
@@ -201,9 +245,6 @@ export default function AdminUsers() {
                                       </div>
                                     ))}
                                   </div>
-                                )}
-                                {order.coupon_code && (
-                                  <p className="text-xs text-muted-foreground mt-1">Coupon: {order.coupon_code} (−₹{order.discount})</p>
                                 )}
                               </div>
                             );
@@ -216,8 +257,8 @@ export default function AdminUsers() {
               </div>
             );
           })}
-          {users.length === 0 && (
-            <div className="py-10 text-center text-sm text-muted-foreground">No customers yet.</div>
+          {filtered.length === 0 && (
+            <div className="py-10 text-center text-sm text-muted-foreground">No customers found.</div>
           )}
         </div>
       )}
