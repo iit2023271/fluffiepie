@@ -21,20 +21,25 @@ export default function Contact() {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !message) {
       toast.error("Please fill in all fields");
       return;
     }
     setSending(true);
-    setTimeout(() => {
-      toast.success("Message sent! We'll get back to you soon 💌");
-      setName("");
-      setEmail("");
-      setMessage("");
-      setSending(false);
-    }, 1200);
+    const { error } = await supabase
+      .from("contact_messages" as any)
+      .insert({ name, email, message } as any);
+    setSending(false);
+    if (error) {
+      toast.error("Failed to send message. Please try again.");
+      return;
+    }
+    toast.success("Message sent! We'll get back to you soon 💌");
+    setName("");
+    setEmail("");
+    setMessage("");
   };
 
   if (loading) {
