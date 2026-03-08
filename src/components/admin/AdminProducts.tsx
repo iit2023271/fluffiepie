@@ -294,25 +294,58 @@ export default function AdminProducts() {
                   className="w-full px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary resize-none bg-background" />
               </div>
               <div>
-                <label className="text-xs font-medium mb-1 block">Product Image</label>
+                <label className="text-xs font-medium mb-1 block">Main Image</label>
                 <div className="flex items-center gap-3">
                   {(form.image_url || imageFile) && <img src={imageFile ? URL.createObjectURL(imageFile) : form.image_url!} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />}
                   <label className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm cursor-pointer hover:bg-secondary">
-                    <Upload className="w-4 h-4" /> Upload Image
+                    <Upload className="w-4 h-4" /> Upload Main Image
                     <input type="file" accept="image/*" className="hidden" onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
                         setCropSrc(URL.createObjectURL(file));
+                        setCropTarget("main");
                         setShowCropper(true);
                       }
                     }} />
                   </label>
                   {imageFile && (
-                    <button onClick={() => { setCropSrc(URL.createObjectURL(imageFile)); setShowCropper(true); }} className="flex items-center gap-1 px-3 py-2 border border-border rounded-xl text-sm hover:bg-secondary">
+                    <button onClick={() => { setCropSrc(URL.createObjectURL(imageFile)); setCropTarget("main"); setShowCropper(true); }} className="flex items-center gap-1 px-3 py-2 border border-border rounded-xl text-sm hover:bg-secondary">
                       <Crop className="w-4 h-4" /> Crop
                     </button>
                   )}
                 </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium mb-1 block">Additional Images</label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {form.images.map((url, i) => (
+                    <div key={i} className="relative group">
+                      <img src={url} alt={`Additional ${i + 1}`} className="w-16 h-16 rounded-lg object-cover" />
+                      <button onClick={() => removeAdditionalImage(i)} className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                  {pendingAdditionalFiles.map((file, i) => (
+                    <div key={`pending-${i}`} className="relative group">
+                      <img src={URL.createObjectURL(file)} alt={`Pending ${i + 1}`} className="w-16 h-16 rounded-lg object-cover opacity-70" />
+                      <button onClick={() => setPendingAdditionalFiles(f => f.filter((_, idx) => idx !== i))} className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <label className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm cursor-pointer hover:bg-secondary">
+                  <Plus className="w-4 h-4" /> Add Image
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      handleAddAdditionalImage(file);
+                    }
+                  }} />
+                </label>
+                <p className="text-xs text-muted-foreground mt-1">Add multiple angles or close-up shots</p>
+              </div>
                 <ImageCropper
                   open={showCropper}
                   imageSrc={cropSrc || ""}
@@ -320,11 +353,14 @@ export default function AdminProducts() {
                   onClose={() => setShowCropper(false)}
                   onCropComplete={(blob) => {
                     const file = new File([blob], `product-${Date.now()}.jpg`, { type: "image/jpeg" });
-                    setImageFile(file);
+                    if (cropTarget === "main") {
+                      setImageFile(file);
+                    } else {
+                      setPendingAdditionalFiles(prev => [...prev, file]);
+                    }
                     setShowCropper(false);
                   }}
                 />
-              </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="text-xs font-medium mb-1 block">Category</label>
