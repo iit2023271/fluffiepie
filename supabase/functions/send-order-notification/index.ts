@@ -37,7 +37,9 @@ serve(async (req) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error('Supabase config missing');
 
-    const { orderId, newStatus, customerEmail, customerName, orderTotal, items, userId } = await req.json();
+    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    const { orderId, newStatus, customerEmail, customerName, orderTotal, items, userId, isTest } = await req.json();
 
     if (!orderId || !newStatus) {
       return new Response(
@@ -46,12 +48,39 @@ serve(async (req) => {
       );
     }
 
-    // Resolve customer email if not provided
+    // Check if email notifications are enabled for this status
+    const { data: configData } = await supabaseAdmin
+      .from("store_config")
+      .select("is_active")
+      .eq("config_type", "email_notification")
+      .eq("value", newStatus)
+      .maybeSingle();
+
+    // If a config exists and is explicitly disabled, skip sending
+    if (configData && configData.is_active === false) {
+      console.log(`Email notification disabled for status: ${newStatus}`);
+      return new Response(
+        JSON.stringify({ success: true, skipped: true, reason: "Notifications disabled for this status" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Resolve customer email
     let email = customerEmail;
     if (!email && userId) {
-      const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
       const { data: userData } = await supabaseAdmin.auth.admin.getUserById(userId);
       email = userData?.user?.email;
+    }
+
+    // For test emails, send to the requesting user (admin)
+    if (isTest && !email) {
+      // Try to get admin email from the auth header
+      const authHeader = req.headers.get('authorization');
+      if (authHeader) {
+        const token = authHeader.replace('Bearer ', '');
+        const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+        email = user?.email;
+      }
     }
 
     if (!email) {
@@ -64,7 +93,7 @@ serve(async (req) => {
     const statusLabel = STATUS_LABELS[newStatus] || newStatus;
     const statusEmoji = STATUS_EMOJI[newStatus] || "📦";
     const name = customerName || "Customer";
-    const shortId = orderId.slice(0, 8).toUpperCase();
+    const shortId = isTest ? "TEST0000" : orderId.slice(0, 8).toUpperCase();
 
     const itemsHtml = Array.isArray(items) && items.length > 0
       ? items.map((item: any) =>
@@ -76,6 +105,8 @@ serve(async (req) => {
         ).join('')
       : '';
 
+    const testBanner = isTest ? `<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px;margin-bottom:16px;text-align:center;font-size:13px;color:#856404;">⚠️ This is a test email — no real order was placed</div>` : '';
+
     const emailHtml = `
     <!DOCTYPE html>
     <html>
@@ -86,6 +117,8 @@ serve(async (req) => {
           <span style="font-size:28px;">🧁</span>
           <span style="font-size:22px;font-weight:700;color:#1a1a1a;margin-left:8px;">Sweet<span style="color:#e85d75;">Crumbs</span></span>
         </div>
+
+        ${testBanner}
 
         <div style="background:#fdf2f4;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
           <div style="font-size:48px;margin-bottom:12px;">${statusEmoji}</div>
@@ -124,7 +157,7 @@ serve(async (req) => {
 
         <div style="text-align:center;padding-top:24px;border-top:1px solid #eee;">
           <p style="margin:0;font-size:12px;color:#999;">SweetCrumbs • Fresh cakes, delivered with love</p>
-          <p style="margin:4px 0 0;font-size:12px;color:#bbb;">Automated notification for order #${shortId}</p>
+          <p style="margin:4px 0 0;font-size:12px;color:#bbb;">${isTest ? 'Test notification' : `Automated notification for order #${shortId}`}</p>
         </div>
       </div>
     </body>
@@ -139,7 +172,7 @@ serve(async (req) => {
       body: JSON.stringify({
         from: 'SweetCrumbs <onboarding@resend.dev>',
         to: [email],
-        subject: `${statusEmoji} Order #${shortId} — ${statusLabel}`,
+        subject: `${isTest ? '[TEST] ' : ''}${statusEmoji} Order #${shortId} — ${statusLabel}`,
         html: emailHtml,
       }),
     });
