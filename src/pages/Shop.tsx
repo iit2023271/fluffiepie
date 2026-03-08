@@ -145,9 +145,9 @@ export default function Shop() {
       <div className="flex gap-8">
         {/* Sidebar filters (desktop) */}
         <aside className="hidden md:block w-56 flex-shrink-0">
-          <FilterSection title="Category" options={categoryTypes} selected={selectedCategory} onSelect={setSelectedCategory} />
-          <FilterSection title="Occasion" options={occasions} selected={selectedOccasion} onSelect={setSelectedOccasion} />
-          <FilterSection title="Flavour" options={flavours} selected={selectedFlavour} onSelect={setSelectedFlavour} />
+          {allFilters.map(f => (
+            <FilterSectionUI key={f.type} title={f.label} options={f.values} selected={selectedFilters[f.type] || ""} onSelect={(v) => selectFilter(f.type, v)} />
+          ))}
         </aside>
 
         {/* Mobile filters */}
@@ -159,9 +159,9 @@ export default function Shop() {
               exit={{ height: 0, opacity: 0 }}
               className="md:hidden fixed inset-x-0 top-16 bg-background z-40 border-b border-border p-4 overflow-hidden"
             >
-              <FilterSection title="Category" options={categoryTypes} selected={selectedCategory} onSelect={setSelectedCategory} />
-              <FilterSection title="Occasion" options={occasions} selected={selectedOccasion} onSelect={setSelectedOccasion} />
-              <FilterSection title="Flavour" options={flavours} selected={selectedFlavour} onSelect={setSelectedFlavour} />
+              {allFilters.map(f => (
+                <FilterSectionUI key={f.type} title={f.label} options={f.values} selected={selectedFilters[f.type] || ""} onSelect={(v) => selectFilter(f.type, v)} />
+              ))}
               <button onClick={() => setShowFilters(false)} className="w-full py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium mt-2">
                 Apply Filters
               </button>
