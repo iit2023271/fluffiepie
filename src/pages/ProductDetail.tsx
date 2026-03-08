@@ -17,7 +17,7 @@ const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transi
 
 export default function ProductDetail() {
   const { slug } = useParams();
-  const { data: product } = useProduct(slug);
+  const { data: product, isLoading } = useProduct(slug);
   const { data: allProducts = [] } = useProducts();
   const { dispatch } = useCart();
   const { addViewed } = useRecentlyViewed();
@@ -32,6 +32,23 @@ export default function ProductDetail() {
   useEffect(() => {
     if (product) addViewed(product.id);
   }, [product?.id]);
+
+  if (isLoading) {
+    return (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="container mx-auto px-4 py-10">
+        <div className="grid md:grid-cols-2 gap-8">
+          <Skeleton className="aspect-square rounded-2xl" />
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-3/4" />
+            <Skeleton className="h-5 w-1/2" />
+            <Skeleton className="h-10 w-1/3" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   if (!product) {
     return (
