@@ -66,6 +66,16 @@ export default function AdminOrders() {
     }
   };
 
+  const deleteNote = async (noteId: string, orderId: string) => {
+    if (!confirm("Delete this note?")) return;
+    const { error } = await supabase.from("order_notes").delete().eq("id", noteId);
+    if (error) toast.error("Failed to delete note");
+    else {
+      toast.success("Note deleted");
+      loadNotes(orderId);
+    }
+  };
+
   const sendNotification = async (order: any, newStatus: string) => {
     try {
       const deliveryAddr = order.delivery_address as any;
