@@ -70,21 +70,17 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
               decoding="async"
             />
             {/* Badge */}
-            <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+            <div className="absolute top-3 left-3">
               {displayTag && (
                 <span
-                  className="px-2.5 py-1 text-xs font-semibold rounded-full"
-                  style={
+                  className={`px-2.5 py-1 text-xs font-semibold rounded-full ${
                     tagDef?.bgColor
-                      ? { backgroundColor: `hsl(${tagDef.bgColor})`, color: `hsl(${tagDef.textColor})` }
-                      : undefined
-                  }
-                  // Fallback classes for legacy tags
-                  {...(!tagDef?.bgColor && {
-                    className: `px-2.5 py-1 text-xs font-semibold rounded-full ${
-                      displayTag.name === "New" ? "bg-accent text-accent-foreground" : "bg-primary text-primary-foreground"
-                    }`,
-                  })}
+                      ? ""
+                      : displayTag.name === "New"
+                        ? "bg-accent text-accent-foreground"
+                        : "bg-primary text-primary-foreground"
+                  }`}
+                  style={tagDef?.bgColor ? { backgroundColor: `hsl(${tagDef.bgColor})`, color: `hsl(${tagDef.textColor})` } : undefined}
                 >
                   {displayTag.name}
                 </span>
