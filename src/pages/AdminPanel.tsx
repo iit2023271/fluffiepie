@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 const tabs = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { key: "homepage", label: "Homepage", icon: Home },
   { key: "products", label: "Products", icon: Package },
   { key: "orders", label: "Orders", icon: ShoppingCart },
   { key: "kitchen", label: "Kitchen", icon: ChefHat },
