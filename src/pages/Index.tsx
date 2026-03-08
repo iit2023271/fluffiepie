@@ -338,7 +338,7 @@ export default function Index() {
             </div>
             <div className="grid md:grid-cols-3 gap-6">
               {reviews.slice(0, 3).map((r, i) => {
-                const name = r.profiles?.full_name || "Customer";
+                const name = r.author_name || "Customer";
                 const initials = name.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase();
                 return (
                   <motion.div
