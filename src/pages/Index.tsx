@@ -25,11 +25,6 @@ const steps = [
   { icon: Truck, title: "Delivered to You", desc: "Right on time, every time" },
 ];
 
-const testimonials = [
-  { name: "Priya S.", rating: 5, text: "The chocolate truffle cake was absolutely divine! Best bakery I've ordered from.", avatar: "PS" },
-  { name: "Rahul M.", rating: 5, text: "Ordered a custom cake for my daughter's birthday. She was thrilled! Amazing quality.", avatar: "RM" },
-  { name: "Anita K.", rating: 5, text: "Their red velvet is to die for. Fast delivery and beautifully packaged.", avatar: "AK" },
-];
 
 interface Banner {
   id: string;
@@ -168,6 +163,21 @@ export default function Index() {
   const { data: allProducts = [] } = useProducts();
   const featured = allProducts.filter((p) => p.isBestseller || p.isNew).slice(0, 4);
 
+  const [reviews, setReviews] = useState<any[]>([]);
+  useEffect(() => {
+    const loadReviews = async () => {
+      const { data } = await supabase
+        .from("reviews")
+        .select("*, profiles!reviews_user_id_fkey(full_name), products!reviews_product_id_fkey(name)")
+        .gte("rating", 4)
+        .not("comment", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(6);
+      if (data) setReviews(data);
+    };
+    loadReviews();
+  }, []);
+
   return (
     <div>
       {/* Banner Carousel */}
@@ -219,21 +229,6 @@ export default function Index() {
               <div className="relative rounded-3xl overflow-hidden shadow-elevated">
                 <img src={heroCake} alt="Premium chocolate cake with berries and gold leaf" className="w-full" />
               </div>
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="absolute -bottom-4 -left-4 md:left-4 bg-background rounded-2xl p-4 shadow-card"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-1">
-                    {[1, 2, 3].map((i) => (
-                      <Star key={i} className="w-4 h-4 fill-accent text-accent" />
-                    ))}
-                  </div>
-                  <span className="text-sm font-semibold">4.9 Rating</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">10,000+ happy customers</p>
-              </motion.div>
             </motion.div>
           </div>
         </div>
@@ -325,40 +320,48 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="bg-blush py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">What Our Customers Say</h2>
-            <p className="text-muted-foreground">Real reviews from real cake lovers</p>
+      {reviews.length > 0 && (
+        <section className="bg-blush py-20">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-14">
+              <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">What Our Customers Say</h2>
+              <p className="text-muted-foreground">Real reviews from real cake lovers</p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6">
+              {reviews.slice(0, 3).map((r, i) => {
+                const name = r.profiles?.full_name || "Customer";
+                const initials = name.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase();
+                return (
+                  <motion.div
+                    key={r.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                    className="bg-background rounded-2xl p-6 shadow-soft"
+                  >
+                    <div className="flex items-center gap-1 mb-3">
+                      {Array.from({ length: r.rating }).map((_, j) => (
+                        <Star key={j} className="w-4 h-4 fill-accent text-accent" />
+                      ))}
+                    </div>
+                    <p className="text-sm text-foreground mb-4 leading-relaxed">"{r.comment}"</p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
+                        {initials}
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium">{name}</span>
+                        {r.products?.name && <p className="text-xs text-muted-foreground">on {r.products.name}</p>}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {testimonials.map((t, i) => (
-              <motion.div
-                key={t.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-background rounded-2xl p-6 shadow-soft"
-              >
-                <div className="flex items-center gap-1 mb-3">
-                  {Array.from({ length: t.rating }).map((_, j) => (
-                    <Star key={j} className="w-4 h-4 fill-accent text-accent" />
-                  ))}
-                </div>
-                <p className="text-sm text-foreground mb-4 leading-relaxed">"{t.text}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
-                    {t.avatar}
-                  </div>
-                  <span className="text-sm font-medium">{t.name}</span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }
