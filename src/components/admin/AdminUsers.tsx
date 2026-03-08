@@ -318,7 +318,7 @@ export default function AdminUsers() {
                                 </div>
 
                                 {/* Timestamps */}
-                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                                   <div className="flex items-center gap-1.5 text-muted-foreground">
                                     <Clock className="w-3 h-3 shrink-0" />
                                     <div>
@@ -326,11 +326,33 @@ export default function AdminUsers() {
                                       {format(new Date(order.created_at), "dd MMM yyyy, hh:mm a")}
                                     </div>
                                   </div>
-                                  {order.updated_at && order.updated_at !== order.created_at && (
+                                  {order.status === "delivered" && order.updated_at && (
+                                    <div className="flex items-center gap-1.5 text-primary">
+                                      <CheckCircle2 className="w-3 h-3 shrink-0" />
+                                      <div>
+                                        <span className="font-medium">Delivered: </span>
+                                        {format(new Date(order.updated_at), "dd MMM yyyy, hh:mm a")}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {order.status === "cancelled" && order.updated_at && (
+                                    <div className="flex items-center gap-1.5 text-destructive">
+                                      <Clock className="w-3 h-3 shrink-0" />
+                                      <div>
+                                        <span className="font-medium">Cancelled: </span>
+                                        {format(new Date(order.updated_at), "dd MMM yyyy, hh:mm a")}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {!["delivered", "cancelled", "placed"].includes(order.status) && order.updated_at && order.updated_at !== order.created_at && (
                                     <div className="flex items-center gap-1.5 text-muted-foreground">
                                       <Clock className="w-3 h-3 shrink-0" />
                                       <div>
-                                        <span className="font-medium text-foreground">Updated: </span>
+                                        <span className="font-medium text-foreground">
+                                          {order.status === "confirmed" ? "Confirmed: " :
+                                           order.status === "baking" ? "Baking since: " :
+                                           order.status === "out_for_delivery" ? "Dispatched: " : "Updated: "}
+                                        </span>
                                         {format(new Date(order.updated_at), "dd MMM yyyy, hh:mm a")}
                                       </div>
                                     </div>
