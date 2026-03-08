@@ -183,11 +183,12 @@ export default function AdminUsers() {
   const filtered = useMemo(() => {
     let result = [...users];
     if (search) {
-      const q = search.toLowerCase();
+      const q = search.toLowerCase().trim();
       result = result.filter((u) =>
         (u.profile.full_name || "").toLowerCase().includes(q) ||
         (u.profile.phone || "").includes(q) ||
-        (u.profile.email || "").toLowerCase().includes(q)
+        (u.profile.email || "").toLowerCase().includes(q) ||
+        u.orders.some((o) => o.id.toLowerCase().includes(q))
       );
     }
     
