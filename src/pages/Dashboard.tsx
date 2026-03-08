@@ -228,12 +228,12 @@ export default function Dashboard() {
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-display font-bold">
+            <h1 className="text-2xl sm:text-3xl font-display font-bold">
               Hello, {profile.full_name || "there"}! 👋
             </h1>
-            <p className="text-muted-foreground">{user?.email}</p>
+            <p className="text-muted-foreground text-sm truncate">{user?.email}</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -248,22 +248,22 @@ export default function Dashboard() {
                 to="/admin"
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-accent-foreground text-sm font-medium hover:opacity-90 transition-opacity"
               >
-                <Shield className="w-4 h-4" /> Admin Panel
+                <Shield className="w-4 h-4" /> Admin
               </Link>
             )}
             <button
               onClick={handleSignOut}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-destructive hover:border-destructive transition-colors"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-destructive hover:border-destructive transition-colors"
             >
-              <LogOut className="w-4 h-4" /> Sign Out
+              <LogOut className="w-4 h-4" /> <span className="hidden sm:inline">Sign Out</span>
             </button>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-8">
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
           {[
-            { key: "orders" as const, icon: Package, label: "My Orders" },
+            { key: "orders" as const, icon: Package, label: "Orders" },
             { key: "wishlist" as const, icon: Heart, label: "Favorites" },
             { key: "addresses" as const, icon: MapPin, label: "Addresses" },
             { key: "profile" as const, icon: User, label: "Profile" },
@@ -271,7 +271,7 @@ export default function Dashboard() {
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
                 tab === t.key
                   ? "bg-primary text-primary-foreground"
                   : "bg-secondary text-secondary-foreground hover:bg-primary/10"
