@@ -5,6 +5,7 @@ import { Star, ShoppingCart, Heart, Minus, Plus, ChevronLeft, Truck, Shield, Clo
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/context/CartContext";
 import ProductCard from "@/components/ProductCard";
+import ProductReviews from "@/components/ProductReviews";
 import { toast } from "sonner";
 
 export default function ProductDetail() {
