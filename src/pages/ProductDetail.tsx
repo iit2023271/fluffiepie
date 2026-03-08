@@ -315,7 +315,7 @@ function Lightbox({ images, initialIndex, onClose }: { images: string[]; initial
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     if (isPinching.current && e.touches.length < 2) { isPinching.current = false; if (scale <= 1.1) { setScale(1); setTranslate({ x: 0, y: 0 }); } return; }
     const now = Date.now(); if (now - lastTouchEnd.current < 300) { toggleZoom(); lastTouchEnd.current = 0; return; } lastTouchEnd.current = now;
-    if (scale <= 1 && touchStart.current && !isPinching.current) { const dx = (e.changedTouches[0]?.clientX ?? 0) - touchStart.current.x; if (Math.abs(dx) > 50 && Date.now() - touchStart.current.time < 400 && images.length > 1) { dx < 0 ? next() : prev(); } }
+    if (scale <= 1 && touchStart.current && !isPinching.current) { const dx = (e.changedTouches[0]?.clientX ?? 0) - touchStart.current.x; if (Math.abs(dx) > 50 && Date.now() - touchStart.current.time < 400 && images.length > 1) { if (dx < 0) next(); else prev(); } }
     touchStart.current = null; panStart.current = null;
   }, [scale, toggleZoom, next, prev, images.length]);
 
