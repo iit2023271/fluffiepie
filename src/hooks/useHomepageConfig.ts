@@ -170,6 +170,33 @@ export const DEFAULT_HOMEPAGE_CONFIG: HomepageConfig = {
       { sectionId: "reviews", label: "Reviews", visible: true },
     ],
   },
+  footer: {
+    brandDescription: "Handcrafted with love. Delivering happiness, one slice at a time. Premium cakes for every occasion.",
+    columns: [
+      {
+        title: "Quick Links",
+        links: [
+          { label: "Shop All", url: "/shop" },
+          { label: "Birthday Cakes", url: "/shop?occasion=Birthday" },
+          { label: "Wedding Cakes", url: "/shop?occasion=Wedding" },
+          { label: "Custom Orders", url: "/shop?occasion=Custom" },
+        ],
+      },
+      {
+        title: "Support",
+        links: [
+          { label: "Contact Us", url: "#" },
+          { label: "FAQs", url: "#" },
+          { label: "Shipping Info", url: "#" },
+          { label: "Returns", url: "#" },
+        ],
+      },
+    ],
+    newsletterEnabled: true,
+    newsletterTitle: "Newsletter",
+    newsletterSubtitle: "Get fresh updates & sweet deals.",
+    copyrightText: "© 2026 SweetCrumbs. All rights reserved.",
+  },
 };
 
 export const SECTION_LABELS: Record<string, string> = {
