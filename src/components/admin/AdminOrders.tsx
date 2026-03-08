@@ -174,6 +174,11 @@ export default function AdminOrders() {
 
   const updateStatus = async (orderId: string, newStatus: string) => {
     const order = orders.find(o => o.id === orderId);
+    // Guard: don't allow changes on finalized orders
+    if (order && (order.status === "delivered" || order.status === "cancelled")) {
+      toast.error(`Cannot change status — order is already ${order.status}`);
+      return;
+    }
     const shouldNotify = notificationSettings[newStatus] ?? true;
     const composeWindow = order && shouldNotify ? window.open("about:blank", "_blank") : null;
 
