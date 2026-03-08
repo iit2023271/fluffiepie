@@ -5,6 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { flavours, categoryTypes, occasions } from "@/data/products";
 import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
+import Pagination from "@/components/Pagination";
+
+const ITEMS_PER_PAGE = 12;
 
 export default function Shop() {
   const [searchParams] = useSearchParams();
@@ -18,7 +21,10 @@ export default function Shop() {
   const [sortBy, setSortBy] = useState("popularity");
   const [showFilters, setShowFilters] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(1);
+
   const filtered = useMemo(() => {
+    setCurrentPage(1);
     let result = [...products];
     if (searchQuery) result = result.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase()));
     if (selectedCategory) result = result.filter((p) => p.category === selectedCategory);
@@ -36,11 +42,16 @@ export default function Shop() {
 
   const hasFilters = selectedCategory || selectedOccasion || selectedFlavour || searchQuery;
 
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginatedProducts = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  // Reset page when filters change
   const clearFilters = () => {
     setSearchQuery("");
     setSelectedCategory("");
     setSelectedOccasion("");
     setSelectedFlavour("");
+    setCurrentPage(1);
   };
 
   const FilterSection = ({ title, options, selected, onSelect }: { title: string; options: string[]; selected: string; onSelect: (v: string) => void }) => (
@@ -139,7 +150,7 @@ export default function Shop() {
         {/* Product grid */}
         <div className="flex-1">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-            {filtered.map((product, i) => (
+            {paginatedProducts.map((product, i) => (
               <ProductCard key={product.id} product={product} index={i} />
             ))}
           </div>
@@ -149,6 +160,13 @@ export default function Shop() {
               <button onClick={clearFilters} className="mt-4 text-primary hover:underline text-sm">Clear all filters</button>
             </div>
           )}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(p) => { setCurrentPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            totalItems={filtered.length}
+            itemsPerPage={ITEMS_PER_PAGE}
+          />
         </div>
       </div>
     </div>

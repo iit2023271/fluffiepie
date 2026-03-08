@@ -1,8 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { Search } from "lucide-react";
+import Pagination from "@/components/Pagination";
+
+const ITEMS_PER_PAGE = 10;
 
 const statusOptions = ["placed", "confirmed", "baking", "out_for_delivery", "delivered", "cancelled"];
 
@@ -20,6 +23,7 @@ export default function AdminOrders() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => { loadOrders(); }, []);
 
@@ -39,11 +43,17 @@ export default function AdminOrders() {
     else { toast.success(`Order updated to ${newStatus}`); loadOrders(); }
   };
 
-  const filtered = orders.filter((o) => {
-    const matchSearch = o.id.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = !statusFilter || o.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  const filtered = useMemo(() => {
+    setCurrentPage(1);
+    return orders.filter((o) => {
+      const matchSearch = o.id.toLowerCase().includes(search.toLowerCase());
+      const matchStatus = !statusFilter || o.status === statusFilter;
+      return matchSearch && matchStatus;
+    });
+  }, [orders, search, statusFilter]);
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (
     <div>
@@ -66,7 +76,7 @@ export default function AdminOrders() {
         <div className="space-y-3">{[1,2,3].map((i) => <div key={i} className="h-20 bg-secondary rounded-xl animate-pulse" />)}</div>
       ) : (
         <div className="space-y-3">
-          {filtered.map((order) => (
+          {paginated.map((order) => (
             <div key={order.id} className="bg-card rounded-2xl p-5 shadow-soft">
               <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
                 <div>
@@ -113,6 +123,7 @@ export default function AdminOrders() {
           {filtered.length === 0 && (
             <div className="py-10 text-center text-sm text-muted-foreground">No orders found.</div>
           )}
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filtered.length} itemsPerPage={ITEMS_PER_PAGE} />
         </div>
       )}
     </div>

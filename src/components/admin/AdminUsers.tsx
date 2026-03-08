@@ -3,6 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ChevronDown, ChevronUp, MapPin, ShoppingBag, User, Phone, Calendar, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import Pagination from "@/components/Pagination";
+
+const ITEMS_PER_PAGE = 10;
 
 interface UserDetail {
   profile: any;
@@ -18,6 +21,7 @@ export default function AdminUsers() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [sortBy, setSortBy] = useState("newest");
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => { loadUsers(); }, []);
 
@@ -47,6 +51,7 @@ export default function AdminUsers() {
   };
 
   const filtered = useMemo(() => {
+    setCurrentPage(1);
     let result = [...users];
     if (search) {
       const q = search.toLowerCase();
@@ -70,6 +75,9 @@ export default function AdminUsers() {
     }
     return result;
   }, [users, search, roleFilter, sortBy]);
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const toggleExpand = (userId: string) => {
     setExpandedUser(expandedUser === userId ? null : userId);
@@ -121,7 +129,7 @@ export default function AdminUsers() {
         <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-20 bg-secondary rounded-xl animate-pulse" />)}</div>
       ) : (
         <div className="space-y-3">
-          {filtered.map((u) => {
+          {paginated.map((u) => {
             const isExpanded = expandedUser === u.profile.user_id;
             const totalSpent = u.orders.reduce((sum, o) => sum + (o.total || 0), 0);
 
@@ -260,6 +268,7 @@ export default function AdminUsers() {
           {filtered.length === 0 && (
             <div className="py-10 text-center text-sm text-muted-foreground">No customers found.</div>
           )}
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filtered.length} itemsPerPage={ITEMS_PER_PAGE} />
         </div>
       )}
     </div>

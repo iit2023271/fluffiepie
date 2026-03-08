@@ -1,6 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Pencil, Trash2, X, Upload, Search } from "lucide-react";
+import Pagination from "@/components/Pagination";
+
+const ITEMS_PER_PAGE = 10;
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -138,16 +141,24 @@ export default function AdminProducts() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
-  const filtered = products.filter((p) => {
-    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
-    const matchCategory = !categoryFilter || p.category === categoryFilter;
-    const matchStatus = !statusFilter || 
-      (statusFilter === "active" && p.is_active) || 
-      (statusFilter === "inactive" && !p.is_active) ||
-      (statusFilter === "bestseller" && p.is_bestseller) ||
-      (statusFilter === "new" && p.is_new);
-    return matchSearch && matchCategory && matchStatus;
-  });
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const filtered = useMemo(() => {
+    setCurrentPage(1);
+    return products.filter((p) => {
+      const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
+      const matchCategory = !categoryFilter || p.category === categoryFilter;
+      const matchStatus = !statusFilter || 
+        (statusFilter === "active" && p.is_active) || 
+        (statusFilter === "inactive" && !p.is_active) ||
+        (statusFilter === "bestseller" && p.is_bestseller) ||
+        (statusFilter === "new" && p.is_new);
+      return matchSearch && matchCategory && matchStatus;
+    });
+  }, [products, search, categoryFilter, statusFilter]);
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (
     <div>
@@ -337,7 +348,7 @@ export default function AdminProducts() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((product) => (
+                {paginated.map((product) => (
                   <tr key={product.id} className="border-b border-border last:border-0 hover:bg-secondary/50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
@@ -383,6 +394,9 @@ export default function AdminProducts() {
           {filtered.length === 0 && (
             <div className="py-10 text-center text-sm text-muted-foreground">No products found.</div>
           )}
+          <div className="px-4 pb-4">
+            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={filtered.length} itemsPerPage={ITEMS_PER_PAGE} />
+          </div>
         </div>
       )}
     </div>
