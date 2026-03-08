@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Search, MessageSquare, Send, Download, DollarSign, X, ChevronDown, ChevronUp, Printer } from "lucide-react";
+import { Search, MessageSquare, Send, Download, DollarSign, X, ChevronDown, ChevronUp, Printer, Trash2 } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -62,6 +62,16 @@ export default function AdminOrders() {
     else {
       toast.success("Note added");
       setNewNote("");
+      loadNotes(orderId);
+    }
+  };
+
+  const deleteNote = async (noteId: string, orderId: string) => {
+    if (!confirm("Delete this note?")) return;
+    const { error } = await supabase.from("order_notes").delete().eq("id", noteId);
+    if (error) toast.error("Failed to delete note");
+    else {
+      toast.success("Note deleted");
       loadNotes(orderId);
     }
   };
@@ -293,8 +303,15 @@ export default function AdminOrders() {
                       <div className="space-y-2">
                         {notes.map((n: any) => (
                           <div key={n.id} className="bg-card rounded-lg p-3 border border-border">
-                            <p className="text-sm">{n.note}</p>
-                            <p className="text-[10px] text-muted-foreground mt-1">{format(new Date(n.created_at), "dd MMM, hh:mm a")}</p>
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <p className="text-sm">{n.note}</p>
+                                <p className="text-[10px] text-muted-foreground mt-1">{format(new Date(n.created_at), "dd MMM, hh:mm a")}</p>
+                              </div>
+                              <button onClick={() => deleteNote(n.id, order.id)} className="shrink-0 p-1 text-muted-foreground hover:text-destructive rounded">
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
                         ))}
                       </div>
