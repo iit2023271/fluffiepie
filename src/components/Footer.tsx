@@ -8,7 +8,7 @@ export default function Footer() {
   return (
     <footer className="bg-foreground text-background/80 mt-20">
       <div className="container mx-auto px-4 py-16">
-        <div className={`grid grid-cols-1 md:grid-cols-${2 + footer.columns.length + (footer.newsletterEnabled ? 1 : 0)} gap-10`}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Brand Column */}
           <div>
             <h3 className="text-xl font-display font-bold text-background mb-4">
