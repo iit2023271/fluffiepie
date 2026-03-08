@@ -28,8 +28,7 @@ function ProductCard({ product, index = 0, isWishlisted = false, onToggleWishlis
   const cartQty = cartItem?.quantity ?? 0;
   
   const activeTag = product.tags?.[0];
-  const tagDef = activeTag ? productTags.find(t => t.name === activeTag) : null;
-  const displayTag = tagDef || (product.isBestseller ? { name: "Bestseller", bgColor: "", textColor: "" } : product.isNew ? { name: "New", bgColor: "", textColor: "" } : null);
+  const displayTag = activeTag ? productTags.find(t => t.name === activeTag) || null : null;
 
   const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -130,13 +129,11 @@ function ProductCard({ product, index = 0, isWishlisted = false, onToggleWishlis
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ delay: index * 0.06 + 0.2, type: "spring", stiffness: 200 }}
                   className={`px-2.5 py-1 text-xs font-semibold rounded-full ${
-                    tagDef?.bgColor
+                    displayTag?.bgColor
                       ? ""
-                      : displayTag.name === "New"
-                        ? "bg-accent text-accent-foreground"
-                        : "bg-primary text-primary-foreground"
+                      : "bg-primary text-primary-foreground"
                   }`}
-                  style={tagDef?.bgColor ? { backgroundColor: `hsl(${tagDef.bgColor})`, color: `hsl(${tagDef.textColor})` } : undefined}
+                  style={displayTag?.bgColor ? { backgroundColor: `hsl(${displayTag.bgColor})`, color: `hsl(${displayTag.textColor})` } : undefined}
                 >
                   {displayTag.name}
                 </motion.span>
