@@ -757,12 +757,45 @@ function TextBlockEditor({ data, onChange }: { data: CustomSectionData; onChange
     <div className="space-y-4">
       <div><Label className="text-xs">Heading</Label><Input value={data.heading || ""} onChange={e => onChange({ heading: e.target.value })} className="mt-1" /></div>
       <div><Label className="text-xs">Body</Label><Textarea value={data.body || ""} onChange={e => onChange({ body: e.target.value })} className="mt-1" rows={4} /></div>
-      <div>
-        <Label className="text-xs">Alignment</Label>
-        <Select value={data.alignment || "center"} onValueChange={v => onChange({ alignment: v as "left" | "center" | "right" })}>
-          <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-          <SelectContent><SelectItem value="left">Left</SelectItem><SelectItem value="center">Center</SelectItem><SelectItem value="right">Right</SelectItem></SelectContent>
-        </Select>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-3 rounded-xl bg-muted/50 border">
+        <div>
+          <Label className="text-xs">📐 Alignment</Label>
+          <Select value={data.alignment || "center"} onValueChange={v => onChange({ alignment: v as "left" | "center" | "right" })}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent><SelectItem value="left">Left</SelectItem><SelectItem value="center">Center</SelectItem><SelectItem value="right">Right</SelectItem></SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label className="text-xs">🔤 Text Size</Label>
+          <Select value={data.textSize || "md"} onValueChange={v => onChange({ textSize: v as any })}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="sm">Small</SelectItem>
+              <SelectItem value="md">Medium (Default)</SelectItem>
+              <SelectItem value="lg">Large</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label className="text-xs">🎨 Background</Label>
+          <Select value={data.textBg || "none"} onValueChange={v => onChange({ textBg: v as any })}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">None (Transparent)</SelectItem>
+              <SelectItem value="muted">Muted Gray</SelectItem>
+              <SelectItem value="cream">Cream</SelectItem>
+              <SelectItem value="blush">Blush</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      {/* Preview */}
+      <div className="p-4 rounded-xl border border-dashed border-primary/30 bg-cream/30">
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview</p>
+        <div className={`${data.alignment === "center" ? "text-center" : data.alignment === "right" ? "text-right" : "text-left"}`}>
+          {data.heading && <p className={`font-bold font-display ${data.textSize === "lg" ? "text-lg" : data.textSize === "sm" ? "text-xs" : "text-sm"}`}>{data.heading}</p>}
+          {data.body && <p className={`text-muted-foreground mt-1 ${data.textSize === "lg" ? "text-sm" : "text-[10px]"} line-clamp-3`}>{data.body}</p>}
+        </div>
       </div>
     </div>
   );
