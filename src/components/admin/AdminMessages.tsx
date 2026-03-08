@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Mail, MailOpen, Trash2, Search, RefreshCw, X, User } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import ConfirmDialog from "@/components/admin/ConfirmDialog";
 
 interface ContactMessage {
   id: string;
