@@ -4,8 +4,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Star, ShoppingCart, Heart, Minus, Plus, ChevronLeft, Truck, Shield, Clock, X, ChevronRight, ZoomIn } from "lucide-react";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/context/CartContext";
+import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import ProductCard from "@/components/ProductCard";
 import ProductReviews from "@/components/ProductReviews";
+import RecentlyViewed from "@/components/RecentlyViewed";
+import ShareButtons from "@/components/ShareButtons";
 import { toast } from "sonner";
 
 export default function ProductDetail() {
