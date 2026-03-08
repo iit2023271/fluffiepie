@@ -82,12 +82,24 @@ export default function AdminUsers() {
     setEmailBody(t.body.replace(/{name}/g, name || "there"));
   };
 
-  const sendEmail = () => {
+  const [sendingEmail, setSendingEmail] = useState(false);
+
+  const sendEmail = async () => {
     if (!emailDialog.email) { toast.error("No email available"); return; }
-    const mailto = `mailto:${emailDialog.email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-    window.open(mailto, "_blank");
-    setEmailDialog({ open: false, email: "", name: "" });
-    toast.success("Email client opened!");
+    setSendingEmail(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-customer-email", {
+        body: { to: emailDialog.email, subject: emailSubject, body: emailBody, storeName: storeInfo.storeName },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success("Email sent successfully!");
+      setEmailDialog({ open: false, email: "", name: "" });
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send email");
+    } finally {
+      setSendingEmail(false);
+    }
   };
 
   useEffect(() => { loadUsers(); }, []);
