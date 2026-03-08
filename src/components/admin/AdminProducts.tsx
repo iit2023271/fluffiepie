@@ -84,6 +84,7 @@ export default function AdminProducts() {
       custom_attributes: ((product as any).custom_attributes as Record<string, string | string[]>) || {},
     });
     setImageFile(null);
+    setPendingAdditionalFiles([]);
     setShowForm(true);
   };
 

@@ -17,6 +17,7 @@ export default function ProductDetail() {
   const [selectedWeight, setSelectedWeight] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [message, setMessage] = useState("");
+  const [selectedImage, setSelectedImage] = useState(0);
 
   if (!product) {
     return (
@@ -29,6 +30,9 @@ export default function ProductDetail() {
 
   const currentPrice = product.weights[selectedWeight].price;
   const totalPrice = currentPrice * quantity;
+
+  // Build all images array: main image + additional images
+  const allImages = [product.image, ...(product.images || [])].filter(Boolean);
 
   const handleAddToCart = () => {
     dispatch({
@@ -53,17 +57,38 @@ export default function ProductDetail() {
       </Link>
 
       <div className="grid md:grid-cols-2 gap-8 md:gap-12">
-        {/* Image */}
+        {/* Image Gallery */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="relative rounded-3xl overflow-hidden bg-cream aspect-square"
+          className="space-y-3"
         >
-          <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-          {product.isBestseller && (
-            <span className="absolute top-4 left-4 px-3 py-1 bg-primary text-primary-foreground text-xs font-semibold rounded-full">
-              Bestseller
-            </span>
+          <div className="relative rounded-3xl overflow-hidden bg-cream aspect-square">
+            <img
+              src={allImages[selectedImage] || product.image}
+              alt={product.name}
+              className="w-full h-full object-cover transition-all duration-300"
+            />
+            {product.isBestseller && (
+              <span className="absolute top-4 left-4 px-3 py-1 bg-primary text-primary-foreground text-xs font-semibold rounded-full">
+                Bestseller
+              </span>
+            )}
+          </div>
+          {allImages.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {allImages.map((img, i) => (
+                <button
+                  key={i}
+                  onClick={() => setSelectedImage(i)}
+                  className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 transition-colors ${
+                    selectedImage === i ? "border-primary" : "border-transparent hover:border-border"
+                  }`}
+                >
+                  <img src={img} alt={`${product.name} ${i + 1}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
           )}
         </motion.div>
 
