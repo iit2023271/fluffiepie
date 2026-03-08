@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Link } from "react-router-dom";
 import { useHomepageConfig } from "@/hooks/useHomepageConfig";
 
-export default function Footer() {
+function Footer() {
   const { config } = useHomepageConfig();
   const footer = config.footer;
 
