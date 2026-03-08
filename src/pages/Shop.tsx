@@ -260,7 +260,7 @@ export default function Shop() {
               </SheetHeader>
             </div>
 
-            <ScrollArea className="flex-1 px-4">
+            <div ref={filterScrollRef} className="flex-1 overflow-y-auto px-4">
               {/* Price Range Slider */}
               <div className="py-4 border-b border-border/50">
                 <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-4 px-2 flex items-center gap-1.5">
