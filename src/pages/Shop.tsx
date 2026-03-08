@@ -1,12 +1,21 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { SlidersHorizontal, X, Search } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useStoreConfig } from "@/hooks/useStoreConfig";
 import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
 import Pagination from "@/components/Pagination";
 import { useWishlist } from "@/hooks/useWishlist";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose,
+} from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -24,15 +33,12 @@ export default function Shop() {
     return init;
   });
   const [sortBy, setSortBy] = useState("popularity");
-  const [showFilters, setShowFilters] = useState(false);
-
   const [currentPage, setCurrentPage] = useState(1);
 
   const filtered = useMemo(() => {
     let result = [...products];
     if (searchQuery) result = result.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase()));
     
-    // Apply all selected filters
     const normalize = (value: unknown) => String(value ?? "").trim().toLowerCase();
     for (const [filterType, filterValue] of Object.entries(selectedFilters)) {
       if (!filterValue) continue;
@@ -45,7 +51,6 @@ export default function Shop() {
       } else if (filterType === "flavour") {
         result = result.filter((p) => normalize(p.flavour) === normalizedFilter);
       } else {
-        // Custom attribute filter
         result = result.filter((p) => {
           const attrs = (p as any).custom_attributes || {};
           const val = attrs[filterType];
@@ -66,7 +71,8 @@ export default function Shop() {
 
   useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedFilters, sortBy]);
 
-  const hasFilters = Object.values(selectedFilters).some(v => v) || searchQuery;
+  const activeFilterCount = Object.values(selectedFilters).filter(v => v).length;
+  const hasFilters = activeFilterCount > 0 || searchQuery;
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginatedProducts = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
@@ -81,7 +87,8 @@ export default function Shop() {
     setSelectedFilters(prev => ({ ...prev, [type]: prev[type] === value ? "" : value }));
   };
 
-  const FilterSectionUI = ({ title, options, selected, onSelect }: { title: string; options: string[]; selected: string; onSelect: (v: string) => void }) => (
+  // Desktop sidebar filter
+  const DesktopFilterSection = ({ title, options, selected, onSelect }: { title: string; options: string[]; selected: string; onSelect: (v: string) => void }) => (
     <div className="mb-6">
       <h4 className="text-sm font-semibold mb-3">{title}</h4>
       <div className="flex flex-wrap gap-2">
@@ -102,9 +109,37 @@ export default function Shop() {
     </div>
   );
 
+  // Mobile sidebar filter — vertical list like Bakingo/real apps
+  const MobileFilterSection = ({ title, options, selected, onSelect }: { title: string; options: string[]; selected: string; onSelect: (v: string) => void }) => (
+    <div className="py-3">
+      <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 px-1">{title}</h4>
+      <div className="flex flex-col gap-0.5">
+        {options.map((opt) => {
+          const isSelected = selected === opt;
+          return (
+            <button
+              key={opt}
+              onClick={() => onSelect(opt)}
+              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${
+                isSelected
+                  ? "bg-primary/10 text-primary font-semibold border border-primary/20"
+                  : "text-foreground hover:bg-secondary"
+              }`}
+            >
+              <span>{opt}</span>
+              {isSelected && (
+                <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-3xl md:text-4xl font-display font-bold mb-2">
           {selectedFilters["occasion"] ? `${selectedFilters["occasion"]} Cakes` : "All Cakes"}
         </h1>
@@ -112,7 +147,7 @@ export default function Shop() {
       </div>
 
       {/* Search Bar */}
-      <div className="relative mb-6 max-w-lg">
+      <div className="relative mb-5 max-w-lg">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
           placeholder="Search cakes by name..."
@@ -123,18 +158,84 @@ export default function Shop() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex items-center justify-between mb-6 gap-4">
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className="md:hidden flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm font-medium"
-        >
-          <SlidersHorizontal className="w-4 h-4" /> Filters
-        </button>
+      <div className="flex items-center justify-between mb-6 gap-3">
+        {/* Mobile filter sheet trigger */}
+        <Sheet>
+          <SheetTrigger asChild>
+            <button className="md:hidden flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border text-sm font-medium bg-card hover:bg-secondary transition-colors">
+              <SlidersHorizontal className="w-4 h-4" />
+              Filters
+              {activeFilterCount > 0 && (
+                <Badge variant="default" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] rounded-full">
+                  {activeFilterCount}
+                </Badge>
+              )}
+            </button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-[300px] p-0 flex flex-col">
+            <SheetHeader className="px-5 pt-5 pb-3 border-b border-border">
+              <div className="flex items-center justify-between">
+                <SheetTitle className="text-lg font-display font-bold flex items-center gap-2">
+                  <SlidersHorizontal className="w-4 h-4" /> Filters
+                </SheetTitle>
+                {activeFilterCount > 0 && (
+                  <button onClick={clearFilters} className="text-xs text-primary font-medium hover:underline">
+                    Clear all
+                  </button>
+                )}
+              </div>
+              {activeFilterCount > 0 && (
+                <p className="text-xs text-muted-foreground mt-1">{activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""} active</p>
+              )}
+            </SheetHeader>
+
+            <ScrollArea className="flex-1 px-4">
+              <div className="py-2 divide-y divide-border">
+                {allFilters.map(f => (
+                  <MobileFilterSection
+                    key={f.type}
+                    title={f.label}
+                    options={f.values}
+                    selected={selectedFilters[f.type] || ""}
+                    onSelect={(v) => selectFilter(f.type, v)}
+                  />
+                ))}
+              </div>
+            </ScrollArea>
+
+            <div className="p-4 border-t border-border">
+              <SheetClose asChild>
+                <button className="w-full py-3 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors">
+                  Show {filtered.length} result{filtered.length !== 1 ? "s" : ""}
+                </button>
+              </SheetClose>
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        {/* Active filter pills on mobile */}
         {hasFilters && (
-          <button onClick={clearFilters} className="flex items-center gap-1 text-sm text-primary hover:underline">
+          <div className="md:hidden flex items-center gap-2 overflow-x-auto scrollbar-hide flex-1">
+            {Object.entries(selectedFilters).map(([type, value]) =>
+              value ? (
+                <button
+                  key={type}
+                  onClick={() => selectFilter(type, value)}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium whitespace-nowrap flex-shrink-0"
+                >
+                  {value} <X className="w-3 h-3" />
+                </button>
+              ) : null
+            )}
+          </div>
+        )}
+
+        {hasFilters && (
+          <button onClick={clearFilters} className="hidden md:flex items-center gap-1 text-sm text-primary hover:underline">
             <X className="w-3 h-3" /> Clear filters
           </button>
         )}
+
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
@@ -148,31 +249,12 @@ export default function Shop() {
       </div>
 
       <div className="flex gap-8">
-        {/* Sidebar filters (desktop) */}
+        {/* Desktop sidebar filters */}
         <aside className="hidden md:block w-56 flex-shrink-0">
           {allFilters.map(f => (
-            <FilterSectionUI key={f.type} title={f.label} options={f.values} selected={selectedFilters[f.type] || ""} onSelect={(v) => selectFilter(f.type, v)} />
+            <DesktopFilterSection key={f.type} title={f.label} options={f.values} selected={selectedFilters[f.type] || ""} onSelect={(v) => selectFilter(f.type, v)} />
           ))}
         </aside>
-
-        {/* Mobile filters */}
-        <AnimatePresence>
-          {showFilters && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="md:hidden fixed inset-x-0 top-16 bg-background z-40 border-b border-border p-4 overflow-hidden"
-            >
-              {allFilters.map(f => (
-                <FilterSectionUI key={f.type} title={f.label} options={f.values} selected={selectedFilters[f.type] || ""} onSelect={(v) => selectFilter(f.type, v)} />
-              ))}
-              <button onClick={() => setShowFilters(false)} className="w-full py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium mt-2">
-                Apply Filters
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* Product grid */}
         <div className="flex-1">
