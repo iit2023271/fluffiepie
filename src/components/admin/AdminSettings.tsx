@@ -307,10 +307,10 @@ export default function AdminSettings() {
         ))}
       </div>
 
-      {/* Store Config */}
       {activeSection === "config" && (
         <div className="space-y-6">
-          {configSections.map(section => {
+          {/* Built-in sections */}
+          {BUILTIN_CONFIG_SECTIONS.map(section => {
             const items = configItems.filter(c => c.config_type === section.type);
             return (
               <div key={section.type} className="bg-card rounded-2xl p-6 shadow-soft">
@@ -341,6 +341,87 @@ export default function AdminSettings() {
               </div>
             );
           })}
+
+          {/* Custom sections */}
+          {configItems.filter(c => c.config_type === "filter_section").map(sectionDef => {
+            let def: { type: string; label: string; isMulti: boolean };
+            try { def = JSON.parse(sectionDef.value); } catch { return null; }
+            const items = configItems.filter(c => c.config_type === def.type);
+            return (
+              <div key={sectionDef.id} className="bg-card rounded-2xl p-6 shadow-soft">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-3">
+                    <Tag className="w-5 h-5 text-primary" />
+                    <h3 className="font-display font-semibold text-lg">{def.label}</h3>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">{def.isMulti ? "Multi-select" : "Single"}</span>
+                  </div>
+                  <button onClick={() => setDeleteConfirm({ open: true, type: "config", id: sectionDef.id, name: def.label })} className="text-muted-foreground hover:text-destructive text-xs flex items-center gap-1">
+                    <Trash2 className="w-3 h-3" /> Remove Section
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground mb-4">Custom product filter section</p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {items.map(item => (
+                    <div key={item.id} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border transition-colors ${item.is_active ? "border-primary/30 bg-primary/5 text-foreground" : "border-border bg-secondary/50 text-muted-foreground line-through"}`}>
+                      <span>{item.value}</span>
+                      <button onClick={() => toggleConfig(item.id, item.is_active)} className={`w-4 h-4 rounded-full border-2 transition-colors ${item.is_active ? "border-primary bg-primary" : "border-muted-foreground"}`} />
+                      <button onClick={() => setDeleteConfirm({ open: true, type: "config", id: item.id, name: item.value })} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
+                    </div>
+                  ))}
+                  {items.length === 0 && <p className="text-sm text-muted-foreground">No items yet.</p>}
+                </div>
+                <div className="flex gap-2">
+                  <input placeholder={`Add new ${def.label.toLowerCase()}...`} value={newValues[def.type] || ""}
+                    onChange={(e) => setNewValues(prev => ({ ...prev, [def.type]: e.target.value }))}
+                    onKeyDown={(e) => e.key === "Enter" && addConfigItem(def.type)}
+                    className="flex-1 max-w-xs px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
+                  <button onClick={() => addConfigItem(def.type)} className="flex items-center gap-1 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90">
+                    <Plus className="w-4 h-4" /> Add
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Add New Section */}
+          {showNewSectionForm ? (
+            <div className="bg-card rounded-2xl p-6 shadow-soft border-2 border-dashed border-primary/30">
+              <h3 className="font-display font-semibold text-lg mb-4">Create New Filter Section</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-medium mb-1 block">Section Name *</label>
+                  <input value={newSectionLabel} onChange={(e) => setNewSectionLabel(e.target.value)} placeholder="e.g. Shape, Size, Tier Count..."
+                    className="w-full max-w-xs px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background" />
+                </div>
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" checked={newSectionMulti} onChange={(e) => setNewSectionMulti(e.target.checked)} className="rounded" />
+                  Allow multiple selections (like Occasions)
+                </label>
+                <div className="flex gap-2 pt-2">
+                  <button onClick={async () => {
+                    if (!newSectionLabel.trim()) { toast.error("Enter a section name"); return; }
+                    const type = newSectionLabel.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_");
+                    if (BUILTIN_CONFIG_SECTIONS.some(s => s.type === type) || RESERVED_CONFIG_TYPES.includes(type)) {
+                      toast.error("This name conflicts with a built-in section"); return;
+                    }
+                    const { error } = await supabase.from("store_config").insert({
+                      config_type: "filter_section",
+                      value: JSON.stringify({ type, label: newSectionLabel.trim(), isMulti: newSectionMulti }),
+                      sort_order: 0,
+                    });
+                    if (error) { toast.error("Failed to create section"); return; }
+                    toast.success(`"${newSectionLabel.trim()}" section created!`);
+                    setNewSectionLabel(""); setNewSectionMulti(false); setShowNewSectionForm(false); loadAll();
+                  }} className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90">Create Section</button>
+                  <button onClick={() => { setShowNewSectionForm(false); setNewSectionLabel(""); }} className="px-4 py-2 border border-border rounded-xl text-sm hover:bg-secondary">Cancel</button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => setShowNewSectionForm(true)} className="w-full py-4 border-2 border-dashed border-border rounded-2xl text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2">
+              <Plus className="w-4 h-4" /> Add New Filter Section
+            </button>
+          )}
         </div>
       )}
 
