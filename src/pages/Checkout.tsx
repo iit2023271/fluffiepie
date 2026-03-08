@@ -144,9 +144,6 @@ export default function Checkout() {
           pincode: form.pincode,
         };
 
-    const customerName = addressMode === "saved" && selectedAddress
-      ? selectedAddress.full_name
-      : `${form.firstName} ${form.lastName}`.trim();
 
     const { data: orderData, error } = await supabase.from("orders").insert({
       user_id: user.id,
