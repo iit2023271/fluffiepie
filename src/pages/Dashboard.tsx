@@ -318,6 +318,26 @@ export default function Dashboard() {
                       </div>
                     )}
 
+                    {/* Admin Notes for Customer */}
+                    {orderNotes[order.id] && orderNotes[order.id].length > 0 && (
+                      <div className="mb-3 p-3 rounded-xl bg-accent/10 border border-accent/20">
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <StickyNote className="w-3.5 h-3.5 text-accent" />
+                          <span className="text-xs font-semibold text-accent">Notes from Store</span>
+                        </div>
+                        <div className="space-y-1.5">
+                          {orderNotes[order.id].map((note) => (
+                            <div key={note.id} className="text-sm text-foreground">
+                              <p>{note.note}</p>
+                              <p className="text-[10px] text-muted-foreground mt-0.5">
+                                {format(new Date(note.created_at), "dd MMM, hh:mm a")}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between pt-3 border-t border-border">
                       <span className="font-semibold">Total: ₹{order.total.toLocaleString()}</span>
                       <div className="flex items-center gap-3">
