@@ -266,7 +266,6 @@ export default function AdminMessages() {
           )}
         </div>
       </div>
-    </div>
 
       <ConfirmDialog
         open={deleteConfirm.open}
@@ -278,4 +277,5 @@ export default function AdminMessages() {
       />
     </div>
   );
+}
 }
