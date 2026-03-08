@@ -680,6 +680,15 @@ export default function AdminOrders() {
         confirmLabel="Cancel Order"
         onConfirm={() => { updateStatus(statusChangeConfirm.orderId, statusChangeConfirm.newStatus); setStatusChangeConfirm({ open: false, orderId: "", newStatus: "" }); }}
       />
+      <ConfirmDialog
+        open={undoConfirm.open}
+        onOpenChange={(open) => setUndoConfirm(prev => ({ ...prev, open }))}
+        title="Undo Status Change"
+        description={`Are you sure you want to move this order back to "${STATUS_CONFIG[undoConfirm.prevStatus]?.label || undoConfirm.prevStatus}"? The customer will be notified if email notifications are enabled.`}
+        confirmLabel={`Revert to ${STATUS_CONFIG[undoConfirm.prevStatus]?.label || undoConfirm.prevStatus}`}
+        variant="default"
+        onConfirm={() => { updateStatus(undoConfirm.orderId, undoConfirm.prevStatus); setUndoConfirm({ open: false, orderId: "", prevStatus: "" }); }}
+      />
     </div>
   );
 }
