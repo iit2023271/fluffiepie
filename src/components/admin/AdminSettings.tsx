@@ -90,6 +90,8 @@ export default function AdminSettings() {
   });
   const [savingEmail, setSavingEmail] = useState(false);
   const [testingEmail, setTestingEmail] = useState<string | null>(null);
+  const [editingConfigItem, setEditingConfigItem] = useState<string | null>(null);
+  const [editingConfigValue, setEditingConfigValue] = useState("");
 
   // Confirm dialog state
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; type: "config" | "coupon" | "banner"; id: string; name: string }>({ open: false, type: "config", id: "", name: "" });
