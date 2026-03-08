@@ -227,7 +227,7 @@ export default function AdminKitchen() {
             <Calendar
               mode="single"
               selected={selectedDate}
-              onSelect={(d) => { if (d) { setSelectedDate(d); setCheckedItems(new Set()); } }}
+              onSelect={(d) => { if (d) setSelectedDate(d); }}
               initialFocus
               className={cn("p-3 pointer-events-auto")}
             />
