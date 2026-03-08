@@ -252,43 +252,23 @@ export default function Index() {
       );
     },
     categories: () => {
+      const cols = config.categories.columns || 4;
+      const aspectCls = config.categories.cardAspect === "square" ? "aspect-square" : config.categories.cardAspect === "landscape" ? "aspect-video" : "aspect-[3/4]";
       const displayOccasions = occasions.length > 0 ? occasions.filter(o => categoryImages[o]) : Object.keys(categoryImages);
       return (
         <section key="categories" className="container mx-auto px-4 py-16">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{config.categories.title}</h2>
             <p className="text-muted-foreground">{config.categories.subtitle}</p>
           </motion.div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {displayOccasions.slice(0, 4).map((name, i) => (
-              <motion.div
-                key={name}
-                initial={{ opacity: 0, y: 40, scale: 0.9 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.12, type: "spring", stiffness: 100 }}
-              >
-                <Link
-                  to={`/shop?occasion=${name}`}
-                  className="group block relative rounded-2xl overflow-hidden aspect-[3/4]"
-                >
-                  <img
-                    src={categoryImages[name] || catCustom}
-                    alt={name}
-                    className="w-full h-full object-cover transition-transform duration-700 will-change-transform group-hover:scale-110"
-                    loading="lazy"
-                    decoding="async"
-                  />
+          <div className="grid gap-4 md:gap-6" style={{ gridTemplateColumns: `repeat(${Math.min(cols, 2)}, 1fr)` }} data-desktop-cols={cols}>
+            <style>{`@media(min-width:768px){[data-desktop-cols="${cols}"]{grid-template-columns:repeat(${cols},1fr)!important}}`}</style>
+            {displayOccasions.slice(0, cols).map((name, i) => (
+              <motion.div key={name} initial={{ opacity: 0, y: 40, scale: 0.9 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.12, type: "spring", stiffness: 100 }}>
+                <Link to={`/shop?occasion=${name}`} className={`group block relative rounded-2xl overflow-hidden ${aspectCls}`}>
+                  <img src={categoryImages[name] || catCustom} alt={name} className="w-full h-full object-cover transition-transform duration-700 will-change-transform group-hover:scale-110" loading="lazy" decoding="async" />
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent group-hover:from-foreground/80 transition-all duration-500" />
-                  <motion.div
-                    className="absolute bottom-4 left-4"
-                    whileHover={{ x: 5 }}
-                  >
+                  <motion.div className="absolute bottom-4 left-4" whileHover={{ x: 5 }}>
                     <h3 className="text-lg font-display font-bold text-background">{name}</h3>
                     <span className="text-xs text-background/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Shop Now →</span>
                   </motion.div>
