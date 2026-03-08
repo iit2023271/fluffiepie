@@ -1268,6 +1268,23 @@ function FaqEditor({ data, onChange }: { data: CustomSectionData; onChange: (u: 
         <div><Label className="text-xs">Section Title</Label><Input value={data.faqTitle || ""} onChange={e => onChange({ faqTitle: e.target.value })} className="mt-1" /></div>
         <div><Label className="text-xs">Section Subtitle</Label><Input value={data.faqSubtitle || ""} onChange={e => onChange({ faqSubtitle: e.target.value })} className="mt-1" /></div>
       </div>
+      {/* Preview */}
+      <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview ({faqs.length} questions)</p>
+        <div className="text-center mb-2">
+          {data.faqTitle && <p className="text-sm font-bold">{data.faqTitle}</p>}
+          {data.faqSubtitle && <p className="text-[10px] text-muted-foreground">{data.faqSubtitle}</p>}
+        </div>
+        <div className="space-y-1 max-w-xs mx-auto">
+          {faqs.slice(0, 3).map((faq, i) => (
+            <div key={i} className="p-1.5 rounded-lg border bg-background text-[8px]">
+              <p className="font-semibold truncate">{faq.question}</p>
+              <p className="text-muted-foreground truncate">{faq.answer}</p>
+            </div>
+          ))}
+          {faqs.length > 3 && <p className="text-[8px] text-muted-foreground text-center">+{faqs.length - 3} more</p>}
+        </div>
+      </div>
       <div className="flex items-center justify-between">
         <Label className="text-xs font-semibold uppercase tracking-wider">Questions</Label>
         <Button variant="outline" size="sm" onClick={() => onChange({ faqs: [...faqs, { question: "New question?", answer: "Answer here." }] })} className="gap-1 text-xs h-7"><Plus className="w-3 h-3" /> Add</Button>
