@@ -459,6 +459,19 @@ export default function AdminUsers() {
         confirmLabel="Remove"
         onConfirm={() => { removeTag(removeTagConfirm.userId, removeTagConfirm.tag); setRemoveTagConfirm({ open: false, userId: "", tag: "" }); }}
       />
+
+      <ConfirmDialog
+        open={adminConfirm.open}
+        onOpenChange={(open) => setAdminConfirm(prev => ({ ...prev, open }))}
+        title={adminConfirm.isAdmin ? "Remove Admin Access" : "Grant Admin Access"}
+        description={adminConfirm.isAdmin
+          ? `Remove admin privileges from ${adminConfirm.name}? They will no longer be able to access the admin panel.`
+          : `Make ${adminConfirm.name} an admin? They will have full access to the admin panel including orders, products, and settings.`
+        }
+        confirmLabel={adminConfirm.isAdmin ? "Remove Admin" : "Make Admin"}
+        variant={adminConfirm.isAdmin ? "destructive" : "default"}
+        onConfirm={() => { toggleAdmin(adminConfirm.userId, adminConfirm.isAdmin); setAdminConfirm({ open: false, userId: "", isAdmin: false, name: "" }); }}
+      />
     </div>
   );
 }
