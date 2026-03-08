@@ -437,12 +437,17 @@ export default function Dashboard() {
                       <span className="font-semibold">Total: ₹{order.total.toLocaleString()}</span>
                       <div className="flex items-center gap-3">
                         {canCancelOrder(order) && (
-                          <button
-                            onClick={() => setCancelConfirm({ open: true, orderId: order.id })}
-                            className="flex items-center gap-1.5 text-xs font-medium text-destructive hover:underline"
-                          >
-                            <XCircle className="w-3.5 h-3.5" /> Cancel Order
-                          </button>
+                          <div className="flex flex-col items-end gap-1">
+                            <button
+                              onClick={() => setCancelConfirm({ open: true, orderId: order.id })}
+                              className="flex items-center gap-1.5 text-xs font-medium text-destructive hover:underline"
+                            >
+                              <XCircle className="w-3.5 h-3.5" /> Cancel Order
+                            </button>
+                            <span className="text-[10px] text-muted-foreground">
+                              ⏳ {getRemainingCancelMinutes(order)} min left to cancel
+                            </span>
+                          </div>
                         )}
                         {storeInfo.whatsappNumber && (
                           <button
