@@ -414,8 +414,14 @@ export default function Index() {
           muted: "bg-muted text-foreground",
         };
         return (
-          <section key={section.id} className={`py-16 ${bgMap[data.ctaBg || "primary"]}`}>
-            <div className="container mx-auto px-4 text-center">
+          <section key={section.id} className={`relative py-16 overflow-hidden ${data.ctaBgImage ? "text-background" : bgMap[data.ctaBg || "primary"]}`}>
+            {data.ctaBgImage && (
+              <>
+                <img src={data.ctaBgImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-foreground/50" />
+              </>
+            )}
+            <div className="container mx-auto px-4 text-center relative z-10">
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
                 {data.ctaTitle && <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{data.ctaTitle}</h2>}
                 {data.ctaSubtitle && <p className="text-lg opacity-80 mb-6 max-w-lg mx-auto">{data.ctaSubtitle}</p>}
@@ -423,7 +429,7 @@ export default function Index() {
                   <Link
                     to={data.ctaButtonLink}
                     className={`inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-medium transition-opacity hover:opacity-90 shadow-card ${
-                      data.ctaBg === "primary" ? "bg-background text-foreground" : "bg-primary text-primary-foreground"
+                      data.ctaBgImage ? "bg-background text-foreground" : data.ctaBg === "primary" ? "bg-background text-foreground" : "bg-primary text-primary-foreground"
                     }`}
                   >
                     {data.ctaButtonText} <ArrowRight className="w-4 h-4" />
