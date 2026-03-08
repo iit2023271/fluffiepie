@@ -173,7 +173,9 @@ export default function AdminOrders() {
 
   const updateStatus = async (orderId: string, newStatus: string) => {
     const order = orders.find(o => o.id === orderId);
-    const composeWindow = order ? window.open("about:blank", "_blank") : null;
+    const shouldNotify = notificationSettings[newStatus] ?? true;
+    const composeWindow = order && shouldNotify ? window.open("about:blank", "_blank") : null;
+
     const { error } = await supabase.from("orders").update({ status: newStatus }).eq("id", orderId);
     if (error) {
       if (composeWindow && !composeWindow.closed) composeWindow.close();
@@ -181,7 +183,7 @@ export default function AdminOrders() {
     }
     else {
       toast.success(`Order updated to "${STATUS_CONFIG[newStatus]?.label || newStatus}"`);
-      if (order) sendNotification(order, newStatus, composeWindow);
+      if (order && shouldNotify) sendNotification(order, newStatus, composeWindow);
       loadOrders();
     }
   };
