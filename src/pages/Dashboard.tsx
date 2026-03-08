@@ -43,6 +43,8 @@ export default function Dashboard() {
   const [orderSearch, setOrderSearch] = useState("");
   const [orderStatusFilter, setOrderStatusFilter] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
+  const [reviewingOrder, setReviewingOrder] = useState<Order | null>(null);
+  const [existingReviews, setExistingReviews] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
