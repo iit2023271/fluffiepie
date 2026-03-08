@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parse, startOfDay, endOfDay, addDays, isToday, isTomorrow, isYesterday } from "date-fns";
-import { ChefHat, Calendar as CalendarIcon, Printer, CheckCircle2, Circle, Clock, Truck, Download } from "lucide-react";
+import { ChefHat, Calendar as CalendarIcon, Printer, CheckCircle2, Circle, Clock, Truck, Download, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -54,15 +54,44 @@ export default function AdminKitchen() {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  const dateKey = (d: Date) => `kitchen-prep-${format(d, "yyyy-MM-dd")}`;
+
+  // Load saved checked items from localStorage when date changes
+  const loadSavedChecks = (date: Date) => {
+    try {
+      const saved = localStorage.getItem(dateKey(date));
+      if (saved) {
+        setCheckedItems(new Set(JSON.parse(saved)));
+      } else {
+        setCheckedItems(new Set());
+      }
+    } catch {
+      setCheckedItems(new Set());
+    }
+    setHasUnsavedChanges(false);
+  };
+
+  // Save checked items to localStorage
+  const saveCheckedItems = () => {
+    try {
+      localStorage.setItem(dateKey(selectedDate), JSON.stringify(Array.from(checkedItems)));
+      setHasUnsavedChanges(false);
+      toast.success("Prep progress saved!");
+    } catch {
+      toast.error("Failed to save progress");
+    }
+  };
 
   // Load a wide range of orders and filter client-side by resolved delivery date
   useEffect(() => {
     loadOrders();
+    loadSavedChecks(selectedDate);
   }, [selectedDate]);
 
   const loadOrders = async () => {
     setLoading(true);
-    // Fetch orders from 2 days before to 2 days after to cover "Today/Tomorrow" slots
     const rangeStart = addDays(startOfDay(selectedDate), -2).toISOString();
     const rangeEnd = endOfDay(addDays(selectedDate, 1)).toISOString();
 
@@ -124,6 +153,7 @@ export default function AdminKitchen() {
       next.has(key) ? next.delete(key) : next.add(key);
       return next;
     });
+    setHasUnsavedChanges(true);
   };
 
   const dateLabel = useMemo(() => {
@@ -139,7 +169,6 @@ export default function AdminKitchen() {
 
   const goToDate = (offset: number) => {
     setSelectedDate((d) => addDays(d, offset));
-    setCheckedItems(new Set());
   };
 
   return (
@@ -172,6 +201,11 @@ export default function AdminKitchen() {
           <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={() => window.print()}>
             <Printer className="w-3.5 h-3.5" /> Print Sheet
           </Button>
+          {hasUnsavedChanges && (
+            <Button size="sm" className="text-xs gap-1.5 animate-pulse" onClick={saveCheckedItems}>
+              <Save className="w-3.5 h-3.5" /> Save Progress
+            </Button>
+          )}
         </div>
       </div>
 
@@ -193,7 +227,7 @@ export default function AdminKitchen() {
             <Calendar
               mode="single"
               selected={selectedDate}
-              onSelect={(d) => { if (d) { setSelectedDate(d); setCheckedItems(new Set()); } }}
+              onSelect={(d) => { if (d) setSelectedDate(d); }}
               initialFocus
               className={cn("p-3 pointer-events-auto")}
             />
@@ -206,7 +240,7 @@ export default function AdminKitchen() {
 
         {!isToday(selectedDate) && (
           <Button variant="ghost" size="sm" className="text-xs"
-            onClick={() => { setSelectedDate(new Date()); setCheckedItems(new Set()); }}>
+            onClick={() => setSelectedDate(new Date())}>
             Go to Today
           </Button>
         )}
