@@ -7,8 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { GripVertical, Eye, EyeOff, Save, RotateCcw, ChevronDown, ChevronUp, Plus, Trash2, Copy, Type, Megaphone, Grid3X3, HelpCircle, Minus, Image } from "lucide-react";
+import { GripVertical, Eye, EyeOff, Save, RotateCcw, ChevronDown, ChevronUp, Plus, Trash2, Copy, Type, Megaphone, Grid3X3, HelpCircle, Minus, Image, Upload, Crop } from "lucide-react";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
+import ImageCropper from "@/components/admin/ImageCropper";
 import {
   HomepageConfig,
   DEFAULT_HOMEPAGE_CONFIG,
