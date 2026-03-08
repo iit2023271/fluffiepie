@@ -85,7 +85,7 @@ function HeroBannerCarousel() {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: 0.5, ease: "easeInOut" }}
+            transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
             className="absolute inset-0"
           >
             {banner.image_url ? (
