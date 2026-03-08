@@ -42,7 +42,8 @@ export default function Checkout() {
   const [deliveryTime, setDeliveryTime] = useState("");
 
   const applyCoupon = async () => {
-    if (!coupon.trim()) { toast.error("Enter a coupon code"); return; }
+    const parsed = couponSchema.safeParse(coupon);
+    if (!parsed.success) { toast.error("Enter a valid coupon code"); return; }
     const { data, error } = await supabase
       .from("coupons")
       .select("*")
