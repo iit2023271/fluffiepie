@@ -479,15 +479,40 @@ export default function AdminOrders() {
                           )}
                         </div>
                         <div className="flex items-center gap-2">
-                          {/* Quick next-step button */}
-                          {nextStatus && (
+                          {/* Undo / Go back button for delivered or cancelled */}
+                          {getPrevStatus(order.status) && !nextStatus && (
                             <Button
                               size="sm"
-                              className="text-xs h-8 gap-1.5 rounded-xl"
-                              onClick={() => handleStatusChange(order.id, nextStatus)}
+                              variant="outline"
+                              className="text-xs h-8 gap-1.5 rounded-xl border-amber-300 text-amber-700 hover:bg-amber-50"
+                              onClick={() => setUndoConfirm({ open: true, orderId: order.id, prevStatus: getPrevStatus(order.status)! })}
                             >
-                              {STATUS_CONFIG[nextStatus].emoji} Mark {STATUS_CONFIG[nextStatus].label}
+                              <Undo2 className="w-3.5 h-3.5" /> Undo to {STATUS_CONFIG[getPrevStatus(order.status)!]?.label}
                             </Button>
+                          )}
+
+                          {/* Quick next-step button */}
+                          {nextStatus && (
+                            <>
+                              {getPrevStatus(order.status) && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="text-xs h-8 px-2 rounded-xl text-muted-foreground hover:text-amber-700"
+                                  onClick={() => setUndoConfirm({ open: true, orderId: order.id, prevStatus: getPrevStatus(order.status)! })}
+                                  title={`Undo to ${STATUS_CONFIG[getPrevStatus(order.status)!]?.label}`}
+                                >
+                                  <Undo2 className="w-3.5 h-3.5" />
+                                </Button>
+                              )}
+                              <Button
+                                size="sm"
+                                className="text-xs h-8 gap-1.5 rounded-xl"
+                                onClick={() => handleStatusChange(order.id, nextStatus)}
+                              >
+                                {STATUS_CONFIG[nextStatus].emoji} Mark {STATUS_CONFIG[nextStatus].label}
+                              </Button>
+                            </>
                           )}
 
                           {/* Status dropdown for manual selection */}
