@@ -483,7 +483,7 @@ export default function Index() {
         const overlayOpacity = data.ctaOverlayOpacity ?? 50;
 
         return (
-          <section key={section.id} className={`relative overflow-hidden flex items-center ${heightMap[height]} ${data.ctaBgImage ? "text-background" : bgMap[data.ctaBg || "primary"]}`}>
+          <section key={section.id} className={`relative overflow-hidden flex items-center ${heightMap[height]} ${data.ctaBgImage ? "text-background" : bgMap[data.ctaBg || "primary"]}`} style={height === "custom" && data.ctaCustomHeight ? { minHeight: `${data.ctaCustomHeight}px` } : undefined}>
             {data.ctaBgImage && (
               <>
                 <img
