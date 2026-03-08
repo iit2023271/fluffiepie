@@ -1,10 +1,11 @@
-import { useState, useCallback, useEffect, useRef } from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, ShoppingCart, Heart, Minus, Plus, ChevronLeft, Truck, Shield, Clock, X, ChevronRight, ZoomIn } from "lucide-react";
 import { useProduct, useProducts } from "@/hooks/useProducts";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSEO } from "@/hooks/useSEO";
 import { useCart } from "@/context/CartContext";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import ProductCard from "@/components/ProductCard";
@@ -34,6 +35,42 @@ export default function ProductDetail() {
   useEffect(() => {
     if (product) addViewed(product.id);
   }, [product?.id]);
+
+  // SEO: meta tags + JSON-LD structured data
+  const jsonLd = useMemo(() => {
+    if (!product) return undefined;
+    return {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: product.name,
+      description: product.description,
+      image: product.image,
+      sku: product.id,
+      brand: { "@type": "Brand", name: "FluffiePie" },
+      category: product.category,
+      offers: {
+        "@type": "AggregateOffer",
+        priceCurrency: "INR",
+        lowPrice: Math.min(...product.weights.map(w => w.price)),
+        highPrice: Math.max(...product.weights.map(w => w.price)),
+        availability: (product.stockQuantity ?? 100) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        offerCount: product.weights.length,
+      },
+      aggregateRating: product.reviewCount > 0 ? {
+        "@type": "AggregateRating",
+        ratingValue: product.rating,
+        reviewCount: product.reviewCount,
+      } : undefined,
+    };
+  }, [product]);
+
+  useSEO({
+    title: product?.name,
+    description: product ? `${product.description.slice(0, 155)}…` : undefined,
+    image: product?.image,
+    type: "product",
+    jsonLd,
+  });
 
   if (isLoading) {
     return (
