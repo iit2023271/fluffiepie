@@ -18,7 +18,7 @@ import {
   CUSTOM_TYPE_LABELS,
   getDefaultCustomData,
 } from "@/hooks/useHomepageConfig";
-import type { HomepageSection, CustomSectionType, CustomSectionData } from "@/hooks/useHomepageConfig";
+import type { HomepageSection, CustomSectionType, CustomSectionData, FooterColumn } from "@/hooks/useHomepageConfig";
 
 const CUSTOM_TYPE_ICONS: Record<CustomSectionType, typeof Type> = {
   text_block: Type,
@@ -159,6 +159,38 @@ export default function AdminHomepage() {
   const addStep = () => setConfig(prev => ({ ...prev, howItWorks: { ...prev.howItWorks, steps: [...prev.howItWorks.steps, { emoji: "⭐", title: "New Step", desc: "Description" }] } }));
   const removeStep = (idx: number) => setConfig(prev => ({ ...prev, howItWorks: { ...prev.howItWorks, steps: prev.howItWorks.steps.filter((_, i) => i !== idx) } }));
   const updateReviews = (field: string, value: string | number) => setConfig(prev => ({ ...prev, reviews: { ...prev.reviews, [field]: value } }));
+  const updateFooter = (field: string, value: any) => setConfig(prev => ({ ...prev, footer: { ...prev.footer, [field]: value } }));
+  const updateFooterColumn = (colIdx: number, field: string, value: any) => {
+    setConfig(prev => ({
+      ...prev,
+      footer: { ...prev.footer, columns: prev.footer.columns.map((c, i) => i === colIdx ? { ...c, [field]: value } : c) },
+    }));
+  };
+  const updateFooterLink = (colIdx: number, linkIdx: number, field: string, value: string) => {
+    setConfig(prev => ({
+      ...prev,
+      footer: {
+        ...prev.footer,
+        columns: prev.footer.columns.map((c, ci) =>
+          ci === colIdx ? { ...c, links: c.links.map((l, li) => li === linkIdx ? { ...l, [field]: value } : l) } : c
+        ),
+      },
+    }));
+  };
+  const addFooterColumn = () => setConfig(prev => ({ ...prev, footer: { ...prev.footer, columns: [...prev.footer.columns, { title: "New Column", links: [{ label: "Link", url: "#" }] }] } }));
+  const removeFooterColumn = (idx: number) => setConfig(prev => ({ ...prev, footer: { ...prev.footer, columns: prev.footer.columns.filter((_, i) => i !== idx) } }));
+  const addFooterLink = (colIdx: number) => {
+    setConfig(prev => ({
+      ...prev,
+      footer: { ...prev.footer, columns: prev.footer.columns.map((c, i) => i === colIdx ? { ...c, links: [...c.links, { label: "New Link", url: "#" }] } : c) },
+    }));
+  };
+  const removeFooterLink = (colIdx: number, linkIdx: number) => {
+    setConfig(prev => ({
+      ...prev,
+      footer: { ...prev.footer, columns: prev.footer.columns.map((c, ci) => ci === colIdx ? { ...c, links: c.links.filter((_, li) => li !== linkIdx) } : c) },
+    }));
+  };
 
   const toggleExpand = (id: string) => setExpandedSection(prev => prev === id ? null : id);
   const isSectionVisible = (id: string) => config.sections.find(s => s.id === id)?.visible ?? true;
@@ -450,6 +482,71 @@ export default function AdminHomepage() {
             <div><Label className="text-xs">Reviews to Show</Label><Input type="number" min={1} max={9} value={config.reviews.count} onChange={e => updateReviews("count", parseInt(e.target.value) || 3)} className="mt-1" /></div>
           </div>
           <p className="text-xs text-muted-foreground mt-3">Reviews are automatically pulled from your database (4+ stars with comments).</p>
+        </SectionEditor>
+
+        {/* Footer Editor */}
+        <SectionEditor id="footer" label="Footer" expanded={expandedSection === "footer"} onToggle={() => toggleExpand("footer")} visible={true}>
+          <div className="space-y-5">
+            <div>
+              <Label className="text-xs">Brand Description</Label>
+              <Textarea value={config.footer.brandDescription} onChange={e => updateFooter("brandDescription", e.target.value)} className="mt-1" rows={2} />
+            </div>
+
+            {/* Footer Columns */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <Label className="text-xs font-semibold uppercase tracking-wider">Link Columns</Label>
+                <Button variant="outline" size="sm" onClick={addFooterColumn} className="gap-1 text-xs h-7" disabled={config.footer.columns.length >= 4}>
+                  <Plus className="w-3 h-3" /> Add Column
+                </Button>
+              </div>
+              <div className="space-y-4">
+                {config.footer.columns.map((col, colIdx) => (
+                  <div key={colIdx} className="p-4 rounded-xl border border-border bg-muted/20 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Input value={col.title} onChange={e => updateFooterColumn(colIdx, "title", e.target.value)} className="flex-1 h-8 text-sm font-semibold" placeholder="Column title" />
+                      <Button variant="ghost" size="sm" onClick={() => removeFooterColumn(colIdx)} disabled={config.footer.columns.length <= 1} className="text-destructive hover:text-destructive h-8 px-2">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                    {col.links.map((link, linkIdx) => (
+                      <div key={linkIdx} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
+                        <Input value={link.label} onChange={e => updateFooterLink(colIdx, linkIdx, "label", e.target.value)} className="h-7 text-xs" placeholder="Label" />
+                        <Input value={link.url} onChange={e => updateFooterLink(colIdx, linkIdx, "url", e.target.value)} className="h-7 text-xs" placeholder="/path or URL" />
+                        <button onClick={() => removeFooterLink(colIdx, linkIdx)} disabled={col.links.length <= 1} className="p-1 rounded hover:bg-destructive/10 disabled:opacity-30">
+                          <Trash2 className="w-3 h-3 text-destructive" />
+                        </button>
+                      </div>
+                    ))}
+                    <Button variant="outline" size="sm" onClick={() => addFooterLink(colIdx)} className="gap-1 text-xs h-6 w-full">
+                      <Plus className="w-3 h-3" /> Add Link
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Newsletter Toggle */}
+            <div className="flex items-center justify-between p-3 rounded-xl border border-border">
+              <div>
+                <Label className="text-xs font-semibold">Newsletter Section</Label>
+                <p className="text-[10px] text-muted-foreground">Email signup in footer</p>
+              </div>
+              <Switch checked={config.footer.newsletterEnabled} onCheckedChange={v => updateFooter("newsletterEnabled", v)} />
+            </div>
+
+            {config.footer.newsletterEnabled && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div><Label className="text-xs">Newsletter Title</Label><Input value={config.footer.newsletterTitle} onChange={e => updateFooter("newsletterTitle", e.target.value)} className="mt-1" /></div>
+                <div><Label className="text-xs">Newsletter Subtitle</Label><Input value={config.footer.newsletterSubtitle} onChange={e => updateFooter("newsletterSubtitle", e.target.value)} className="mt-1" /></div>
+              </div>
+            )}
+
+            <div>
+              <Label className="text-xs">Copyright Text</Label>
+              <Input value={config.footer.copyrightText} onChange={e => updateFooter("copyrightText", e.target.value)} className="mt-1" />
+            </div>
+          </div>
         </SectionEditor>
 
         {/* Custom Section Editors */}

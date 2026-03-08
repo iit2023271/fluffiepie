@@ -87,6 +87,25 @@ export interface SectionNavConfig {
   items: SectionNavItem[];
 }
 
+export interface FooterLink {
+  label: string;
+  url: string;
+}
+
+export interface FooterColumn {
+  title: string;
+  links: FooterLink[];
+}
+
+export interface FooterConfig {
+  brandDescription: string;
+  columns: FooterColumn[];
+  newsletterEnabled: boolean;
+  newsletterTitle: string;
+  newsletterSubtitle: string;
+  copyrightText: string;
+}
+
 export interface HomepageConfig {
   sections: HomepageSection[];
   hero: HeroConfig;
@@ -95,6 +114,7 @@ export interface HomepageConfig {
   howItWorks: HowItWorksConfig;
   reviews: ReviewsConfig;
   sectionNav: SectionNavConfig;
+  footer: FooterConfig;
 }
 
 export const BUILTIN_SECTION_IDS = ["banners", "hero", "categories", "trending", "howItWorks", "reviews"];
@@ -149,6 +169,33 @@ export const DEFAULT_HOMEPAGE_CONFIG: HomepageConfig = {
       { sectionId: "howItWorks", label: "How It Works", visible: true },
       { sectionId: "reviews", label: "Reviews", visible: true },
     ],
+  },
+  footer: {
+    brandDescription: "Handcrafted with love. Delivering happiness, one slice at a time. Premium cakes for every occasion.",
+    columns: [
+      {
+        title: "Quick Links",
+        links: [
+          { label: "Shop All", url: "/shop" },
+          { label: "Birthday Cakes", url: "/shop?occasion=Birthday" },
+          { label: "Wedding Cakes", url: "/shop?occasion=Wedding" },
+          { label: "Custom Orders", url: "/shop?occasion=Custom" },
+        ],
+      },
+      {
+        title: "Support",
+        links: [
+          { label: "Contact Us", url: "#" },
+          { label: "FAQs", url: "#" },
+          { label: "Shipping Info", url: "#" },
+          { label: "Returns", url: "#" },
+        ],
+      },
+    ],
+    newsletterEnabled: true,
+    newsletterTitle: "Newsletter",
+    newsletterSubtitle: "Get fresh updates & sweet deals.",
+    copyrightText: "© 2026 SweetCrumbs. All rights reserved.",
   },
 };
 
@@ -219,6 +266,7 @@ export function useHomepageConfig() {
             howItWorks: { ...DEFAULT_HOMEPAGE_CONFIG.howItWorks, ...(parsed.howItWorks || {}) },
             reviews: { ...DEFAULT_HOMEPAGE_CONFIG.reviews, ...(parsed.reviews || {}) },
             sectionNav: { ...DEFAULT_HOMEPAGE_CONFIG.sectionNav, ...(parsed.sectionNav || {}), items: parsed.sectionNav?.items || DEFAULT_HOMEPAGE_CONFIG.sectionNav.items },
+            footer: { ...DEFAULT_HOMEPAGE_CONFIG.footer, ...(parsed.footer || {}), columns: parsed.footer?.columns || DEFAULT_HOMEPAGE_CONFIG.footer.columns },
             sections: parsed.sections || DEFAULT_HOMEPAGE_CONFIG.sections,
           });
         } catch { /* use defaults */ }
