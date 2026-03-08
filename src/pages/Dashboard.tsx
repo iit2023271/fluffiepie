@@ -49,7 +49,7 @@ export default function Dashboard() {
   const loadData = async () => {
     setLoading(true);
     const [ordersRes, profileRes] = await Promise.all([
-      supabase.from("orders").select("*").order("created_at", { ascending: false }),
+      supabase.from("orders").select("*").eq("user_id", user!.id).order("created_at", { ascending: false }),
       supabase.from("profiles").select("full_name, phone").eq("user_id", user!.id).single(),
     ]);
     if (ordersRes.data) setOrders(ordersRes.data);
