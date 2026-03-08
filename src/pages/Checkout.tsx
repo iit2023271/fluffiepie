@@ -135,7 +135,7 @@ export default function Checkout() {
       user_id: user.id,
       items: orderItems,
       delivery_address: deliveryAddress,
-      delivery_slot: `${deliveryDay}, ${deliverySlot}`,
+      delivery_slot: `${format(deliveryDate!, "dd MMM yyyy")}, ${deliveryTime}`,
       subtotal: totalPrice,
       discount,
       delivery_fee: deliveryFee,
