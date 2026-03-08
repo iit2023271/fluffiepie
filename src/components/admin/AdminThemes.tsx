@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Check, Paintbrush, RotateCcw, Sparkles, Eye, Plus, Trash2 } from "lucide-react";
+import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -67,6 +68,7 @@ export default function AdminThemes() {
   const [previewingId, setPreviewingId] = useState<string | null>(null);
   const [customPresets, setCustomPresets] = useState<(ThemeConfig & { dbId?: string })[]>([]);
   const [showNewPreset, setShowNewPreset] = useState(false);
+  const [deletePresetConfirm, setDeletePresetConfirm] = useState<{ open: boolean; preset: (ThemeConfig & { dbId?: string }) | null }>({ open: false, preset: null });
   const [newPreset, setNewPreset] = useState({
     name: "", emoji: "🎉", description: "", bannerText: "",
     colors: { ...DEFAULT_COLORS },
@@ -303,7 +305,7 @@ export default function AdminThemes() {
                   </div>
                 </button>
                 {preset.isCustom && (
-                  <button onClick={() => deleteCustomPreset(preset)}
+                  <button onClick={() => setDeletePresetConfirm({ open: true, preset })}
                     className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md active:scale-90"
                     title="Delete preset">
                     <Trash2 className="w-3 h-3" />
@@ -466,6 +468,15 @@ export default function AdminThemes() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={deletePresetConfirm.open}
+        onOpenChange={(open) => setDeletePresetConfirm(prev => ({ ...prev, open }))}
+        title="Delete Theme Preset"
+        description={`Are you sure you want to delete "${deletePresetConfirm.preset?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={() => { if (deletePresetConfirm.preset) deleteCustomPreset(deletePresetConfirm.preset); setDeletePresetConfirm({ open: false, preset: null }); }}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Mail, MailOpen, Trash2, Search, RefreshCw, X, User } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import ConfirmDialog from "@/components/admin/ConfirmDialog";
 
 interface ContactMessage {
   id: string;
@@ -23,6 +24,7 @@ export default function AdminMessages() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
   const [selected, setSelected] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id: string }>({ open: false, id: "" });
 
   const load = async () => {
     setLoading(true);
@@ -216,7 +218,7 @@ export default function AdminMessages() {
                     {selectedMsg.is_read ? <Mail className="w-4 h-4" /> : <MailOpen className="w-4 h-4" />}
                   </button>
                   <button
-                    onClick={() => deleteMsg(selectedMsg.id)}
+                    onClick={() => setDeleteConfirm({ open: true, id: selectedMsg.id })}
                     className="p-2 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
                     title="Delete"
                   >
@@ -264,6 +266,15 @@ export default function AdminMessages() {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={(open) => setDeleteConfirm(prev => ({ ...prev, open }))}
+        title="Delete Message"
+        description="Are you sure you want to delete this message? This action cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={() => { deleteMsg(deleteConfirm.id); setDeleteConfirm({ open: false, id: "" }); }}
+      />
     </div>
   );
 }
