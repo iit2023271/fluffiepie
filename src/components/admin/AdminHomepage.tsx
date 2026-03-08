@@ -153,8 +153,8 @@ export default function AdminHomepage() {
   };
 
   // Built-in section updaters
-  const updateHero = (field: string, value: string) => setConfig(prev => ({ ...prev, hero: { ...prev.hero, [field]: value } }));
-  const updateCategories = (field: string, value: string) => setConfig(prev => ({ ...prev, categories: { ...prev.categories, [field]: value } }));
+  const updateHero = (field: string, value: any) => setConfig(prev => ({ ...prev, hero: { ...prev.hero, [field]: value } }));
+  const updateCategories = (field: string, value: any) => setConfig(prev => ({ ...prev, categories: { ...prev.categories, [field]: value } }));
   const updateTrending = (field: string, value: string | number) => setConfig(prev => ({ ...prev, trending: { ...prev.trending, [field]: value } }));
   const updateHowItWorks = (field: string, value: string) => setConfig(prev => ({ ...prev, howItWorks: { ...prev.howItWorks, [field]: value } }));
   const updateStep = (idx: number, field: string, value: string) => {
@@ -409,55 +409,102 @@ export default function AdminHomepage() {
 
           if (section.id === "hero") return (
             <SectionEditor key="hero" id="hero" label="Hero Section" expanded={expandedSection === "hero"} onToggle={() => toggleExpand("hero")} visible={isSectionVisible("hero")}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><Label className="text-xs">Badge Text</Label><Input value={config.hero.badge} onChange={e => updateHero("badge", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Title Line 1</Label><Input value={config.hero.titleLine1} onChange={e => updateHero("titleLine1", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Title Line 2 (highlighted)</Label><Input value={config.hero.titleLine2} onChange={e => updateHero("titleLine2", e.target.value)} className="mt-1" /></div>
-                <div className="md:col-span-2"><Label className="text-xs">Subtitle</Label><Textarea value={config.hero.subtitle} onChange={e => updateHero("subtitle", e.target.value)} className="mt-1" rows={2} /></div>
-                <div><Label className="text-xs">Primary CTA Text</Label><Input value={config.hero.ctaPrimaryText} onChange={e => updateHero("ctaPrimaryText", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Primary CTA Link</Label><Input value={config.hero.ctaPrimaryLink} onChange={e => updateHero("ctaPrimaryLink", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Secondary CTA Text</Label><Input value={config.hero.ctaSecondaryText} onChange={e => updateHero("ctaSecondaryText", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Secondary CTA Link</Label><Input value={config.hero.ctaSecondaryLink} onChange={e => updateHero("ctaSecondaryLink", e.target.value)} className="mt-1" /></div>
-                <div className="md:col-span-2">
-                  <Label className="text-xs">Hero Image</Label>
-                  <div className="mt-1 flex items-center gap-3">
-                    {config.hero.heroImage && (
-                      <img src={config.hero.heroImage} alt="Hero preview" className="w-20 h-20 rounded-xl object-cover border border-border" />
-                    )}
-                    <label className="flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed border-border bg-muted/30 hover:bg-muted/60 cursor-pointer transition-colors text-sm text-muted-foreground">
-                      <Upload className="w-4 h-4" /> Upload Image
-                      <input type="file" accept="image/*" className="hidden" onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        setHeroCropState({ open: true, src: URL.createObjectURL(file) });
-                        e.target.value = "";
-                      }} />
-                    </label>
-                    {config.hero.heroImage && (
-                      <>
-                        <button onClick={() => setHeroCropState({ open: true, src: config.hero.heroImage! })} className="flex items-center gap-1 px-3 py-2 border border-border rounded-xl text-sm hover:bg-secondary">
-                          <Crop className="w-4 h-4" /> Crop
-                        </button>
-                        <button onClick={() => updateHero("heroImage", "")} className="text-xs text-destructive hover:underline">Remove</button>
-                      </>
-                    )}
+              <div className="space-y-5">
+                {/* Layout Controls */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 rounded-xl bg-muted/50 border">
+                  <div>
+                    <Label className="text-xs">📐 Hero Height</Label>
+                    <Select value={config.hero.heroHeight || "default"} onValueChange={v => updateHero("heroHeight", v)}>
+                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="compact">Compact</SelectItem>
+                        <SelectItem value="default">Default</SelectItem>
+                        <SelectItem value="tall">Tall</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-1">Leave empty to use the default cake image</p>
-                  <ImageCropper
-                    open={heroCropState.open}
-                    imageSrc={heroCropState.src}
-                    aspect={16 / 9}
-                    onClose={() => setHeroCropState({ open: false, src: "" })}
-                    onCropComplete={async (blob) => {
-                      const path = `hero/hero-image-${Date.now()}_cropped.jpg`;
-                      const { error } = await supabase.storage.from("homepage-assets").upload(path, blob, { contentType: "image/jpeg", upsert: true });
-                      if (error) { toast.error("Upload failed"); setHeroCropState({ open: false, src: "" }); return; }
-                      const { data: urlData } = supabase.storage.from("homepage-assets").getPublicUrl(path);
-                      updateHero("heroImage", urlData.publicUrl);
-                      setHeroCropState({ open: false, src: "" });
-                      toast.success("Image cropped & uploaded!");
-                    }}
-                  />
+                  <div>
+                    <Label className="text-xs">🖼️ Image Position</Label>
+                    <Select value={config.hero.imagePosition || "right"} onValueChange={v => updateHero("imagePosition", v)}>
+                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="left">Left (Image first)</SelectItem>
+                        <SelectItem value="right">Right (Default)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Live Preview */}
+                <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview</p>
+                  <div className={`flex ${config.hero.imagePosition === "left" ? "flex-row-reverse" : "flex-row"} gap-4 items-center`}>
+                    <div className="flex-1 min-w-0">
+                      <span className="inline-block px-2 py-0.5 bg-blush text-primary text-[8px] font-medium rounded-full mb-1">{config.hero.badge}</span>
+                      <p className="text-[10px] font-bold truncate">{config.hero.titleLine1}</p>
+                      <p className="text-[10px] font-bold text-primary truncate">{config.hero.titleLine2}</p>
+                      <p className="text-[8px] text-muted-foreground truncate">{config.hero.subtitle}</p>
+                      <div className="flex gap-1 mt-1">
+                        <span className="px-2 py-0.5 bg-primary text-primary-foreground text-[7px] rounded">{config.hero.ctaPrimaryText}</span>
+                        {config.hero.ctaSecondaryText && <span className="px-2 py-0.5 border text-[7px] rounded">{config.hero.ctaSecondaryText}</span>}
+                      </div>
+                    </div>
+                    <div className="w-20 h-16 rounded-lg overflow-hidden bg-muted shrink-0">
+                      {config.hero.heroImage ? <img src={config.hero.heroImage} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20" />}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div><Label className="text-xs">Badge Text</Label><Input value={config.hero.badge} onChange={e => updateHero("badge", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Title Line 1</Label><Input value={config.hero.titleLine1} onChange={e => updateHero("titleLine1", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Title Line 2 (highlighted)</Label><Input value={config.hero.titleLine2} onChange={e => updateHero("titleLine2", e.target.value)} className="mt-1" /></div>
+                  <div className="md:col-span-2"><Label className="text-xs">Subtitle</Label><Textarea value={config.hero.subtitle} onChange={e => updateHero("subtitle", e.target.value)} className="mt-1" rows={2} /></div>
+                  <div><Label className="text-xs">Primary CTA Text</Label><Input value={config.hero.ctaPrimaryText} onChange={e => updateHero("ctaPrimaryText", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Primary CTA Link</Label><Input value={config.hero.ctaPrimaryLink} onChange={e => updateHero("ctaPrimaryLink", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Secondary CTA Text</Label><Input value={config.hero.ctaSecondaryText} onChange={e => updateHero("ctaSecondaryText", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Secondary CTA Link</Label><Input value={config.hero.ctaSecondaryLink} onChange={e => updateHero("ctaSecondaryLink", e.target.value)} className="mt-1" /></div>
+                  <div className="md:col-span-2">
+                    <Label className="text-xs">Hero Image</Label>
+                    <div className="mt-1 flex items-center gap-3">
+                      {config.hero.heroImage && (
+                        <img src={config.hero.heroImage} alt="Hero preview" className="w-20 h-20 rounded-xl object-cover border border-border" />
+                      )}
+                      <label className="flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed border-border bg-muted/30 hover:bg-muted/60 cursor-pointer transition-colors text-sm text-muted-foreground">
+                        <Upload className="w-4 h-4" /> Upload Image
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setHeroCropState({ open: true, src: URL.createObjectURL(file) });
+                          e.target.value = "";
+                        }} />
+                      </label>
+                      {config.hero.heroImage && (
+                        <>
+                          <button onClick={() => setHeroCropState({ open: true, src: config.hero.heroImage! })} className="flex items-center gap-1 px-3 py-2 border border-border rounded-xl text-sm hover:bg-secondary">
+                            <Crop className="w-4 h-4" /> Crop
+                          </button>
+                          <button onClick={() => updateHero("heroImage", "")} className="text-xs text-destructive hover:underline">Remove</button>
+                        </>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-1">Leave empty to use the default cake image</p>
+                    <ImageCropper
+                      open={heroCropState.open}
+                      imageSrc={heroCropState.src}
+                      onClose={() => setHeroCropState({ open: false, src: "" })}
+                      showAspectPresets
+                      onCropComplete={async (blob) => {
+                        const path = `hero/hero-image-${Date.now()}_cropped.jpg`;
+                        const { error } = await supabase.storage.from("homepage-assets").upload(path, blob, { contentType: "image/jpeg", upsert: true });
+                        if (error) { toast.error("Upload failed"); setHeroCropState({ open: false, src: "" }); return; }
+                        const { data: urlData } = supabase.storage.from("homepage-assets").getPublicUrl(path);
+                        updateHero("heroImage", urlData.publicUrl);
+                        setHeroCropState({ open: false, src: "" });
+                        toast.success("Image cropped & uploaded!");
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </SectionEditor>
@@ -465,19 +512,76 @@ export default function AdminHomepage() {
 
           if (section.id === "categories") return (
             <SectionEditor key="categories" id="categories" label="Shop by Occasion" expanded={expandedSection === "categories"} onToggle={() => toggleExpand("categories")} visible={isSectionVisible("categories")}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><Label className="text-xs">Section Title</Label><Input value={config.categories.title} onChange={e => updateCategories("title", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Section Subtitle</Label><Input value={config.categories.subtitle} onChange={e => updateCategories("subtitle", e.target.value)} className="mt-1" /></div>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div><Label className="text-xs">Section Title</Label><Input value={config.categories.title} onChange={e => updateCategories("title", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Section Subtitle</Label><Input value={config.categories.subtitle} onChange={e => updateCategories("subtitle", e.target.value)} className="mt-1" /></div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 rounded-xl bg-muted/50 border">
+                  <div>
+                    <Label className="text-xs">🔲 Grid Columns</Label>
+                    <Select value={String(config.categories.columns || 4)} onValueChange={v => updateCategories("columns", parseInt(v))}>
+                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="2">2 Columns</SelectItem>
+                        <SelectItem value="3">3 Columns</SelectItem>
+                        <SelectItem value="4">4 Columns (Default)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs">📐 Card Shape</Label>
+                    <Select value={config.categories.cardAspect || "portrait"} onValueChange={v => updateCategories("cardAspect", v)}>
+                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="portrait">Portrait (Tall)</SelectItem>
+                        <SelectItem value="square">Square</SelectItem>
+                        <SelectItem value="landscape">Landscape (Wide)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                {/* Preview */}
+                <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview</p>
+                  <div className={`grid gap-1.5`} style={{ gridTemplateColumns: `repeat(${config.categories.columns || 4}, 1fr)` }}>
+                    {Array.from({ length: config.categories.columns || 4 }).map((_, i) => (
+                      <div key={i} className={`rounded bg-muted ${config.categories.cardAspect === "square" ? "aspect-square" : config.categories.cardAspect === "landscape" ? "aspect-video" : "aspect-[3/4]"}`} />
+                    ))}
+                  </div>
+                </div>
               </div>
             </SectionEditor>
           );
 
           if (section.id === "trending") return (
             <SectionEditor key="trending" id="trending" label="Trending Products" expanded={expandedSection === "trending"} onToggle={() => toggleExpand("trending")} visible={isSectionVisible("trending")}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div><Label className="text-xs">Section Title</Label><Input value={config.trending.title} onChange={e => updateTrending("title", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Section Subtitle</Label><Input value={config.trending.subtitle} onChange={e => updateTrending("subtitle", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Products to Show</Label><Input type="number" min={2} max={12} value={config.trending.count} onChange={e => updateTrending("count", parseInt(e.target.value) || 4)} className="mt-1" /></div>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div><Label className="text-xs">Section Title</Label><Input value={config.trending.title} onChange={e => updateTrending("title", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Section Subtitle</Label><Input value={config.trending.subtitle} onChange={e => updateTrending("subtitle", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Products to Show</Label><Input type="number" min={2} max={12} value={config.trending.count} onChange={e => updateTrending("count", parseInt(e.target.value) || 4)} className="mt-1" /></div>
+                </div>
+                <div className="p-3 rounded-xl bg-muted/50 border">
+                  <Label className="text-xs">🔲 Grid Columns</Label>
+                  <Select value={String(config.trending.columns || 4)} onValueChange={v => updateTrending("columns", parseInt(v))}>
+                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="2">2 Columns</SelectItem>
+                      <SelectItem value="3">3 Columns</SelectItem>
+                      <SelectItem value="4">4 Columns (Default)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {/* Preview */}
+                <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview ({config.trending.count} products in {config.trending.columns || 4} cols)</p>
+                  <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${config.trending.columns || 4}, 1fr)` }}>
+                    {Array.from({ length: Math.min(config.trending.count, 8) }).map((_, i) => (
+                      <div key={i} className="aspect-square rounded bg-muted" />
+                    ))}
+                  </div>
+                </div>
               </div>
             </SectionEditor>
           );
@@ -506,12 +610,25 @@ export default function AdminHomepage() {
 
           if (section.id === "reviews") return (
             <SectionEditor key="reviews" id="reviews" label="Customer Reviews" expanded={expandedSection === "reviews"} onToggle={() => toggleExpand("reviews")} visible={isSectionVisible("reviews")}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div><Label className="text-xs">Section Title</Label><Input value={config.reviews.title} onChange={e => updateReviews("title", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Section Subtitle</Label><Input value={config.reviews.subtitle} onChange={e => updateReviews("subtitle", e.target.value)} className="mt-1" /></div>
-                <div><Label className="text-xs">Reviews to Show</Label><Input type="number" min={1} max={9} value={config.reviews.count} onChange={e => updateReviews("count", parseInt(e.target.value) || 3)} className="mt-1" /></div>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div><Label className="text-xs">Section Title</Label><Input value={config.reviews.title} onChange={e => updateReviews("title", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Section Subtitle</Label><Input value={config.reviews.subtitle} onChange={e => updateReviews("subtitle", e.target.value)} className="mt-1" /></div>
+                  <div><Label className="text-xs">Reviews to Show</Label><Input type="number" min={1} max={9} value={config.reviews.count} onChange={e => updateReviews("count", parseInt(e.target.value) || 3)} className="mt-1" /></div>
+                </div>
+                <div className="p-3 rounded-xl bg-muted/50 border">
+                  <Label className="text-xs">🔲 Grid Columns</Label>
+                  <Select value={String(config.reviews.columns || 3)} onValueChange={v => updateReviews("columns", parseInt(v))}>
+                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 Column</SelectItem>
+                      <SelectItem value="2">2 Columns</SelectItem>
+                      <SelectItem value="3">3 Columns (Default)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="text-xs text-muted-foreground">Reviews are automatically pulled from your database (4+ stars with comments).</p>
               </div>
-              <p className="text-xs text-muted-foreground mt-3">Reviews are automatically pulled from your database (4+ stars with comments).</p>
             </SectionEditor>
           );
 
@@ -640,12 +757,45 @@ function TextBlockEditor({ data, onChange }: { data: CustomSectionData; onChange
     <div className="space-y-4">
       <div><Label className="text-xs">Heading</Label><Input value={data.heading || ""} onChange={e => onChange({ heading: e.target.value })} className="mt-1" /></div>
       <div><Label className="text-xs">Body</Label><Textarea value={data.body || ""} onChange={e => onChange({ body: e.target.value })} className="mt-1" rows={4} /></div>
-      <div>
-        <Label className="text-xs">Alignment</Label>
-        <Select value={data.alignment || "center"} onValueChange={v => onChange({ alignment: v as "left" | "center" | "right" })}>
-          <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-          <SelectContent><SelectItem value="left">Left</SelectItem><SelectItem value="center">Center</SelectItem><SelectItem value="right">Right</SelectItem></SelectContent>
-        </Select>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-3 rounded-xl bg-muted/50 border">
+        <div>
+          <Label className="text-xs">📐 Alignment</Label>
+          <Select value={data.alignment || "center"} onValueChange={v => onChange({ alignment: v as "left" | "center" | "right" })}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent><SelectItem value="left">Left</SelectItem><SelectItem value="center">Center</SelectItem><SelectItem value="right">Right</SelectItem></SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label className="text-xs">🔤 Text Size</Label>
+          <Select value={data.textSize || "md"} onValueChange={v => onChange({ textSize: v as any })}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="sm">Small</SelectItem>
+              <SelectItem value="md">Medium (Default)</SelectItem>
+              <SelectItem value="lg">Large</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label className="text-xs">🎨 Background</Label>
+          <Select value={data.textBg || "none"} onValueChange={v => onChange({ textBg: v as any })}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">None (Transparent)</SelectItem>
+              <SelectItem value="muted">Muted Gray</SelectItem>
+              <SelectItem value="cream">Cream</SelectItem>
+              <SelectItem value="blush">Blush</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      {/* Preview */}
+      <div className="p-4 rounded-xl border border-dashed border-primary/30 bg-cream/30">
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview</p>
+        <div className={`${data.alignment === "center" ? "text-center" : data.alignment === "right" ? "text-right" : "text-left"}`}>
+          {data.heading && <p className={`font-bold font-display ${data.textSize === "lg" ? "text-lg" : data.textSize === "sm" ? "text-xs" : "text-sm"}`}>{data.heading}</p>}
+          {data.body && <p className={`text-muted-foreground mt-1 ${data.textSize === "lg" ? "text-sm" : "text-[10px]"} line-clamp-3`}>{data.body}</p>}
+        </div>
       </div>
     </div>
   );
@@ -820,6 +970,29 @@ function FeatureGridEditor({ data, onChange }: { data: CustomSectionData; onChan
         <div><Label className="text-xs">Section Title</Label><Input value={data.gridTitle || ""} onChange={e => onChange({ gridTitle: e.target.value })} className="mt-1" /></div>
         <div><Label className="text-xs">Section Subtitle</Label><Input value={data.gridSubtitle || ""} onChange={e => onChange({ gridSubtitle: e.target.value })} className="mt-1" /></div>
       </div>
+      <div className="p-3 rounded-xl bg-muted/50 border">
+        <Label className="text-xs">🔲 Grid Columns</Label>
+        <Select value={String(data.gridColumns || 4)} onValueChange={v => onChange({ gridColumns: parseInt(v) })}>
+          <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="2">2 Columns</SelectItem>
+            <SelectItem value="3">3 Columns</SelectItem>
+            <SelectItem value="4">4 Columns (Default)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      {/* Preview */}
+      <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview ({features.length} features in {data.gridColumns || 4} cols)</p>
+        <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${data.gridColumns || 4}, 1fr)` }}>
+          {features.map((f, i) => (
+            <div key={i} className="text-center p-2 rounded-lg bg-background border text-[8px]">
+              <span className="text-sm">{f.emoji}</span>
+              <p className="font-semibold truncate mt-0.5">{f.title}</p>
+            </div>
+          ))}
+        </div>
+      </div>
       <div className="flex items-center justify-between">
         <Label className="text-xs font-semibold uppercase tracking-wider">Features</Label>
         <Button variant="outline" size="sm" onClick={() => onChange({ features: [...features, { emoji: "⭐", title: "Feature", desc: "Description" }] })} className="gap-1 text-xs h-7"><Plus className="w-3 h-3" /> Add</Button>
@@ -921,6 +1094,43 @@ function ImageGalleryEditor({ data, onChange }: { data: CustomSectionData; onCha
         <div><Label className="text-xs">Section Title</Label><Input value={data.galleryTitle || ""} onChange={e => onChange({ galleryTitle: e.target.value })} className="mt-1" /></div>
         <div><Label className="text-xs">Section Subtitle</Label><Input value={data.gallerySubtitle || ""} onChange={e => onChange({ gallerySubtitle: e.target.value })} className="mt-1" /></div>
       </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 rounded-xl bg-muted/50 border">
+        <div>
+          <Label className="text-xs">🔲 Grid Columns</Label>
+          <Select value={String(data.galleryColumns || 3)} onValueChange={v => onChange({ galleryColumns: parseInt(v) })}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="2">2 Columns</SelectItem>
+              <SelectItem value="3">3 Columns (Default)</SelectItem>
+              <SelectItem value="4">4 Columns</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label className="text-xs">📐 Image Shape</Label>
+          <Select value={data.galleryAspect || "square"} onValueChange={v => onChange({ galleryAspect: v as any })}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="square">Square</SelectItem>
+              <SelectItem value="portrait">Portrait (Tall)</SelectItem>
+              <SelectItem value="landscape">Landscape (Wide)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      {/* Preview */}
+      {images.length > 0 && (
+        <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">👁️ Preview</p>
+          <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${data.galleryColumns || 3}, 1fr)` }}>
+            {images.map((img, i) => (
+              <div key={i} className={`rounded-lg overflow-hidden bg-muted ${data.galleryAspect === "portrait" ? "aspect-[3/4]" : data.galleryAspect === "landscape" ? "aspect-video" : "aspect-square"}`}>
+                {img.url && <img src={img.url} alt="" className="w-full h-full object-cover" />}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <Label className="text-xs font-semibold uppercase tracking-wider">Images</Label>
         <Button variant="outline" size="sm" onClick={() => onChange({ images: [...images, { url: "", caption: "" }] })} className="gap-1 text-xs h-7"><Plus className="w-3 h-3" /> Add</Button>

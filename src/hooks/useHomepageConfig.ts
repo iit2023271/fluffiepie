@@ -34,7 +34,14 @@ export interface CustomSectionData {
   // image_gallery
   galleryTitle?: string;
   gallerySubtitle?: string;
+  galleryColumns?: number;
+  galleryAspect?: "square" | "portrait" | "landscape";
   images?: { url: string; caption: string }[];
+  // text_block extras
+  textSize?: "sm" | "md" | "lg";
+  textBg?: "none" | "muted" | "cream" | "blush";
+  // feature_grid extras
+  gridColumns?: number;
 }
 
 export interface HomepageSection {
@@ -55,17 +62,22 @@ export interface HeroConfig {
   ctaSecondaryText: string;
   ctaSecondaryLink: string;
   heroImage?: string;
+  imagePosition?: "left" | "right";
+  heroHeight?: "compact" | "default" | "tall";
 }
 
 export interface CategoriesConfig {
   title: string;
   subtitle: string;
+  columns?: number;
+  cardAspect?: "portrait" | "square" | "landscape";
 }
 
 export interface TrendingConfig {
   title: string;
   subtitle: string;
   count: number;
+  columns?: number;
 }
 
 export interface HowItWorksConfig {
@@ -78,6 +90,7 @@ export interface ReviewsConfig {
   title: string;
   subtitle: string;
   count: number;
+  columns?: number;
 }
 
 export interface SectionNavItem {

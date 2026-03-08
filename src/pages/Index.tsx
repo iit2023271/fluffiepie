@@ -205,138 +205,70 @@ export default function Index() {
         <HeroBannerCarousel />
       </section>
     ),
-    hero: () => (
-      <section key="hero" className="relative overflow-hidden bg-cream">
-        <div className="container mx-auto px-4 py-16 md:py-24">
-          <div className="grid md:grid-cols-2 gap-10 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -40 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
-            >
-              <motion.span
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                className="inline-block px-4 py-1.5 bg-blush text-primary text-sm font-medium rounded-full mb-6"
-              >
-                {config.hero.badge}
-              </motion.span>
-              <h1 className="text-4xl md:text-6xl font-display font-bold text-foreground leading-tight mb-6">
-                <motion.span
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.6 }}
-                  className="block"
-                >
-                  {config.hero.titleLine1}
-                </motion.span>
-                <motion.span
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.45, duration: 0.6 }}
-                  className="block text-primary"
-                >
-                  {config.hero.titleLine2}
-                </motion.span>
-              </h1>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
-                className="text-lg text-muted-foreground mb-8 max-w-md"
-              >
-                {config.hero.subtitle}
-              </motion.p>
+    hero: () => {
+      const imgPos = config.hero.imagePosition || "right";
+      const heightCls = config.hero.heroHeight === "compact" ? "py-10 md:py-14" : config.hero.heroHeight === "tall" ? "py-20 md:py-32" : "py-16 md:py-24";
+      return (
+        <section key="hero" className="relative overflow-hidden bg-cream">
+          <div className={`container mx-auto px-4 ${heightCls}`}>
+            <div className={`grid md:grid-cols-2 gap-10 items-center ${imgPos === "left" ? "md:[direction:rtl] [&>*]:md:[direction:ltr]" : ""}`}>
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.75, duration: 0.5 }}
-                className="flex flex-wrap gap-4"
+                initial={{ opacity: 0, x: -40 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
               >
-                <Link
-                  to={config.hero.ctaPrimaryLink}
-                  className="group inline-flex items-center gap-2 px-8 py-3.5 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 transition-all shadow-card hover:shadow-elevated hover:scale-[1.02]"
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                  className="inline-block px-4 py-1.5 bg-blush text-primary text-sm font-medium rounded-full mb-6"
                 >
-                  {config.hero.ctaPrimaryText}
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                </Link>
-                {config.hero.ctaSecondaryText && (
-                  <Link
-                    to={config.hero.ctaSecondaryLink}
-                    className="inline-flex items-center gap-2 px-8 py-3.5 bg-background text-foreground rounded-xl font-medium border border-border hover:bg-secondary transition-all hover:scale-[1.02]"
-                  >
-                    {config.hero.ctaSecondaryText}
+                  {config.hero.badge}
+                </motion.span>
+                <h1 className="text-4xl md:text-6xl font-display font-bold text-foreground leading-tight mb-6">
+                  <motion.span initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.6 }} className="block">{config.hero.titleLine1}</motion.span>
+                  <motion.span initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.6 }} className="block text-primary">{config.hero.titleLine2}</motion.span>
+                </h1>
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6, duration: 0.5 }} className="text-lg text-muted-foreground mb-8 max-w-md">{config.hero.subtitle}</motion.p>
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.75, duration: 0.5 }} className="flex flex-wrap gap-4">
+                  <Link to={config.hero.ctaPrimaryLink} className="group inline-flex items-center gap-2 px-8 py-3.5 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 transition-all shadow-card hover:shadow-elevated hover:scale-[1.02]">
+                    {config.hero.ctaPrimaryText} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </Link>
-                )}
+                  {config.hero.ctaSecondaryText && (
+                    <Link to={config.hero.ctaSecondaryLink} className="inline-flex items-center gap-2 px-8 py-3.5 bg-background text-foreground rounded-xl font-medium border border-border hover:bg-secondary transition-all hover:scale-[1.02]">{config.hero.ctaSecondaryText}</Link>
+                  )}
+                </motion.div>
               </motion.div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.85, rotate: -3 }}
-              animate={{ opacity: 1, scale: 1, rotate: 0 }}
-              transition={{ duration: 0.8, delay: 0.2, ease: [0.32, 0.72, 0, 1] }}
-              className="relative"
-            >
-              <motion.div
-                animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="relative rounded-3xl overflow-hidden shadow-elevated"
-              >
-                <img src={config.hero.heroImage || heroCake} alt="Premium cake" className="w-full" loading="eager" decoding="async" />
+              <motion.div initial={{ opacity: 0, scale: 0.85, rotate: -3 }} animate={{ opacity: 1, scale: 1, rotate: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.32, 0.72, 0, 1] }} className="relative">
+                <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} className="relative rounded-3xl overflow-hidden shadow-elevated">
+                  <img src={config.hero.heroImage || heroCake} alt="Premium cake" className="w-full" loading="eager" decoding="async" />
+                </motion.div>
+                <motion.div animate={{ y: [0, -12, 0], x: [0, 5, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }} className="absolute -top-4 -right-4 w-20 h-20 bg-accent/20 rounded-full blur-xl" />
+                <motion.div animate={{ y: [0, 10, 0], x: [0, -8, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute -bottom-6 -left-6 w-28 h-28 bg-primary/15 rounded-full blur-xl" />
               </motion.div>
-              <motion.div
-                animate={{ y: [0, -12, 0], x: [0, 5, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                className="absolute -top-4 -right-4 w-20 h-20 bg-accent/20 rounded-full blur-xl"
-              />
-              <motion.div
-                animate={{ y: [0, 10, 0], x: [0, -8, 0] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                className="absolute -bottom-6 -left-6 w-28 h-28 bg-primary/15 rounded-full blur-xl"
-              />
-            </motion.div>
+            </div>
           </div>
-        </div>
-      </section>
-    ),
+        </section>
+      );
+    },
     categories: () => {
+      const cols = config.categories.columns || 4;
+      const aspectCls = config.categories.cardAspect === "square" ? "aspect-square" : config.categories.cardAspect === "landscape" ? "aspect-video" : "aspect-[3/4]";
       const displayOccasions = occasions.length > 0 ? occasions.filter(o => categoryImages[o]) : Object.keys(categoryImages);
       return (
         <section key="categories" className="container mx-auto px-4 py-16">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{config.categories.title}</h2>
             <p className="text-muted-foreground">{config.categories.subtitle}</p>
           </motion.div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {displayOccasions.slice(0, 4).map((name, i) => (
-              <motion.div
-                key={name}
-                initial={{ opacity: 0, y: 40, scale: 0.9 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.12, type: "spring", stiffness: 100 }}
-              >
-                <Link
-                  to={`/shop?occasion=${name}`}
-                  className="group block relative rounded-2xl overflow-hidden aspect-[3/4]"
-                >
-                  <img
-                    src={categoryImages[name] || catCustom}
-                    alt={name}
-                    className="w-full h-full object-cover transition-transform duration-700 will-change-transform group-hover:scale-110"
-                    loading="lazy"
-                    decoding="async"
-                  />
+          <div className="grid gap-4 md:gap-6" style={{ gridTemplateColumns: `repeat(${Math.min(cols, 2)}, 1fr)` }} data-desktop-cols={cols}>
+            <style>{`@media(min-width:768px){[data-desktop-cols="${cols}"]{grid-template-columns:repeat(${cols},1fr)!important}}`}</style>
+            {displayOccasions.slice(0, cols).map((name, i) => (
+              <motion.div key={name} initial={{ opacity: 0, y: 40, scale: 0.9 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.12, type: "spring", stiffness: 100 }}>
+                <Link to={`/shop?occasion=${name}`} className={`group block relative rounded-2xl overflow-hidden ${aspectCls}`}>
+                  <img src={categoryImages[name] || catCustom} alt={name} className="w-full h-full object-cover transition-transform duration-700 will-change-transform group-hover:scale-110" loading="lazy" decoding="async" />
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent group-hover:from-foreground/80 transition-all duration-500" />
-                  <motion.div
-                    className="absolute bottom-4 left-4"
-                    whileHover={{ x: 5 }}
-                  >
+                  <motion.div className="absolute bottom-4 left-4" whileHover={{ x: 5 }}>
                     <h3 className="text-lg font-display font-bold text-background">{name}</h3>
                     <span className="text-xs text-background/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Shop Now →</span>
                   </motion.div>
@@ -347,45 +279,33 @@ export default function Index() {
         </section>
       );
     },
-    trending: () => (
-      <section key="trending" className="container mx-auto px-4 py-16 bg-cream rounded-3xl mx-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="flex items-center justify-between mb-10"
-        >
-          <div>
-            <h2 className="text-3xl font-display font-bold mb-2">{config.trending.title}</h2>
-            <p className="text-muted-foreground">{config.trending.subtitle}</p>
+    trending: () => {
+      const trendCols = config.trending.columns || 4;
+      return (
+        <section key="trending" className="container mx-auto px-4 py-16 bg-cream rounded-3xl mx-4">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex items-center justify-between mb-10">
+            <div>
+              <h2 className="text-3xl font-display font-bold mb-2">{config.trending.title}</h2>
+              <p className="text-muted-foreground">{config.trending.subtitle}</p>
+            </div>
+            <Link to="/shop" className="hidden md:inline-flex items-center gap-1 text-primary font-medium text-sm hover:underline group">
+              View All <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </motion.div>
+          <div className="grid gap-4 md:gap-6" style={{ gridTemplateColumns: `repeat(${Math.min(trendCols, 2)}, 1fr)` }} data-desktop-cols={`t${trendCols}`}>
+            <style>{`@media(min-width:768px){[data-desktop-cols="t${trendCols}"]{grid-template-columns:repeat(${trendCols},1fr)!important}}`}</style>
+            {featured.map((product, i) => (
+              <motion.div key={product.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, type: "spring", stiffness: 100 }}>
+                <ProductCard product={product} index={i} />
+              </motion.div>
+            ))}
           </div>
-          <Link
-            to="/shop"
-            className="hidden md:inline-flex items-center gap-1 text-primary font-medium text-sm hover:underline group"
-          >
-            View All <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </Link>
-        </motion.div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {featured.map((product, i) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1, type: "spring", stiffness: 100 }}
-            >
-              <ProductCard product={product} index={i} />
-            </motion.div>
-          ))}
-        </div>
-        <div className="mt-8 text-center md:hidden">
-          <Link to="/shop" className="inline-flex items-center gap-1 text-primary font-medium text-sm hover:underline">
-            View All <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-      </section>
-    ),
+          <div className="mt-8 text-center md:hidden">
+            <Link to="/shop" className="inline-flex items-center gap-1 text-primary font-medium text-sm hover:underline">View All <ArrowRight className="w-4 h-4" /></Link>
+          </div>
+        </section>
+      );
+    },
     howItWorks: () => (
       <section key="howItWorks" className="container mx-auto px-4 py-20">
         <motion.div
@@ -422,51 +342,32 @@ export default function Index() {
         </div>
       </section>
     ),
-    reviews: () =>
-      reviews.length > 0 ? (
+    reviews: () => {
+      const revCols = config.reviews.columns || 3;
+      return reviews.length > 0 ? (
         <section key="reviews" className="bg-blush py-20 overflow-hidden">
           <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-14"
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-14">
               <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{config.reviews.title}</h2>
               <p className="text-muted-foreground">{config.reviews.subtitle}</p>
             </motion.div>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid gap-6" style={{ gridTemplateColumns: `repeat(1, 1fr)` }} data-desktop-cols={`r${revCols}`}>
+              <style>{`@media(min-width:768px){[data-desktop-cols="r${revCols}"]{grid-template-columns:repeat(${revCols},1fr)!important}}`}</style>
               {reviews.slice(0, config.reviews.count).map((r, i) => {
                 const name = r.author_name || "Customer";
                 const initials = name.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase();
                 return (
-                  <motion.div
-                    key={r.id}
-                    initial={{ opacity: 0, y: 30, rotateX: 15 }}
-                    whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.15, type: "spring", stiffness: 80 }}
-                    whileHover={{ y: -5, scale: 1.02, transition: { duration: 0.25 } }}
-                    className="bg-background rounded-2xl p-6 shadow-soft hover:shadow-elevated transition-shadow"
-                  >
+                  <motion.div key={r.id} initial={{ opacity: 0, y: 30, rotateX: 15 }} whileInView={{ opacity: 1, y: 0, rotateX: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.15, type: "spring", stiffness: 80 }} whileHover={{ y: -5, scale: 1.02, transition: { duration: 0.25 } }} className="bg-background rounded-2xl p-6 shadow-soft hover:shadow-elevated transition-shadow">
                     <div className="flex items-center gap-1 mb-3">
                       {Array.from({ length: r.rating }).map((_, j) => (
-                        <motion.div
-                          key={j}
-                          initial={{ opacity: 0, scale: 0 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: i * 0.1 + j * 0.05 }}
-                        >
+                        <motion.div key={j} initial={{ opacity: 0, scale: 0 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.1 + j * 0.05 }}>
                           <Star className="w-4 h-4 fill-accent text-accent" />
                         </motion.div>
                       ))}
                     </div>
                     <p className="text-sm text-foreground mb-4 leading-relaxed">"{r.comment}"</p>
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
-                        {initials}
-                      </div>
+                      <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">{initials}</div>
                       <div>
                         <span className="text-sm font-medium">{name}</span>
                         {r.products?.name && <p className="text-xs text-muted-foreground">on {r.products.name}</p>}
@@ -478,7 +379,8 @@ export default function Index() {
             </div>
           </div>
         </section>
-      ) : null,
+      ) : null;
+    },
   };
 
   // Render a custom section
@@ -487,15 +389,22 @@ export default function Index() {
     if (!data) return null;
 
     switch (data.type) {
-      case "text_block":
+      case "text_block": {
+        const textSizeMap: Record<string, string> = { sm: "text-xl md:text-2xl", md: "text-3xl md:text-4xl", lg: "text-4xl md:text-5xl" };
+        const bodySizeMap: Record<string, string> = { sm: "text-sm", md: "text-base", lg: "text-lg" };
+        const bgMap: Record<string, string> = { none: "", muted: "bg-muted", cream: "bg-cream", blush: "bg-blush" };
+        const bgCls = bgMap[data.textBg || "none"];
         return (
-          <section key={section.id} className="container mx-auto px-4 py-16">
-            <div className={`max-w-3xl ${data.alignment === "center" ? "mx-auto text-center" : data.alignment === "right" ? "ml-auto text-right" : ""}`}>
-              {data.heading && <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">{data.heading}</h2>}
-              {data.body && <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{data.body}</p>}
+          <section key={section.id} className={`${bgCls} ${bgCls ? "py-16" : ""}`}>
+            <div className="container mx-auto px-4 py-16">
+              <div className={`max-w-3xl ${data.alignment === "center" ? "mx-auto text-center" : data.alignment === "right" ? "ml-auto text-right" : ""}`}>
+                {data.heading && <h2 className={`${textSizeMap[data.textSize || "md"]} font-display font-bold mb-4`}>{data.heading}</h2>}
+                {data.body && <p className={`text-muted-foreground leading-relaxed whitespace-pre-line ${bodySizeMap[data.textSize || "md"]}`}>{data.body}</p>}
+              </div>
             </div>
           </section>
         );
+      }
 
       case "cta_banner": {
         const bgMap: Record<string, string> = {
@@ -554,23 +463,18 @@ export default function Index() {
         );
       }
 
-      case "feature_grid":
+      case "feature_grid": {
+        const fgCols = data.gridColumns || 4;
         return (
           <section key={section.id} className="container mx-auto px-4 py-16">
             <div className="text-center mb-12">
               {data.gridTitle && <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{data.gridTitle}</h2>}
               {data.gridSubtitle && <p className="text-muted-foreground">{data.gridSubtitle}</p>}
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="grid gap-6" style={{ gridTemplateColumns: `repeat(${Math.min(fgCols, 2)}, 1fr)` }} data-desktop-cols={`fg${fgCols}`}>
+              <style>{`@media(min-width:768px){[data-desktop-cols="fg${fgCols}"]{grid-template-columns:repeat(${fgCols},1fr)!important}}`}</style>
               {(data.features || []).map((f, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className="text-center p-6 rounded-2xl bg-card shadow-soft hover:shadow-card transition-shadow"
-                >
+                <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="text-center p-6 rounded-2xl bg-card shadow-soft hover:shadow-card transition-shadow">
                   <div className="text-3xl mb-3">{f.emoji}</div>
                   <h3 className="text-sm font-display font-semibold mb-1">{f.title}</h3>
                   <p className="text-xs text-muted-foreground">{f.desc}</p>
@@ -579,6 +483,7 @@ export default function Index() {
             </div>
           </section>
         );
+      }
 
       case "faq":
         return (
@@ -598,7 +503,9 @@ export default function Index() {
       case "spacer":
         return <div key={section.id} style={{ height: data.spacerHeight || 60 }} />;
 
-      case "image_gallery":
+      case "image_gallery": {
+        const galCols = data.galleryColumns || 3;
+        const galAspect = data.galleryAspect === "portrait" ? "aspect-[3/4]" : data.galleryAspect === "landscape" ? "aspect-video" : "aspect-square";
         return (
           <section key={section.id} className="container mx-auto px-4 py-16">
             <div className="text-center mb-12">
@@ -606,16 +513,10 @@ export default function Index() {
               {data.gallerySubtitle && <p className="text-muted-foreground">{data.gallerySubtitle}</p>}
             </div>
             {(data.images || []).length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${Math.min(galCols, 2)}, 1fr)` }} data-desktop-cols={`gal${galCols}`}>
+                <style>{`@media(min-width:768px){[data-desktop-cols="gal${galCols}"]{grid-template-columns:repeat(${galCols},1fr)!important}}`}</style>
                 {(data.images || []).map((img, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.05 }}
-                    className="relative rounded-2xl overflow-hidden bg-muted aspect-square"
-                  >
+                  <motion.div key={i} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }} className={`relative rounded-2xl overflow-hidden bg-muted ${galAspect}`}>
                     {img.url && <img src={img.url} alt={img.caption || ""} className="w-full h-full object-cover" loading="lazy" decoding="async" />}
                     {img.caption && (
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-foreground/60 to-transparent p-3">
@@ -628,6 +529,7 @@ export default function Index() {
             )}
           </section>
         );
+      }
 
       default:
         return null;
