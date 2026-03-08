@@ -76,7 +76,7 @@ export default function AdminOrders() {
         <div className="space-y-3">{[1,2,3].map((i) => <div key={i} className="h-20 bg-secondary rounded-xl animate-pulse" />)}</div>
       ) : (
         <div className="space-y-3">
-          {filtered.map((order) => (
+          {paginated.map((order) => (
             <div key={order.id} className="bg-card rounded-2xl p-5 shadow-soft">
               <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
                 <div>
