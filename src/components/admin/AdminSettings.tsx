@@ -70,7 +70,7 @@ export default function AdminSettings() {
   const [showNewSectionForm, setShowNewSectionForm] = useState(false);
   const [newSectionLabel, setNewSectionLabel] = useState("");
   const [newSectionMulti, setNewSectionMulti] = useState(false);
-  const [activeSection, setActiveSection] = useState<"config" | "coupons" | "banners" | "notifications" | "storeinfo">("config");
+  const [activeSection, setActiveSection] = useState<"config" | "coupons" | "banners" | "notifications" | "storeinfo" | "delivery">("config");
   const [storeInfoForm, setStoreInfoForm] = useState<StoreInfo>(DEFAULT_STORE_INFO);
   const [storeInfoId, setStoreInfoId] = useState<string | null>(null);
   const [savingStoreInfo, setSavingStoreInfo] = useState(false);
