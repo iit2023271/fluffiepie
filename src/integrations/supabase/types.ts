@@ -53,6 +53,48 @@ export type Database = {
         }
         Relationships: []
       }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_discount: number | null
+          min_order_amount: number
+          usage_limit: number | null
+          used_count: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_discount?: number | null
+          min_order_amount?: number
+          usage_limit?: number | null
+          used_count?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_discount?: number | null
+          min_order_amount?: number
+          usage_limit?: number | null
+          used_count?: number
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           coupon_code: string | null
@@ -191,6 +233,33 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      store_config: {
+        Row: {
+          config_type: string
+          created_at: string
+          id: string
+          is_active: boolean
+          sort_order: number
+          value: string
+        }
+        Insert: {
+          config_type: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+          value: string
+        }
+        Update: {
+          config_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+          value?: string
         }
         Relationships: []
       }
