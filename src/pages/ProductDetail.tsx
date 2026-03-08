@@ -2,14 +2,15 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Star, ShoppingCart, Heart, Minus, Plus, ChevronLeft, Truck, Shield, Clock } from "lucide-react";
-import { products } from "@/data/products";
+import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/context/CartContext";
 import ProductCard from "@/components/ProductCard";
 import { toast } from "sonner";
 
 export default function ProductDetail() {
   const { slug } = useParams();
-  const product = products.find((p) => p.slug === slug);
+  const { data: product, isLoading } = useProduct(slug);
+  const { data: allProducts = [] } = useProducts();
   const { dispatch } = useCart();
 
   const [selectedWeight, setSelectedWeight] = useState(0);

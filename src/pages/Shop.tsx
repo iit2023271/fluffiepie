@@ -9,6 +9,7 @@ import ProductCard from "@/components/ProductCard";
 export default function Shop() {
   const [searchParams] = useSearchParams();
   const initialOccasion = searchParams.get("occasion") || "";
+  const { data: products = [] } = useProducts();
 
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedOccasion, setSelectedOccasion] = useState(initialOccasion);
