@@ -17,6 +17,7 @@ import {
   BUILTIN_SECTION_IDS,
   CUSTOM_TYPE_LABELS,
   getDefaultCustomData,
+  normalizeHomepageSections,
 } from "@/hooks/useHomepageConfig";
 import type { HomepageSection, CustomSectionType, CustomSectionData, FooterColumn } from "@/hooks/useHomepageConfig";
 

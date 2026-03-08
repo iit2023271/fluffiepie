@@ -246,6 +246,28 @@ export function getDefaultCustomData(type: CustomSectionType): CustomSectionData
   }
 }
 
+export function normalizeHomepageSections(sections?: HomepageSection[]): HomepageSection[] {
+  const base = sections?.length ? sections : DEFAULT_HOMEPAGE_CONFIG.sections;
+  const normalized: HomepageSection[] = [];
+  const seen = new Set<string>();
+
+  for (const section of base) {
+    if (!seen.has(section.id)) {
+      normalized.push(section);
+      seen.add(section.id);
+    }
+  }
+
+  for (const section of DEFAULT_HOMEPAGE_CONFIG.sections) {
+    if (!seen.has(section.id)) {
+      normalized.push(section);
+      seen.add(section.id);
+    }
+  }
+
+  return normalized;
+}
+
 export function useHomepageConfig() {
   const [config, setConfig] = useState<HomepageConfig>(DEFAULT_HOMEPAGE_CONFIG);
   const [loading, setLoading] = useState(true);
