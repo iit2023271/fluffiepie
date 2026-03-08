@@ -391,7 +391,7 @@ export default function AdminOrders() {
       <div className="flex flex-wrap gap-2 mb-4">
         <button onClick={() => setStatusFilter("")}
           className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${!statusFilter ? "bg-foreground text-background shadow-md" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"}`}>
-          All Statuses ({filtered.length})
+          All Statuses ({baseFiltered.length})
         </button>
         {statusOptions.map(s => {
           const cfg = STATUS_CONFIG[s];
