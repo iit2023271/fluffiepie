@@ -302,25 +302,77 @@ export default function AdminUsers() {
                         <div className="space-y-2 max-h-64 overflow-y-auto">
                           {u.orders.map((order) => {
                             const items = Array.isArray(order.items) ? order.items : [];
+                            const addr = order.delivery_address as any;
                             return (
-                              <div key={order.id} className="bg-card rounded-lg border border-border p-3 text-sm">
-                                <div className="flex items-center justify-between mb-1">
+                              <div key={order.id} className="bg-card rounded-lg border border-border p-3 text-sm space-y-2">
+                                {/* Header: ID, Status, Total */}
+                                <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-2">
                                     <span className="font-mono text-xs text-muted-foreground">#{order.id.slice(0, 8)}</span>
                                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${getStatusColor(order.status)}`}>{order.status}</span>
+                                    {order.payment_status && (
+                                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-secondary text-muted-foreground">{order.payment_status}</span>
+                                    )}
                                   </div>
-                                  <span className="font-semibold">₹{order.total}</span>
+                                  <span className="font-semibold">₹{order.total?.toLocaleString()}</span>
                                 </div>
-                                <p className="text-xs text-muted-foreground">{format(new Date(order.created_at), "dd MMM yyyy, hh:mm a")}</p>
+
+                                {/* Timestamps */}
+                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                                    <Clock className="w-3 h-3 shrink-0" />
+                                    <div>
+                                      <span className="font-medium text-foreground">Ordered: </span>
+                                      {format(new Date(order.created_at), "dd MMM yyyy, hh:mm a")}
+                                    </div>
+                                  </div>
+                                  {order.updated_at && order.updated_at !== order.created_at && (
+                                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                                      <Clock className="w-3 h-3 shrink-0" />
+                                      <div>
+                                        <span className="font-medium text-foreground">Updated: </span>
+                                        {format(new Date(order.updated_at), "dd MMM yyyy, hh:mm a")}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Delivery Slot */}
+                                {order.delivery_slot && (
+                                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                    <Truck className="w-3 h-3 shrink-0" />
+                                    <span className="font-medium text-foreground">Delivery: </span>
+                                    {order.delivery_slot}
+                                  </div>
+                                )}
+
+                                {/* Delivery Address */}
+                                {addr && (
+                                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                    <MapPin className="w-3 h-3 shrink-0" />
+                                    <span className="truncate">
+                                      {addr.name && `${addr.name}, `}{addr.address || addr.address_line || ""}{addr.city ? `, ${addr.city}` : ""}{addr.pincode ? ` - ${addr.pincode}` : ""}
+                                    </span>
+                                  </div>
+                                )}
+
+                                {/* Price Breakdown */}
+                                <div className="flex flex-wrap gap-3 text-[11px] text-muted-foreground">
+                                  <span>Subtotal: ₹{order.subtotal?.toLocaleString()}</span>
+                                  {order.discount > 0 && <span className="text-primary">Discount: -₹{order.discount?.toLocaleString()}</span>}
+                                  <span>Delivery: {order.delivery_fee === 0 ? "Free" : `₹${order.delivery_fee}`}</span>
+                                  {order.coupon_code && <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">🏷 {order.coupon_code}</span>}
+                                </div>
+
+                                {/* Items */}
                                 {items.length > 0 && (
-                                  <div className="mt-1 space-y-0.5">
-                                    {items.slice(0, 3).map((item: any, idx: number) => (
+                                  <div className="space-y-0.5 pt-1 border-t border-border">
+                                    {items.map((item: any, idx: number) => (
                                       <div key={idx} className="flex justify-between text-xs text-muted-foreground">
                                         <span>{item.name} ({item.weight}) × {item.quantity}</span>
-                                        <span>₹{item.price * item.quantity}</span>
+                                        <span>₹{(item.price * item.quantity).toLocaleString()}</span>
                                       </div>
                                     ))}
-                                    {items.length > 3 && <p className="text-[10px] text-muted-foreground">+{items.length - 3} more items</p>}
                                   </div>
                                 )}
                               </div>
