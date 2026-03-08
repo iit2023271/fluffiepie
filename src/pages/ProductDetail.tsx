@@ -286,7 +286,7 @@ function Lightbox({ images, initialIndex, onClose }: { images: string[]; initial
     if (e.touches.length === 2) {
       // Pinch start
       isPinching.current = true;
-      pinchStartDist.current = getTouchDist(e.touches);
+      pinchStartDist.current = getTouchDist(e.touches[0], e.touches[1]);
       pinchStartScale.current = scale;
     } else if (e.touches.length === 1) {
       const t = e.touches[0];
