@@ -48,8 +48,8 @@ export default function Shop() {
     let result = [...products];
     if (searchQuery) result = result.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase()));
     
-    // Price range filter
-    result = result.filter(p => p.basePrice >= priceRange[0] && p.basePrice <= priceRange[1]);
+
+
 
     // Tag filter
     if (selectedTag) {
