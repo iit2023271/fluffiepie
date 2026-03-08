@@ -34,11 +34,10 @@ export default function AdminUsers() {
 
   const loadUsers = async () => {
     setLoading(true);
-    const [profilesRes, addressesRes, ordersRes, rolesRes, tagsRes] = await Promise.all([
+    const [profilesRes, addressesRes, ordersRes, tagsRes] = await Promise.all([
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("addresses").select("*"),
       supabase.from("orders").select("*").order("created_at", { ascending: false }),
-      supabase.from("user_roles").select("*"),
       supabase.from("customer_tags").select("*"),
     ]);
 
