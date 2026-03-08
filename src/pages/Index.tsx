@@ -163,6 +163,21 @@ export default function Index() {
   const { data: allProducts = [] } = useProducts();
   const featured = allProducts.filter((p) => p.isBestseller || p.isNew).slice(0, 4);
 
+  const [reviews, setReviews] = useState<any[]>([]);
+  useEffect(() => {
+    const loadReviews = async () => {
+      const { data } = await supabase
+        .from("reviews")
+        .select("*, profiles!reviews_user_id_fkey(full_name), products!reviews_product_id_fkey(name)")
+        .gte("rating", 4)
+        .not("comment", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(6);
+      if (data) setReviews(data);
+    };
+    loadReviews();
+  }, []);
+
   return (
     <div>
       {/* Banner Carousel */}
