@@ -69,9 +69,27 @@ export default function Dashboard() {
       supabase.from("orders").select("*").eq("user_id", user!.id).order("created_at", { ascending: false }),
       supabase.from("profiles").select("full_name, phone").eq("user_id", user!.id).single(),
     ]);
-    if (ordersRes.data) setOrders(ordersRes.data);
+    if (ordersRes.data) {
+      setOrders(ordersRes.data);
+      // Load notes for all orders
+      const orderIds = ordersRes.data.map((o: any) => o.id);
+      if (orderIds.length > 0) {
+        const { data: notes } = await supabase
+          .from("order_notes")
+          .select("id, note, note_type, created_at, order_id")
+          .in("order_id", orderIds)
+          .order("created_at", { ascending: true });
+        if (notes) {
+          const grouped: Record<string, OrderNote[]> = {};
+          notes.forEach((n: any) => {
+            if (!grouped[n.order_id]) grouped[n.order_id] = [];
+            grouped[n.order_id].push(n);
+          });
+          setOrderNotes(grouped);
+        }
+      }
+    }
     if (profileRes.data) setProfile(profileRes.data);
-    // Load existing reviews by this user
     if (user) {
       const { data: reviews } = await supabase
         .from("reviews")
