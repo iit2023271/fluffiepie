@@ -261,6 +261,45 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* Review Dialog */}
+        <Dialog open={!!reviewingOrder} onOpenChange={(open) => !open && setReviewingOrder(null)}>
+          <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Review Your Order</DialogTitle>
+            </DialogHeader>
+            {reviewingOrder && (
+              <div className="space-y-6">
+                {(reviewingOrder.items as any[]).map((item: any) => {
+                  const key = `${item.productId}-${reviewingOrder.id}`;
+                  const alreadyReviewed = existingReviews.has(key);
+                  if (alreadyReviewed) {
+                    return (
+                      <div key={key} className="p-3 rounded-xl bg-secondary/50">
+                        <p className="text-sm font-medium">{item.name}</p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                          <CheckCircle className="w-3 h-3" /> Already reviewed
+                        </p>
+                      </div>
+                    );
+                  }
+                  return (
+                    <ReviewForm
+                      key={key}
+                      productId={item.productId}
+                      productName={item.name}
+                      orderId={reviewingOrder.id}
+                      userId={user!.id}
+                      onSubmitted={() => {
+                        setExistingReviews((prev) => new Set([...prev, key]));
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* Profile */}
         {tab === "profile" && (
           <div className="p-6 rounded-2xl bg-card shadow-soft max-w-lg">
