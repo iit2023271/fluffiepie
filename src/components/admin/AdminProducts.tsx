@@ -244,6 +244,7 @@ export default function AdminProducts() {
       is_active: form.is_active, image_url: imageUrl, images: allImages,
       stock_quantity: form.stock_quantity, low_stock_threshold: form.low_stock_threshold,
       sku: form.sku || null, custom_attributes: form.custom_attributes,
+      tags: form.tags,
     };
 
     if (editing) {
