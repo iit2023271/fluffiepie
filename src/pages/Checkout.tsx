@@ -246,32 +246,54 @@ export default function Checkout() {
           </div>
 
           <div className="p-6 rounded-2xl bg-card shadow-soft">
-            <h3 className="font-display font-semibold text-lg mb-4">Delivery Slot</h3>
-            <div className="grid grid-cols-3 gap-2">
-              {["Today", "Tomorrow", "Day After"].map((day) => (
-                <button
-                  key={day}
-                  onClick={() => setDeliveryDay(day)}
-                  className={`px-3 py-2 rounded-xl border text-sm transition-colors ${
-                    deliveryDay === day ? "border-primary bg-primary/10 text-primary font-medium" : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  {day}
-                </button>
-              ))}
-            </div>
-            <div className="grid grid-cols-3 gap-2 mt-3">
-              {["9AM - 12PM", "12PM - 4PM", "4PM - 8PM"].map((slot) => (
-                <button
-                  key={slot}
-                  onClick={() => setDeliverySlot(slot)}
-                  className={`px-3 py-2 rounded-xl border text-xs transition-colors ${
-                    deliverySlot === slot ? "border-primary bg-primary/10 text-primary font-medium" : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  {slot}
-                </button>
-              ))}
+            <h3 className="font-display font-semibold text-lg mb-4 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-primary" /> Delivery Date & Time
+            </h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Select Date</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      className={cn(
+                        "w-full flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm text-left transition-colors",
+                        deliveryDate ? "border-primary bg-primary/5 text-foreground font-medium" : "border-border text-muted-foreground hover:border-primary/50"
+                      )}
+                    >
+                      <CalendarIcon className="w-4 h-4" />
+                      {deliveryDate ? format(deliveryDate, "EEEE, dd MMM yyyy") : "Pick a delivery date"}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={deliveryDate}
+                      onSelect={setDeliveryDate}
+                      disabled={(date) => isBefore(date, startOfDay(new Date())) || isBefore(addDays(new Date(), 14), date)}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">Select Time</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {["9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"].map((time) => (
+                    <button
+                      key={time}
+                      onClick={() => setDeliveryTime(time)}
+                      className={`px-3 py-2 rounded-xl border text-xs transition-colors ${
+                        deliveryTime === time ? "border-primary bg-primary/10 text-primary font-medium" : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      {time}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
