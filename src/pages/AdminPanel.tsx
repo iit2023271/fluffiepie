@@ -16,6 +16,7 @@ const tabs = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { key: "products", label: "Products", icon: Package },
   { key: "orders", label: "Orders", icon: ShoppingCart },
+  { key: "kitchen", label: "Kitchen", icon: ChefHat },
   { key: "users", label: "Customers", icon: Users },
   { key: "settings", label: "Settings", icon: Settings },
 ] as const;
