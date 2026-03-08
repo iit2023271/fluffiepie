@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format, parse, formatDistanceToNow, startOfDay, endOfDay, isToday, isTomorrow, isYesterday } from "date-fns";
+import { format, parse, startOfDay, endOfDay, isToday, isYesterday } from "date-fns";
 import { Search, Send, Download, ChevronDown, ChevronUp, Trash2, Calendar as CalendarIcon, X, Clock, Package, CheckCircle2, Timer, Copy, Undo2 } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { useAuth } from "@/context/AuthContext";
@@ -29,12 +29,7 @@ const STATUS_STEP_ORDER = ["placed", "confirmed", "baking", "out_for_delivery", 
 function getRelativeDate(date: Date): string {
   if (isToday(date)) return `Today, ${format(date, "hh:mm a")}`;
   if (isYesterday(date)) return `Yesterday, ${format(date, "hh:mm a")}`;
-  if (isTomorrow(date)) return `Tomorrow, ${format(date, "hh:mm a")}`;
   return format(date, "dd MMM yyyy, hh:mm a");
-}
-
-function getTimeAgo(date: Date): string {
-  return formatDistanceToNow(date, { addSuffix: true });
 }
 
 function parseDeliveryInfo(slot: string | null): { label: string; isUrgent: boolean } {
@@ -520,11 +515,18 @@ export default function AdminOrders() {
                     <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border ${statusCfg.bgColor} ${statusCfg.color}`}>
                       {statusCfg.emoji} {statusCfg.label}
                     </span>
-                    {isFinal && <span className="text-[10px] text-muted-foreground ml-auto">🔒 Final</span>}
+                    {isFinal && <span className="text-[10px] text-muted-foreground">🔒 Final</span>}
                     <span className="text-[10px] text-muted-foreground ml-auto" title={format(orderDate, "dd MMM yyyy, hh:mm a")}>
-                      {getTimeAgo(orderDate)}
+                      🕐 {format(orderDate, "dd MMM, hh:mm a")}
                     </span>
                   </div>
+
+                  {/* Delivered/Cancelled timestamp */}
+                  {isFinal && order.updated_at !== order.created_at && (
+                    <p className={`text-[10px] mb-1.5 font-medium ${order.status === "delivered" ? "text-emerald-600" : "text-destructive"}`}>
+                      {order.status === "delivered" ? "✅" : "❌"} {order.status === "delivered" ? "Delivered" : "Cancelled"}: {getRelativeDate(new Date(order.updated_at))}
+                    </p>
+                  )}
 
                   {/* Progress bar — only for active orders */}
                   {!isFinal && order.status !== "cancelled" && (
