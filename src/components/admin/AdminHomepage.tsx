@@ -379,6 +379,32 @@ export default function AdminHomepage() {
             <div><Label className="text-xs">Primary CTA Link</Label><Input value={config.hero.ctaPrimaryLink} onChange={e => updateHero("ctaPrimaryLink", e.target.value)} className="mt-1" /></div>
             <div><Label className="text-xs">Secondary CTA Text</Label><Input value={config.hero.ctaSecondaryText} onChange={e => updateHero("ctaSecondaryText", e.target.value)} className="mt-1" /></div>
             <div><Label className="text-xs">Secondary CTA Link</Label><Input value={config.hero.ctaSecondaryLink} onChange={e => updateHero("ctaSecondaryLink", e.target.value)} className="mt-1" /></div>
+            <div className="md:col-span-2">
+              <Label className="text-xs">Hero Image</Label>
+              <div className="mt-1 flex items-center gap-3">
+                {config.hero.heroImage && (
+                  <img src={config.hero.heroImage} alt="Hero preview" className="w-20 h-20 rounded-xl object-cover border border-border" />
+                )}
+                <label className="flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed border-border bg-muted/30 hover:bg-muted/60 cursor-pointer transition-colors text-sm text-muted-foreground">
+                  <Upload className="w-4 h-4" /> Upload Image
+                  <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const ext = file.name.split(".").pop();
+                    const path = `hero/hero-image-${Date.now()}.${ext}`;
+                    const { error } = await supabase.storage.from("homepage-assets").upload(path, file, { upsert: true });
+                    if (error) { toast.error("Upload failed"); return; }
+                    const { data: urlData } = supabase.storage.from("homepage-assets").getPublicUrl(path);
+                    updateHero("heroImage", urlData.publicUrl);
+                    toast.success("Image uploaded!");
+                  }} />
+                </label>
+                {config.hero.heroImage && (
+                  <button onClick={() => updateHero("heroImage", "")} className="text-xs text-destructive hover:underline">Remove</button>
+                )}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">Leave empty to use the default cake image</p>
+            </div>
           </div>
         </SectionEditor>
 
