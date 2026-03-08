@@ -336,9 +336,9 @@ export default function AdminOrders() {
         <div className="bg-card rounded-2xl p-4 border border-border">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center"><Package className="w-4 h-4 text-primary" /></div>
-            <span className="text-xs text-muted-foreground">Today's Orders</span>
+            <span className="text-xs text-muted-foreground">{statsLabel} Orders</span>
           </div>
-          <p className="text-2xl font-bold">{orderStats.todayCount}</p>
+          <p className="text-2xl font-bold">{orderStats.totalCount}</p>
         </div>
         <div className="bg-card rounded-2xl p-4 border border-border">
           <div className="flex items-center gap-2 mb-1">
