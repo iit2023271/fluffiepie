@@ -86,7 +86,7 @@ export default function Shop() {
       default: result.sort((a, b) => b.reviewCount - a.reviewCount);
     }
     return result;
-  }, [searchQuery, selectedFilters, sortBy, products]);
+  }, [searchQuery, selectedFilters, sortBy, products, priceRange]);
 
   useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedFilters, sortBy]);
 
