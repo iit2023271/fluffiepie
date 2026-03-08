@@ -404,7 +404,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Revenue Chart */}
-      <div className="bg-card rounded-2xl p-6 shadow-soft mb-6">
+      <div className="bg-card rounded-2xl p-4 md:p-6 shadow-soft mb-6">
         <div className="flex items-start justify-between mb-4">
           <div>
             <h3 className="font-display font-semibold text-lg">
