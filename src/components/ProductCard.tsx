@@ -18,6 +18,7 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
   const { dispatch } = useCart();
   const { user } = useAuth();
   const { productTags } = useStoreConfig();
+  const isSoldOut = (product.stockQuantity ?? 100) <= 0;
   
   // Get the product's active tag and its color
   const activeTag = product.tags?.[0];
@@ -29,6 +30,10 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isSoldOut) {
+      toast.error("This product is currently sold out");
+      return;
+    }
     dispatch({
       type: "ADD_ITEM",
       payload: {
@@ -65,10 +70,18 @@ export default function ProductCard({ product, index = 0, isWishlisted = false, 
             <img
               src={product.image}
               alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-500 will-change-transform group-hover:scale-105"
+              className={`w-full h-full object-cover transition-transform duration-500 will-change-transform group-hover:scale-105 ${isSoldOut ? "grayscale opacity-60" : ""}`}
               loading="lazy"
               decoding="async"
             />
+            {/* Sold Out Overlay */}
+            {isSoldOut && (
+              <div className="absolute inset-0 flex items-center justify-center bg-background/40 backdrop-blur-[2px] z-10">
+                <span className="px-4 py-2 bg-destructive text-destructive-foreground text-sm font-bold rounded-full uppercase tracking-wider shadow-lg">
+                  Sold Out
+                </span>
+              </div>
+            )}
             {/* Badge */}
             <div className="absolute top-3 left-3">
               {displayTag && (
