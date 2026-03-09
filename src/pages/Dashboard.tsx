@@ -267,6 +267,7 @@ export default function Dashboard() {
         <div className="flex gap-2 mb-8 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
           {[
             { key: "orders" as const, icon: Package, label: "Orders" },
+            { key: "rewards" as const, icon: Gift, label: "Rewards" },
             { key: "wishlist" as const, icon: Heart, label: "Favorites" },
             { key: "addresses" as const, icon: MapPin, label: "Addresses" },
             { key: "profile" as const, icon: User, label: "Profile" },
