@@ -1470,7 +1470,7 @@ function ImageGalleryEditor({ data, onChange }: { data: CustomSectionData; onCha
         <div><Label className="text-xs">Section Title</Label><Input value={data.galleryTitle || ""} onChange={e => onChange({ galleryTitle: e.target.value })} className="mt-1" /></div>
         <div><Label className="text-xs">Section Subtitle</Label><Input value={data.gallerySubtitle || ""} onChange={e => onChange({ gallerySubtitle: e.target.value })} className="mt-1" /></div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 rounded-xl bg-muted/50 border">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-3 rounded-xl bg-muted/50 border">
         <div>
           <Label className="text-xs">🔲 Grid Columns</Label>
           <Select value={String(data.galleryColumns || 3)} onValueChange={v => onChange({ galleryColumns: parseInt(v) })}>
@@ -1492,6 +1492,17 @@ function ImageGalleryEditor({ data, onChange }: { data: CustomSectionData; onCha
               <SelectItem value="landscape">Landscape (Wide)</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+        <div>
+          <Label className="text-xs flex items-center gap-1.5">📱 Layout Mode</Label>
+          <div className="flex gap-1 mt-1">
+            <button onClick={() => onChange({ galleryLayout: "grid" })} className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${data.galleryLayout !== "carousel" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+              <LayoutGrid className="w-3.5 h-3.5" /> Grid
+            </button>
+            <button onClick={() => onChange({ galleryLayout: "carousel" })} className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${data.galleryLayout === "carousel" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+              <GalleryHorizontal className="w-3.5 h-3.5" /> Carousel
+            </button>
+          </div>
         </div>
       </div>
       {/* Preview */}

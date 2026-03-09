@@ -670,26 +670,35 @@ export default function Index() {
       case "image_gallery": {
         const galCols = data.galleryColumns || 3;
         const galAspect = data.galleryAspect === "portrait" ? "aspect-[3/4]" : data.galleryAspect === "landscape" ? "aspect-video" : "aspect-square";
+        const useCarousel = data.galleryLayout === "carousel";
+        const galleryImages = data.images || [];
+        
+        const galleryContent = galleryImages.map((img, i) => (
+          <motion.div key={i} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }} className={`relative rounded-2xl overflow-hidden bg-muted ${galAspect} ${useCarousel ? "shrink-0 w-[280px] md:w-[320px]" : ""}`}>
+            {img.url && <img src={img.url} alt={img.caption || ""} className="w-full h-full object-cover" loading="lazy" decoding="async" />}
+            {img.caption && (
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-foreground/60 to-transparent p-3">
+                <p className="text-xs text-background font-medium">{img.caption}</p>
+              </div>
+            )}
+          </motion.div>
+        ));
+
         return (
           <section key={section.id} className="container mx-auto px-4 py-16">
             <div className="text-center mb-12">
               {data.galleryTitle && <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{data.galleryTitle}</h2>}
               {data.gallerySubtitle && <p className="text-muted-foreground">{data.gallerySubtitle}</p>}
             </div>
-            {(data.images || []).length > 0 && (
-              <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${Math.min(galCols, 2)}, 1fr)` }} data-desktop-cols={`gal${galCols}`}>
-                <style>{`@media(min-width:768px){[data-desktop-cols="gal${galCols}"]{grid-template-columns:repeat(${galCols},1fr)!important}}`}</style>
-                {(data.images || []).map((img, i) => (
-                  <motion.div key={i} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }} className={`relative rounded-2xl overflow-hidden bg-muted ${galAspect}`}>
-                    {img.url && <img src={img.url} alt={img.caption || ""} className="w-full h-full object-cover" loading="lazy" decoding="async" />}
-                    {img.caption && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-foreground/60 to-transparent p-3">
-                        <p className="text-xs text-background font-medium">{img.caption}</p>
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
-              </div>
+            {galleryImages.length > 0 && (
+              useCarousel ? (
+                <HorizontalCarousel>{galleryContent}</HorizontalCarousel>
+              ) : (
+                <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${Math.min(galCols, 2)}, 1fr)` }} data-desktop-cols={`gal${galCols}`}>
+                  <style>{`@media(min-width:768px){[data-desktop-cols="gal${galCols}"]{grid-template-columns:repeat(${galCols},1fr)!important}}`}</style>
+                  {galleryContent}
+                </div>
+              )
             )}
           </section>
         );
