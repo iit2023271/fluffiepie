@@ -578,6 +578,14 @@ export default function Dashboard() {
           </DialogContent>
         </Dialog>
 
+        {/* Rewards */}
+        {tab === "rewards" && (
+          <div className="space-y-6">
+            <LoyaltyPointsCard />
+            <NotificationToggle />
+          </div>
+        )}
+
         {/* Wishlist */}
         {tab === "wishlist" && (
           <div>
