@@ -29,7 +29,7 @@ FluffiePie is a full-stack, modern bakery e-commerce application designed to pro
 - **Product Catalog:** Browse products with filters by category, occasion, and flavor.
 - **Product Details:** Rich product pages with multi-image galleries, zoomable lightboxes, weight/variant selection, and stock availability.
 - **Shopping Cart & Checkout:** Persistent cart, discount code application, delivery slot selection, and integrated checkout flow.
-- **User Accounts:** Profile management, order history, saved addresses, and loyalty points tracking.
+- **User Accounts:** Profile management, order history, and saved addresses.
 - **Progressive Web App (PWA):** Installable on mobile devices with a native-like experience.
 
 ### 2. Admin Panel (Management Suite)
@@ -38,7 +38,7 @@ Accessed via `/admin` (restricted to users with the `admin` role).
 - **Homepage Designer:** A drag-and-drop, real-time preview builder for the storefront homepage. Admins can add carousels, customize grids, upload images, and manage banners without touching code.
 - **Product Management:** Full CRUD operations for products. Supports multiple images (with drag-to-reorder and cropping), variants (weights), stock management, and categorization.
 - **Order Management:** Track order statuses, print invoices, manage refunds, and update delivery states. Includes a specialized "Kitchen" view for chefs to track pending cake preparations.
-- **Customer Management:** View user profiles, manage loyalty points, and assign customer tags.
+- **Customer Management:** View user profiles and assign customer tags.
 - **Settings:** Configure store information, delivery fees, business hours, discount coupons, and email notification toggles.
 
 ## 🗄️ Database Schema (Supabase)
@@ -52,7 +52,7 @@ Key tables in the Postgres database:
 - `store_config`: Key-value store for global settings (homepage layout, delivery config, contact info).
 - `banners`: Promotional banners for carousels.
 - `coupons`: Discount codes and usage limits.
-- `loyalty_points` & `loyalty_transactions`: Gamification and rewards tracking.
+- `contact_messages`: Inquiries from the frontend contact form.
 - `contact_messages`: Inquiries from the frontend contact form.
 
 ## ☁️ Cloud & Edge Functions
