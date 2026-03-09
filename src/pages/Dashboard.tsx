@@ -651,10 +651,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="p-6 rounded-2xl bg-card shadow-soft">
-              <h3 className="font-display font-semibold text-lg mb-4">Notifications</h3>
-              <NotificationToggle />
-            </div>
           </div>
         )}
 
