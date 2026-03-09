@@ -110,6 +110,7 @@ export interface ReviewsConfig {
   subtitle: string;
   count: number;
   columns?: number;
+  layout?: "grid" | "carousel";
 }
 
 export interface SectionNavItem {
