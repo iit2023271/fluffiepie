@@ -86,6 +86,7 @@ export interface CategoriesConfig {
   showOverlay?: boolean;
   overlayStyle?: "gradient" | "solid" | "none";
   maxItems?: number;
+  layout?: "grid" | "carousel";
 }
 
 export interface TrendingConfig {
@@ -95,6 +96,7 @@ export interface TrendingConfig {
   columns?: number;
   filterBy?: "bestseller" | "new" | "tag" | "all";
   filterTag?: string;
+  layout?: "grid" | "carousel";
 }
 
 export interface HowItWorksConfig {
