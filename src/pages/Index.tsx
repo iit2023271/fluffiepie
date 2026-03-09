@@ -23,6 +23,75 @@ const categoryImages: Record<string, string> = {
   Custom: catCustom,
 };
 
+// Reusable horizontal scroll carousel component
+function HorizontalCarousel({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 0);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 1);
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    const el = scrollRef.current;
+    if (el) {
+      el.addEventListener("scroll", checkScroll, { passive: true });
+      window.addEventListener("resize", checkScroll);
+      return () => {
+        el.removeEventListener("scroll", checkScroll);
+        window.removeEventListener("resize", checkScroll);
+      };
+    }
+  }, [checkScroll]);
+
+  const scroll = (dir: "left" | "right") => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const cardWidth = el.querySelector(":scope > *")?.clientWidth || 300;
+    el.scrollBy({ left: dir === "left" ? -cardWidth - 16 : cardWidth + 16, behavior: "smooth" });
+  };
+
+  return (
+    <div className="relative group">
+      <div
+        ref={scrollRef}
+        className={`flex gap-4 overflow-x-auto scroll-smooth scrollbar-hide pb-2 ${className}`}
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+      >
+        {children}
+      </div>
+      {/* Navigation arrows */}
+      {canScrollLeft && (
+        <button
+          onClick={() => scroll("left")}
+          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 z-10 w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm border border-border shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+      )}
+      {canScrollRight && (
+        <button
+          onClick={() => scroll("right")}
+          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 z-10 w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm border border-border shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      )}
+      {/* Scroll indicators (dots) */}
+      <div className="flex justify-center gap-1.5 mt-4 md:hidden">
+        <div className={`h-1.5 rounded-full transition-all ${canScrollLeft ? "w-1.5 bg-primary/30" : "w-4 bg-primary"}`} />
+        <div className={`h-1.5 rounded-full transition-all ${canScrollLeft && canScrollRight ? "w-4 bg-primary" : "w-1.5 bg-primary/30"}`} />
+        <div className={`h-1.5 rounded-full transition-all ${canScrollRight ? "w-1.5 bg-primary/30" : "w-4 bg-primary"}`} />
+      </div>
+    </div>
+  );
+}
+
 interface Banner {
   id: string;
   title: string;
