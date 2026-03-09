@@ -243,7 +243,7 @@ function HeroBannerCarousel() {
             <button
               key={i}
               onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
-              className={`h-1.5 md:h-2 rounded-full transition-[width,background-color] duration-300 ease-out ${i === current ? "w-5 md:w-6 bg-background" : "w-1.5 md:w-2 bg-background/50"}`}
+              className={`h-1 md:h-2 rounded-full transition-[width,background-color] duration-300 ease-out ${i === current ? "w-4 md:w-6 bg-background" : "w-1 md:w-2 bg-background/50"}`}
             />
           ))}
         </div>
