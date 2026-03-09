@@ -37,6 +37,7 @@ export interface CustomSectionData {
   gallerySubtitle?: string;
   galleryColumns?: number;
   galleryAspect?: "square" | "portrait" | "landscape";
+  galleryLayout?: "grid" | "carousel";
   images?: { url: string; caption: string }[];
   // text_block extras
   textSize?: "sm" | "md" | "lg";
