@@ -56,7 +56,7 @@ export default function Dashboard() {
   const { config: deliveryConfig } = useDeliveryConfig();
   const { isWishlisted, toggle: toggleWishlist } = useWishlist();
   const { data: allProducts = [] } = useProducts();
-  const [tab, setTab] = useState<"orders" | "profile" | "addresses" | "wishlist">("orders");
+  const [tab, setTab] = useState<"orders" | "profile" | "addresses" | "wishlist" | "rewards">("orders");
   const [orders, setOrders] = useState<Order[]>([]);
   const [profile, setProfile] = useState<Profile>({ full_name: "", phone: "" });
   const [loading, setLoading] = useState(true);
