@@ -16,7 +16,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useDeliveryConfig } from "@/hooks/useDeliveryConfig";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { downloadInvoice } from "@/utils/generateInvoice";
-import NotificationToggle from "@/components/NotificationToggle";
+
 
 interface OrderNote {
   id: string;
