@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Package, User, LogOut, Clock, CheckCircle, Truck, ChefHat, Search, Shield, Star, MapPin, StickyNote, Heart, XCircle, RefreshCw, FileText, Gift } from "lucide-react";
+import { Package, User, LogOut, Clock, CheckCircle, Truck, ChefHat, Search, Shield, Star, MapPin, StickyNote, Heart, XCircle, RefreshCw, FileText } from "lucide-react";
 import SavedAddresses from "@/components/SavedAddresses";
 import ReviewForm from "@/components/ReviewForm";
 import ProductCard from "@/components/ProductCard";
@@ -15,8 +15,6 @@ import { useWishlist } from "@/hooks/useWishlist";
 import { useProducts } from "@/hooks/useProducts";
 import { useDeliveryConfig } from "@/hooks/useDeliveryConfig";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
-import LoyaltyPointsCard from "@/components/LoyaltyPointsCard";
-import NotificationToggle from "@/components/NotificationToggle";
 import { downloadInvoice } from "@/utils/generateInvoice";
 
 interface OrderNote {
@@ -56,7 +54,7 @@ export default function Dashboard() {
   const { config: deliveryConfig } = useDeliveryConfig();
   const { isWishlisted, toggle: toggleWishlist } = useWishlist();
   const { data: allProducts = [] } = useProducts();
-  const [tab, setTab] = useState<"orders" | "profile" | "addresses" | "wishlist" | "rewards">("orders");
+  const [tab, setTab] = useState<"orders" | "profile" | "addresses" | "wishlist">("orders");
   const [orders, setOrders] = useState<Order[]>([]);
   const [profile, setProfile] = useState<Profile>({ full_name: "", phone: "" });
   const [loading, setLoading] = useState(true);
@@ -267,7 +265,6 @@ export default function Dashboard() {
         <div className="flex gap-2 mb-8 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
           {[
             { key: "orders" as const, icon: Package, label: "Orders" },
-            { key: "rewards" as const, icon: Gift, label: "Rewards" },
             { key: "wishlist" as const, icon: Heart, label: "Favorites" },
             { key: "addresses" as const, icon: MapPin, label: "Addresses" },
             { key: "profile" as const, icon: User, label: "Profile" },
@@ -578,14 +575,6 @@ export default function Dashboard() {
             )}
           </DialogContent>
         </Dialog>
-
-        {/* Rewards */}
-        {tab === "rewards" && (
-          <div className="space-y-6">
-            <LoyaltyPointsCard />
-            <NotificationToggle />
-          </div>
-        )}
 
         {/* Wishlist */}
         {tab === "wishlist" && (
