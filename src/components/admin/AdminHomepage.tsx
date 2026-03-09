@@ -771,7 +771,44 @@ export default function AdminHomepage() {
                       </div>
                     )}
                   </div>
-                  <div>
+                </div>
+
+                {/* Layout Mode */}
+                <div className="p-3 rounded-xl bg-cream/50 border border-primary/20">
+                  <Label className="text-xs font-semibold mb-2 block">📐 Layout Mode</Label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => updateTrending("layout", "grid")}
+                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border transition-all ${
+                        (config.trending.layout || "grid") === "grid"
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <LayoutGrid className="w-4 h-4" />
+                      <span className="text-xs font-medium">Grid</span>
+                    </button>
+                    <button
+                      onClick={() => updateTrending("layout", "carousel")}
+                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border transition-all ${
+                        config.trending.layout === "carousel"
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <GalleryHorizontal className="w-4 h-4" />
+                      <span className="text-xs font-medium">Carousel</span>
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-2">
+                    {config.trending.layout === "carousel" 
+                      ? "Products scroll horizontally like the banner slider" 
+                      : "Products display in a fixed grid layout"}
+                  </p>
+                </div>
+
+                {(config.trending.layout || "grid") === "grid" && (
+                  <div className="p-3 rounded-xl bg-muted/50 border">
                     <Label className="text-xs">🔲 Grid Columns</Label>
                     <Select value={String(config.trending.columns || 4)} onValueChange={v => updateTrending("columns", parseInt(v))}>
                       <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
@@ -782,7 +819,7 @@ export default function AdminHomepage() {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
+                )}
 
                 {/* Preview */}
                 <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
