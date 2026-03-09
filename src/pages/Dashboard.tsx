@@ -16,6 +16,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useDeliveryConfig } from "@/hooks/useDeliveryConfig";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { downloadInvoice } from "@/utils/generateInvoice";
+import NotificationToggle from "@/components/NotificationToggle";
 
 interface OrderNote {
   id: string;
@@ -608,44 +609,51 @@ export default function Dashboard() {
 
         {/* Profile */}
         {tab === "profile" && (
-          <div className="p-6 rounded-2xl bg-card shadow-soft max-w-lg">
-            <h3 className="font-display font-semibold text-lg mb-6">Edit Profile</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-1 block">Full Name</label>
-                <input
-                  type="text"
-                  value={profile.full_name || ""}
-                  onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:border-primary"
-                />
+          <div className="space-y-6 max-w-lg">
+            <div className="p-6 rounded-2xl bg-card shadow-soft">
+              <h3 className="font-display font-semibold text-lg mb-6">Edit Profile</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Full Name</label>
+                  <input
+                    type="text"
+                    value={profile.full_name || ""}
+                    onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Email</label>
+                  <input
+                    type="email"
+                    value={user?.email || ""}
+                    disabled
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-muted text-sm text-muted-foreground"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Phone</label>
+                  <input
+                    type="tel"
+                    value={profile.phone || ""}
+                    onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                    placeholder="Enter your phone number"
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:border-primary"
+                  />
+                </div>
+                <button
+                  onClick={handleSaveProfile}
+                  disabled={saving}
+                  className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 disabled:opacity-50"
+                >
+                  {saving ? "Saving..." : "Save Changes"}
+                </button>
               </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">Email</label>
-                <input
-                  type="email"
-                  value={user?.email || ""}
-                  disabled
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-muted text-sm text-muted-foreground"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">Phone</label>
-                <input
-                  type="tel"
-                  value={profile.phone || ""}
-                  onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                  placeholder="Enter your phone number"
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm focus:outline-none focus:border-primary"
-                />
-              </div>
-              <button
-                onClick={handleSaveProfile}
-                disabled={saving}
-                className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 disabled:opacity-50"
-              >
-                {saving ? "Saving..." : "Save Changes"}
-              </button>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-card shadow-soft">
+              <h3 className="font-display font-semibold text-lg mb-4">Notifications</h3>
+              <NotificationToggle />
             </div>
           </div>
         )}
