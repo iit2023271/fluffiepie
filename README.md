@@ -1,4 +1,6 @@
-# Welcome to your Lovable project
+# Welcome to your Lovable project: FluffiePie
+
+📚 **[Click here to view the full Project Documentation](DOCUMENTATION.md)**
 
 ## Project info
 
