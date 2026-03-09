@@ -142,12 +142,12 @@ function HeroBannerCarousel() {
       </div>
 
       {banners.length > 1 && (
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
           {banners.map((_, i) => (
             <button
               key={i}
               onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
-              className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-background w-6" : "bg-background/50"}`}
+              className={`h-2 rounded-full transition-[width,background-color] duration-300 ease-out ${i === current ? "w-6 bg-background" : "w-2 bg-background/50"}`}
             />
           ))}
         </div>
