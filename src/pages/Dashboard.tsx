@@ -481,12 +481,45 @@ export default function Dashboard() {
                           </button>
                         )}
                         {order.status === "delivered" && (
-                          <button
-                            onClick={() => setReviewingOrder(order)}
-                            className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
-                          >
-                            <Star className="w-3.5 h-3.5" /> Write Review
-                          </button>
+                          <>
+                            <button
+                              onClick={() => {
+                                const items = (order.items as any[]).map((item: any) => ({
+                                  name: item.name,
+                                  weight: item.weight,
+                                  quantity: item.quantity,
+                                  price: item.price,
+                                }));
+                                const addr = (order as any).delivery_address || {};
+                                downloadInvoice({
+                                  orderId: order.id,
+                                  orderDate: order.created_at,
+                                  customerName: profile.full_name || user?.email || "",
+                                  customerEmail: user?.email || "",
+                                  customerPhone: profile.phone || "",
+                                  deliveryAddress: addr,
+                                  items,
+                                  subtotal: (order as any).subtotal || order.total,
+                                  discount: (order as any).discount || 0,
+                                  deliveryFee: (order as any).delivery_fee || 0,
+                                  total: order.total,
+                                  deliverySlot: order.delivery_slot || undefined,
+                                  storeName: storeInfo.storeName,
+                                  storePhone: storeInfo.phone,
+                                  storeEmail: storeInfo.email,
+                                });
+                              }}
+                              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+                            >
+                              <FileText className="w-3.5 h-3.5" /> Invoice
+                            </button>
+                            <button
+                              onClick={() => setReviewingOrder(order)}
+                              className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                            >
+                              <Star className="w-3.5 h-3.5" /> Write Review
+                            </button>
+                          </>
                         )}
                       </div>
                     </div>
