@@ -56,7 +56,7 @@ export default function Dashboard() {
   const { config: deliveryConfig } = useDeliveryConfig();
   const { isWishlisted, toggle: toggleWishlist } = useWishlist();
   const { data: allProducts = [] } = useProducts();
-  const [tab, setTab] = useState<"orders" | "profile" | "addresses" | "wishlist">("orders");
+  const [tab, setTab] = useState<"orders" | "profile" | "addresses" | "wishlist" | "rewards">("orders");
   const [orders, setOrders] = useState<Order[]>([]);
   const [profile, setProfile] = useState<Profile>({ full_name: "", phone: "" });
   const [loading, setLoading] = useState(true);
@@ -267,6 +267,7 @@ export default function Dashboard() {
         <div className="flex gap-2 mb-8 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
           {[
             { key: "orders" as const, icon: Package, label: "Orders" },
+            { key: "rewards" as const, icon: Gift, label: "Rewards" },
             { key: "wishlist" as const, icon: Heart, label: "Favorites" },
             { key: "addresses" as const, icon: MapPin, label: "Addresses" },
             { key: "profile" as const, icon: User, label: "Profile" },
@@ -481,12 +482,45 @@ export default function Dashboard() {
                           </button>
                         )}
                         {order.status === "delivered" && (
-                          <button
-                            onClick={() => setReviewingOrder(order)}
-                            className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
-                          >
-                            <Star className="w-3.5 h-3.5" /> Write Review
-                          </button>
+                          <>
+                            <button
+                              onClick={() => {
+                                const items = (order.items as any[]).map((item: any) => ({
+                                  name: item.name,
+                                  weight: item.weight,
+                                  quantity: item.quantity,
+                                  price: item.price,
+                                }));
+                                const addr = (order as any).delivery_address || {};
+                                downloadInvoice({
+                                  orderId: order.id,
+                                  orderDate: order.created_at,
+                                  customerName: profile.full_name || user?.email || "",
+                                  customerEmail: user?.email || "",
+                                  customerPhone: profile.phone || "",
+                                  deliveryAddress: addr,
+                                  items,
+                                  subtotal: (order as any).subtotal || order.total,
+                                  discount: (order as any).discount || 0,
+                                  deliveryFee: (order as any).delivery_fee || 0,
+                                  total: order.total,
+                                  deliverySlot: order.delivery_slot || undefined,
+                                  storeName: storeInfo.storeName,
+                                  storePhone: storeInfo.phone,
+                                  storeEmail: storeInfo.email,
+                                });
+                              }}
+                              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+                            >
+                              <FileText className="w-3.5 h-3.5" /> Invoice
+                            </button>
+                            <button
+                              onClick={() => setReviewingOrder(order)}
+                              className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                            >
+                              <Star className="w-3.5 h-3.5" /> Write Review
+                            </button>
+                          </>
                         )}
                       </div>
                     </div>
@@ -544,6 +578,14 @@ export default function Dashboard() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Rewards */}
+        {tab === "rewards" && (
+          <div className="space-y-6">
+            <LoyaltyPointsCard />
+            <NotificationToggle />
+          </div>
+        )}
 
         {/* Wishlist */}
         {tab === "wishlist" && (
