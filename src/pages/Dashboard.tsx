@@ -15,8 +15,6 @@ import { useWishlist } from "@/hooks/useWishlist";
 import { useProducts } from "@/hooks/useProducts";
 import { useDeliveryConfig } from "@/hooks/useDeliveryConfig";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
-import LoyaltyPointsCard from "@/components/LoyaltyPointsCard";
-import NotificationToggle from "@/components/NotificationToggle";
 import { downloadInvoice } from "@/utils/generateInvoice";
 
 interface OrderNote {
