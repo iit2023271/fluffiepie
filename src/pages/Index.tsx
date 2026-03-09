@@ -264,13 +264,16 @@ function HeroBannerCarousel() {
       </div>
 
       {banners.length > 1 && (
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
+        <div className="absolute bottom-2 md:bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1 md:gap-1.5 z-10">
           {banners.map((_, i) => (
             <button
               key={i}
+              aria-label={`Go to banner ${i + 1}`}
               onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
-              className={`h-1 md:h-2 rounded-full transition-[width,background-color] duration-300 ease-out ${i === current ? "w-4 md:w-6 bg-background" : "w-1 md:w-2 bg-background/50"}`}
+              className={`p-0 border-0 h-0.5 md:h-2 rounded-full transition-[width,background-color] duration-300 ease-out ${i === current ? "w-3 md:w-6 bg-background" : "w-1.5 md:w-2 bg-background/50"}`}
             />
+          ))}
+        </div>
           ))}
         </div>
       )}
