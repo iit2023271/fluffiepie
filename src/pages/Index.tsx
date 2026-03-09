@@ -23,6 +23,75 @@ const categoryImages: Record<string, string> = {
   Custom: catCustom,
 };
 
+// Reusable horizontal scroll carousel component
+function HorizontalCarousel({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 0);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 1);
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    const el = scrollRef.current;
+    if (el) {
+      el.addEventListener("scroll", checkScroll, { passive: true });
+      window.addEventListener("resize", checkScroll);
+      return () => {
+        el.removeEventListener("scroll", checkScroll);
+        window.removeEventListener("resize", checkScroll);
+      };
+    }
+  }, [checkScroll]);
+
+  const scroll = (dir: "left" | "right") => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const cardWidth = el.querySelector(":scope > *")?.clientWidth || 300;
+    el.scrollBy({ left: dir === "left" ? -cardWidth - 16 : cardWidth + 16, behavior: "smooth" });
+  };
+
+  return (
+    <div className="relative group">
+      <div
+        ref={scrollRef}
+        className={`flex gap-4 overflow-x-auto scroll-smooth scrollbar-hide pb-2 ${className}`}
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+      >
+        {children}
+      </div>
+      {/* Navigation arrows */}
+      {canScrollLeft && (
+        <button
+          onClick={() => scroll("left")}
+          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 z-10 w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm border border-border shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+      )}
+      {canScrollRight && (
+        <button
+          onClick={() => scroll("right")}
+          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 z-10 w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm border border-border shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      )}
+      {/* Scroll indicators (dots) */}
+      <div className="flex justify-center gap-1.5 mt-4 md:hidden">
+        <div className={`h-1.5 rounded-full transition-all ${canScrollLeft ? "w-1.5 bg-primary/30" : "w-4 bg-primary"}`} />
+        <div className={`h-1.5 rounded-full transition-all ${canScrollLeft && canScrollRight ? "w-4 bg-primary" : "w-1.5 bg-primary/30"}`} />
+        <div className={`h-1.5 rounded-full transition-all ${canScrollRight ? "w-1.5 bg-primary/30" : "w-4 bg-primary"}`} />
+      </div>
+    </div>
+  );
+}
+
 interface Banner {
   id: string;
   title: string;
@@ -277,6 +346,7 @@ export default function Index() {
       const overlayCls = overlayStyle === "solid" ? "bg-foreground/50" : overlayStyle === "none" ? "" : "bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent group-hover:from-foreground/80 transition-all duration-500";
       const filterType = config.categories.filterType || "occasion";
       const maxItems = config.categories.maxItems || 0;
+      const isCarousel = config.categories.layout === "carousel";
 
       // Build display items
       let displayItems: { name: string; image: string; link: string }[];
@@ -298,29 +368,46 @@ export default function Index() {
 
       if (maxItems > 0) displayItems = displayItems.slice(0, maxItems);
 
+      const renderCard = (item: typeof displayItems[0], i: number) => (
+        <motion.div 
+          key={item.name + i} 
+          initial={{ opacity: 0, y: 40, scale: 0.9 }} 
+          whileInView={{ opacity: 1, y: 0, scale: 1 }} 
+          viewport={{ once: true }} 
+          transition={{ delay: i * 0.12, type: "spring", stiffness: 100 }}
+          className={isCarousel ? "flex-shrink-0 w-[280px] md:w-[320px]" : ""}
+        >
+          <Link to={item.link} className={`group block relative overflow-hidden ${radiusCls} ${aspectCls}`}>
+            <img src={item.image} alt={item.name} className="w-full h-full object-cover transition-transform duration-700 will-change-transform group-hover:scale-110" loading="lazy" decoding="async" />
+            {overlayStyle !== "none" && (
+              <div className={`absolute inset-0 ${overlayCls}`} />
+            )}
+            <motion.div className="absolute bottom-4 left-4" whileHover={{ x: 5 }}>
+              <h3 className="text-lg font-display font-bold text-background">{item.name}</h3>
+              <span className="text-xs text-background/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Shop Now →</span>
+            </motion.div>
+          </Link>
+        </motion.div>
+      );
+
       return (
         <section key="categories" className="container mx-auto px-4 py-16">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{config.categories.title}</h2>
             <p className="text-muted-foreground">{config.categories.subtitle}</p>
           </motion.div>
-          <div className="grid gap-4 md:gap-6" style={{ gridTemplateColumns: `repeat(${Math.min(cols, 2)}, 1fr)` }} data-desktop-cols={cols}>
-            <style>{`@media(min-width:768px){[data-desktop-cols="${cols}"]{grid-template-columns:repeat(${cols},1fr)!important}}`}</style>
-            {displayItems.map((item, i) => (
-              <motion.div key={item.name + i} initial={{ opacity: 0, y: 40, scale: 0.9 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.12, type: "spring", stiffness: 100 }}>
-                <Link to={item.link} className={`group block relative overflow-hidden ${radiusCls} ${aspectCls}`}>
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover transition-transform duration-700 will-change-transform group-hover:scale-110" loading="lazy" decoding="async" />
-                  {overlayStyle !== "none" && (
-                    <div className={`absolute inset-0 ${overlayCls}`} />
-                  )}
-                  <motion.div className="absolute bottom-4 left-4" whileHover={{ x: 5 }}>
-                    <h3 className="text-lg font-display font-bold text-background">{item.name}</h3>
-                    <span className="text-xs text-background/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Shop Now →</span>
-                  </motion.div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+          
+          {isCarousel ? (
+            <HorizontalCarousel>
+              {displayItems.map((item, i) => renderCard(item, i))}
+            </HorizontalCarousel>
+          ) : (
+            <div className="grid gap-4 md:gap-6" style={{ gridTemplateColumns: `repeat(${Math.min(cols, 2)}, 1fr)` }} data-desktop-cols={cols}>
+              <style>{`@media(min-width:768px){[data-desktop-cols="${cols}"]{grid-template-columns:repeat(${cols},1fr)!important}}`}</style>
+              {displayItems.map((item, i) => renderCard(item, i))}
+            </div>
+          )}
+          
           {config.categories.showViewAll && (
             <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-8">
               <Link to={config.categories.viewAllLink || "/shop"} className="inline-flex items-center gap-1 text-primary font-medium text-sm hover:underline group">
@@ -333,6 +420,7 @@ export default function Index() {
     },
     trending: () => {
       const trendCols = config.trending.columns || 4;
+      const isCarousel = config.trending.layout === "carousel";
       return (
         <section key="trending" className="container mx-auto px-4 py-16 bg-cream rounded-3xl mx-4">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex items-center justify-between mb-10">
@@ -344,14 +432,26 @@ export default function Index() {
               View All <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </motion.div>
-          <div className="grid gap-4 md:gap-6" style={{ gridTemplateColumns: `repeat(${Math.min(trendCols, 2)}, 1fr)` }} data-desktop-cols={`t${trendCols}`}>
-            <style>{`@media(min-width:768px){[data-desktop-cols="t${trendCols}"]{grid-template-columns:repeat(${trendCols},1fr)!important}}`}</style>
-            {featured.map((product, i) => (
-              <motion.div key={product.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, type: "spring", stiffness: 100 }}>
-                <ProductCard product={product} index={i} />
-              </motion.div>
-            ))}
-          </div>
+          
+          {isCarousel ? (
+            <HorizontalCarousel>
+              {featured.map((product, i) => (
+                <motion.div key={product.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, type: "spring", stiffness: 100 }} className="flex-shrink-0 w-[260px] md:w-[280px]">
+                  <ProductCard product={product} index={i} />
+                </motion.div>
+              ))}
+            </HorizontalCarousel>
+          ) : (
+            <div className="grid gap-4 md:gap-6" style={{ gridTemplateColumns: `repeat(${Math.min(trendCols, 2)}, 1fr)` }} data-desktop-cols={`t${trendCols}`}>
+              <style>{`@media(min-width:768px){[data-desktop-cols="t${trendCols}"]{grid-template-columns:repeat(${trendCols},1fr)!important}}`}</style>
+              {featured.map((product, i) => (
+                <motion.div key={product.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, type: "spring", stiffness: 100 }}>
+                  <ProductCard product={product} index={i} />
+                </motion.div>
+              ))}
+            </div>
+          )}
+          
           <div className="mt-8 text-center md:hidden">
             <Link to="/shop" className="inline-flex items-center gap-1 text-primary font-medium text-sm hover:underline">View All <ArrowRight className="w-4 h-4" /></Link>
           </div>
@@ -396,6 +496,32 @@ export default function Index() {
     ),
     reviews: () => {
       const revCols = config.reviews.columns || 3;
+      const isCarousel = config.reviews.layout === "carousel";
+      
+      const renderReviewCard = (r: any, i: number) => {
+        const name = r.author_name || "Customer";
+        const initials = name.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase();
+        return (
+          <motion.div key={r.id} initial={{ opacity: 0, y: 30, rotateX: 15 }} whileInView={{ opacity: 1, y: 0, rotateX: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.15, type: "spring", stiffness: 80 }} whileHover={{ y: -5, scale: 1.02, transition: { duration: 0.25 } }} className={`bg-background rounded-2xl p-6 shadow-soft hover:shadow-elevated transition-shadow ${isCarousel ? "flex-shrink-0 w-[300px] md:w-[350px]" : ""}`}>
+            <div className="flex items-center gap-1 mb-3">
+              {Array.from({ length: r.rating }).map((_, j) => (
+                <motion.div key={j} initial={{ opacity: 0, scale: 0 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.1 + j * 0.05 }}>
+                  <Star className="w-4 h-4 fill-accent text-accent" />
+                </motion.div>
+              ))}
+            </div>
+            <p className="text-sm text-foreground mb-4 leading-relaxed">"{r.comment}"</p>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">{initials}</div>
+              <div>
+                <span className="text-sm font-medium">{name}</span>
+                {r.products?.name && <p className="text-xs text-muted-foreground">on {r.products.name}</p>}
+              </div>
+            </div>
+          </motion.div>
+        );
+      };
+
       return reviews.length > 0 ? (
         <section key="reviews" className="bg-blush py-20 overflow-hidden">
           <div className="container mx-auto px-4">
@@ -403,32 +529,17 @@ export default function Index() {
               <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{config.reviews.title}</h2>
               <p className="text-muted-foreground">{config.reviews.subtitle}</p>
             </motion.div>
-            <div className="grid gap-6" style={{ gridTemplateColumns: `repeat(1, 1fr)` }} data-desktop-cols={`r${revCols}`}>
-              <style>{`@media(min-width:768px){[data-desktop-cols="r${revCols}"]{grid-template-columns:repeat(${revCols},1fr)!important}}`}</style>
-              {reviews.slice(0, config.reviews.count).map((r, i) => {
-                const name = r.author_name || "Customer";
-                const initials = name.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase();
-                return (
-                  <motion.div key={r.id} initial={{ opacity: 0, y: 30, rotateX: 15 }} whileInView={{ opacity: 1, y: 0, rotateX: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.15, type: "spring", stiffness: 80 }} whileHover={{ y: -5, scale: 1.02, transition: { duration: 0.25 } }} className="bg-background rounded-2xl p-6 shadow-soft hover:shadow-elevated transition-shadow">
-                    <div className="flex items-center gap-1 mb-3">
-                      {Array.from({ length: r.rating }).map((_, j) => (
-                        <motion.div key={j} initial={{ opacity: 0, scale: 0 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.1 + j * 0.05 }}>
-                          <Star className="w-4 h-4 fill-accent text-accent" />
-                        </motion.div>
-                      ))}
-                    </div>
-                    <p className="text-sm text-foreground mb-4 leading-relaxed">"{r.comment}"</p>
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">{initials}</div>
-                      <div>
-                        <span className="text-sm font-medium">{name}</span>
-                        {r.products?.name && <p className="text-xs text-muted-foreground">on {r.products.name}</p>}
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
+            
+            {isCarousel ? (
+              <HorizontalCarousel>
+                {reviews.slice(0, config.reviews.count).map((r, i) => renderReviewCard(r, i))}
+              </HorizontalCarousel>
+            ) : (
+              <div className="grid gap-6" style={{ gridTemplateColumns: `repeat(1, 1fr)` }} data-desktop-cols={`r${revCols}`}>
+                <style>{`@media(min-width:768px){[data-desktop-cols="r${revCols}"]{grid-template-columns:repeat(${revCols},1fr)!important}}`}</style>
+                {reviews.slice(0, config.reviews.count).map((r, i) => renderReviewCard(r, i))}
+              </div>
+            )}
           </div>
         </section>
       ) : null;

@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { GripVertical, Eye, EyeOff, Save, RotateCcw, ChevronDown, ChevronUp, Plus, Trash2, Copy, Type, Megaphone, Grid3X3, HelpCircle, Minus, Image, Upload, Crop } from "lucide-react";
+import { GripVertical, Eye, EyeOff, Save, RotateCcw, ChevronDown, ChevronUp, Plus, Trash2, Copy, Type, Megaphone, Grid3X3, HelpCircle, Minus, Image, Upload, Crop, LayoutGrid, GalleryHorizontal } from "lucide-react";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import ImageCropper from "@/components/admin/ImageCropper";
 import {
@@ -602,21 +602,57 @@ export default function AdminHomepage() {
                   </div>
                 )}
 
+                {/* Layout Mode */}
+                <div className="p-3 rounded-xl bg-cream/50 border border-primary/20">
+                  <Label className="text-xs font-semibold mb-2 block">📐 Layout Mode</Label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => updateCategories("layout", "grid")}
+                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border transition-all ${
+                        (config.categories.layout || "grid") === "grid"
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <LayoutGrid className="w-4 h-4" />
+                      <span className="text-xs font-medium">Grid</span>
+                    </button>
+                    <button
+                      onClick={() => updateCategories("layout", "carousel")}
+                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border transition-all ${
+                        config.categories.layout === "carousel"
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <GalleryHorizontal className="w-4 h-4" />
+                      <span className="text-xs font-medium">Carousel</span>
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-2">
+                    {config.categories.layout === "carousel" 
+                      ? "Items scroll horizontally like a slider" 
+                      : "Items display in a fixed grid layout"}
+                  </p>
+                </div>
+
                 {/* Layout Controls */}
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3 p-3 rounded-xl bg-muted/50 border">
-                  <div>
-                    <Label className="text-xs">🔲 Columns</Label>
-                    <Select value={String(config.categories.columns || 4)} onValueChange={v => updateCategories("columns", parseInt(v))}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="2">2</SelectItem>
-                        <SelectItem value="3">3</SelectItem>
-                        <SelectItem value="4">4</SelectItem>
-                        <SelectItem value="5">5</SelectItem>
-                        <SelectItem value="6">6</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {(config.categories.layout || "grid") === "grid" && (
+                    <div>
+                      <Label className="text-xs">🔲 Columns</Label>
+                      <Select value={String(config.categories.columns || 4)} onValueChange={v => updateCategories("columns", parseInt(v))}>
+                        <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="2">2</SelectItem>
+                          <SelectItem value="3">3</SelectItem>
+                          <SelectItem value="4">4</SelectItem>
+                          <SelectItem value="5">5</SelectItem>
+                          <SelectItem value="6">6</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   <div>
                     <Label className="text-xs">🔢 Max Items</Label>
                     <Input type="number" min={1} max={20} value={config.categories.maxItems || ""} placeholder="All" onChange={e => updateCategories("maxItems", e.target.value ? parseInt(e.target.value) : 0)} className="mt-1" />
@@ -735,7 +771,44 @@ export default function AdminHomepage() {
                       </div>
                     )}
                   </div>
-                  <div>
+                </div>
+
+                {/* Layout Mode */}
+                <div className="p-3 rounded-xl bg-cream/50 border border-primary/20">
+                  <Label className="text-xs font-semibold mb-2 block">📐 Layout Mode</Label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => updateTrending("layout", "grid")}
+                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border transition-all ${
+                        (config.trending.layout || "grid") === "grid"
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <LayoutGrid className="w-4 h-4" />
+                      <span className="text-xs font-medium">Grid</span>
+                    </button>
+                    <button
+                      onClick={() => updateTrending("layout", "carousel")}
+                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border transition-all ${
+                        config.trending.layout === "carousel"
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <GalleryHorizontal className="w-4 h-4" />
+                      <span className="text-xs font-medium">Carousel</span>
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-2">
+                    {config.trending.layout === "carousel" 
+                      ? "Products scroll horizontally like the banner slider" 
+                      : "Products display in a fixed grid layout"}
+                  </p>
+                </div>
+
+                {(config.trending.layout || "grid") === "grid" && (
+                  <div className="p-3 rounded-xl bg-muted/50 border">
                     <Label className="text-xs">🔲 Grid Columns</Label>
                     <Select value={String(config.trending.columns || 4)} onValueChange={v => updateTrending("columns", parseInt(v))}>
                       <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
@@ -746,7 +819,7 @@ export default function AdminHomepage() {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
+                )}
 
                 {/* Preview */}
                 <div className="p-3 rounded-xl border border-dashed border-primary/30 bg-cream/30">
@@ -810,18 +883,53 @@ export default function AdminHomepage() {
                   <div><Label className="text-xs">Section Subtitle</Label><Input value={config.reviews.subtitle} onChange={e => updateReviews("subtitle", e.target.value)} className="mt-1" /></div>
                   <div><Label className="text-xs">Reviews to Show</Label><Input type="number" min={1} max={9} value={config.reviews.count} onChange={e => updateReviews("count", parseInt(e.target.value) || 3)} className="mt-1" /></div>
                 </div>
-                <div className="p-3 rounded-xl bg-muted/50 border">
-                  <Label className="text-xs">🔲 Grid Columns</Label>
-                  <Select value={String(config.reviews.columns || 3)} onValueChange={v => updateReviews("columns", parseInt(v))}>
-                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 Column</SelectItem>
-                      <SelectItem value="2">2 Columns</SelectItem>
-                      <SelectItem value="3">3 Columns (Default)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                {/* Layout Mode */}
+                <div className="p-3 rounded-xl bg-cream/50 border border-primary/20">
+                  <Label className="text-xs font-semibold mb-2 block">📐 Layout Mode</Label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => updateReviews("layout", "grid")}
+                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border transition-all ${
+                        (config.reviews.layout || "grid") === "grid"
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <LayoutGrid className="w-4 h-4" />
+                      <span className="text-xs font-medium">Grid</span>
+                    </button>
+                    <button
+                      onClick={() => updateReviews("layout", "carousel")}
+                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border transition-all ${
+                        config.reviews.layout === "carousel"
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <GalleryHorizontal className="w-4 h-4" />
+                      <span className="text-xs font-medium">Carousel</span>
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-2">
+                    {config.reviews.layout === "carousel" 
+                      ? "Reviews scroll horizontally like the banner slider" 
+                      : "Reviews display in a fixed grid layout"}
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">Reviews are automatically pulled from your database (4+ stars with comments).</p>
+
+                {(config.reviews.layout || "grid") === "grid" && (
+                  <div className="p-3 rounded-xl bg-muted/50 border">
+                    <Label className="text-xs">🔲 Grid Columns</Label>
+                    <Select value={String(config.reviews.columns || 3)} onValueChange={v => updateReviews("columns", parseInt(v))}>
+                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1 Column</SelectItem>
+                        <SelectItem value="2">2 Columns</SelectItem>
+                        <SelectItem value="3">3 Columns (Default)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
             </SectionEditor>
           );
