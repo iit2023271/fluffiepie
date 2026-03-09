@@ -52,7 +52,7 @@ Key tables in the Postgres database:
 - `store_config`: Key-value store for global settings (homepage layout, delivery config, contact info).
 - `banners`: Promotional banners for carousels.
 - `coupons`: Discount codes and usage limits.
-- `loyalty_points` & `loyalty_transactions`: Gamification and rewards tracking.
+- `contact_messages`: Inquiries from the frontend contact form.
 - `contact_messages`: Inquiries from the frontend contact form.
 
 ## ☁️ Cloud & Edge Functions
