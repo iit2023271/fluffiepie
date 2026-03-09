@@ -133,6 +133,7 @@ function HeroBannerCarousel() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
+  const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
     supabase
@@ -163,6 +164,26 @@ function HeroBannerCarousel() {
     return () => clearInterval(timer);
   }, [next, banners.length]);
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX.current - touchEndX;
+    const threshold = 50; // minimum swipe distance
+
+    if (Math.abs(diff) > threshold) {
+      if (diff > 0) {
+        next(); // swipe left = next
+      } else {
+        prev(); // swipe right = prev
+      }
+    }
+    touchStartX.current = null;
+  };
+
   if (banners.length === 0) return null;
 
   const banner = banners[current];
@@ -173,7 +194,12 @@ function HeroBannerCarousel() {
   };
 
   return (
-    <div className="relative w-full overflow-hidden rounded-3xl bg-muted shadow-elevated" style={{ minHeight: '200px' }}>
+    <div 
+      className="relative w-full overflow-hidden rounded-3xl bg-muted shadow-elevated touch-pan-y" 
+      style={{ minHeight: '200px' }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <div className="relative aspect-[16/9] sm:aspect-[21/9] md:aspect-[3/1] w-full">
         <AnimatePresence custom={direction} mode="wait">
           <motion.div
