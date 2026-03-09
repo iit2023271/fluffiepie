@@ -38,7 +38,7 @@ Accessed via `/admin` (restricted to users with the `admin` role).
 - **Homepage Designer:** A drag-and-drop, real-time preview builder for the storefront homepage. Admins can add carousels, customize grids, upload images, and manage banners without touching code.
 - **Product Management:** Full CRUD operations for products. Supports multiple images (with drag-to-reorder and cropping), variants (weights), stock management, and categorization.
 - **Order Management:** Track order statuses, print invoices, manage refunds, and update delivery states. Includes a specialized "Kitchen" view for chefs to track pending cake preparations.
-- **Customer Management:** View user profiles, manage loyalty points, and assign customer tags.
+- **Customer Management:** View user profiles and assign customer tags.
 - **Settings:** Configure store information, delivery fees, business hours, discount coupons, and email notification toggles.
 
 ## 🗄️ Database Schema (Supabase)
