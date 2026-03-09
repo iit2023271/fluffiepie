@@ -274,8 +274,6 @@ function HeroBannerCarousel() {
             />
           ))}
         </div>
-          ))}
-        </div>
       )}
     </div>
   );
