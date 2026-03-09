@@ -320,12 +320,6 @@ export default function ProductDetail() {
       {/* Recently Viewed */}
       <RecentlyViewed excludeId={product.id} />
 
-      {/* Lightbox */}
-      <AnimatePresence>
-        {lightboxOpen && (
-          <Lightbox images={allImages} initialIndex={selectedImage} onClose={() => setLightboxOpen(false)} />
-        )}
-      </AnimatePresence>
       {/* Mobile sticky Add to Cart bar */}
       {isMobile && (
         <motion.div
