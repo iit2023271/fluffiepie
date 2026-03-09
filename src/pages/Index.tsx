@@ -346,6 +346,7 @@ export default function Index() {
       const overlayCls = overlayStyle === "solid" ? "bg-foreground/50" : overlayStyle === "none" ? "" : "bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent group-hover:from-foreground/80 transition-all duration-500";
       const filterType = config.categories.filterType || "occasion";
       const maxItems = config.categories.maxItems || 0;
+      const isCarousel = config.categories.layout === "carousel";
 
       // Build display items
       let displayItems: { name: string; image: string; link: string }[];
@@ -367,29 +368,46 @@ export default function Index() {
 
       if (maxItems > 0) displayItems = displayItems.slice(0, maxItems);
 
+      const renderCard = (item: typeof displayItems[0], i: number) => (
+        <motion.div 
+          key={item.name + i} 
+          initial={{ opacity: 0, y: 40, scale: 0.9 }} 
+          whileInView={{ opacity: 1, y: 0, scale: 1 }} 
+          viewport={{ once: true }} 
+          transition={{ delay: i * 0.12, type: "spring", stiffness: 100 }}
+          className={isCarousel ? "flex-shrink-0 w-[280px] md:w-[320px]" : ""}
+        >
+          <Link to={item.link} className={`group block relative overflow-hidden ${radiusCls} ${aspectCls}`}>
+            <img src={item.image} alt={item.name} className="w-full h-full object-cover transition-transform duration-700 will-change-transform group-hover:scale-110" loading="lazy" decoding="async" />
+            {overlayStyle !== "none" && (
+              <div className={`absolute inset-0 ${overlayCls}`} />
+            )}
+            <motion.div className="absolute bottom-4 left-4" whileHover={{ x: 5 }}>
+              <h3 className="text-lg font-display font-bold text-background">{item.name}</h3>
+              <span className="text-xs text-background/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Shop Now →</span>
+            </motion.div>
+          </Link>
+        </motion.div>
+      );
+
       return (
         <section key="categories" className="container mx-auto px-4 py-16">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-display font-bold mb-3">{config.categories.title}</h2>
             <p className="text-muted-foreground">{config.categories.subtitle}</p>
           </motion.div>
-          <div className="grid gap-4 md:gap-6" style={{ gridTemplateColumns: `repeat(${Math.min(cols, 2)}, 1fr)` }} data-desktop-cols={cols}>
-            <style>{`@media(min-width:768px){[data-desktop-cols="${cols}"]{grid-template-columns:repeat(${cols},1fr)!important}}`}</style>
-            {displayItems.map((item, i) => (
-              <motion.div key={item.name + i} initial={{ opacity: 0, y: 40, scale: 0.9 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.12, type: "spring", stiffness: 100 }}>
-                <Link to={item.link} className={`group block relative overflow-hidden ${radiusCls} ${aspectCls}`}>
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover transition-transform duration-700 will-change-transform group-hover:scale-110" loading="lazy" decoding="async" />
-                  {overlayStyle !== "none" && (
-                    <div className={`absolute inset-0 ${overlayCls}`} />
-                  )}
-                  <motion.div className="absolute bottom-4 left-4" whileHover={{ x: 5 }}>
-                    <h3 className="text-lg font-display font-bold text-background">{item.name}</h3>
-                    <span className="text-xs text-background/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Shop Now →</span>
-                  </motion.div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+          
+          {isCarousel ? (
+            <HorizontalCarousel>
+              {displayItems.map((item, i) => renderCard(item, i))}
+            </HorizontalCarousel>
+          ) : (
+            <div className="grid gap-4 md:gap-6" style={{ gridTemplateColumns: `repeat(${Math.min(cols, 2)}, 1fr)` }} data-desktop-cols={cols}>
+              <style>{`@media(min-width:768px){[data-desktop-cols="${cols}"]{grid-template-columns:repeat(${cols},1fr)!important}}`}</style>
+              {displayItems.map((item, i) => renderCard(item, i))}
+            </div>
+          )}
+          
           {config.categories.showViewAll && (
             <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-8">
               <Link to={config.categories.viewAllLink || "/shop"} className="inline-flex items-center gap-1 text-primary font-medium text-sm hover:underline group">
