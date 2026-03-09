@@ -29,7 +29,7 @@ FluffiePie is a full-stack, modern bakery e-commerce application designed to pro
 - **Product Catalog:** Browse products with filters by category, occasion, and flavor.
 - **Product Details:** Rich product pages with multi-image galleries, zoomable lightboxes, weight/variant selection, and stock availability.
 - **Shopping Cart & Checkout:** Persistent cart, discount code application, delivery slot selection, and integrated checkout flow.
-- **User Accounts:** Profile management, order history, saved addresses, and loyalty points tracking.
+- **User Accounts:** Profile management, order history, and saved addresses.
 - **Progressive Web App (PWA):** Installable on mobile devices with a native-like experience.
 
 ### 2. Admin Panel (Management Suite)
