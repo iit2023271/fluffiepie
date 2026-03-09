@@ -23,11 +23,12 @@ const categoryImages: Record<string, string> = {
   Custom: catCustom,
 };
 
-// Reusable horizontal scroll carousel component
-function HorizontalCarousel({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+// Reusable horizontal scroll carousel component with autoplay
+function HorizontalCarousel({ children, className = "", autoplay = true, interval = 4000 }: { children: React.ReactNode; className?: string; autoplay?: boolean; interval?: number }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
 
   const checkScroll = useCallback(() => {
     const el = scrollRef.current;
@@ -49,6 +50,28 @@ function HorizontalCarousel({ children, className = "" }: { children: React.Reac
     }
   }, [checkScroll]);
 
+  // Autoplay logic
+  useEffect(() => {
+    if (!autoplay || isPaused) return;
+    
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const timer = setInterval(() => {
+      const cardWidth = el.querySelector(":scope > *")?.clientWidth || 300;
+      const atEnd = el.scrollLeft >= el.scrollWidth - el.clientWidth - 1;
+      
+      if (atEnd) {
+        // Loop back to start
+        el.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        el.scrollBy({ left: cardWidth + 16, behavior: "smooth" });
+      }
+    }, interval);
+
+    return () => clearInterval(timer);
+  }, [autoplay, isPaused, interval]);
+
   const scroll = (dir: "left" | "right") => {
     const el = scrollRef.current;
     if (!el) return;
@@ -57,7 +80,11 @@ function HorizontalCarousel({ children, className = "" }: { children: React.Reac
   };
 
   return (
-    <div className="relative group">
+    <div 
+      className="relative group"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       <div
         ref={scrollRef}
         className={`flex gap-4 overflow-x-auto scroll-smooth scrollbar-hide pb-2 ${className}`}
