@@ -301,13 +301,27 @@ export default function Index() {
   const [reviews, setReviews] = useState<any[]>([]);
   useEffect(() => {
     const loadReviews = async () => {
-      const { data } = await supabase
+      // First try featured reviews
+      let { data } = await supabase
         .from("reviews")
         .select("*, products(name)")
-        .gte("rating", 4)
+        .eq("is_featured", true)
         .not("comment", "is", null)
         .order("created_at", { ascending: false })
         .limit(config.reviews.count);
+      
+      // Fallback to top-rated if no featured reviews
+      if (!data || data.length === 0) {
+        const res = await supabase
+          .from("reviews")
+          .select("*, products(name)")
+          .gte("rating", 4)
+          .not("comment", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(config.reviews.count);
+        data = res.data;
+      }
+
       if (data && data.length > 0) {
         const userIds = [...new Set(data.map(r => r.user_id))];
         const { data: profiles } = await supabase
