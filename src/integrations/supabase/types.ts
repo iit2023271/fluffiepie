@@ -429,6 +429,7 @@ export type Database = {
           comment: string | null
           created_at: string
           id: string
+          is_featured: boolean
           order_id: string
           product_id: string
           rating: number
@@ -439,6 +440,7 @@ export type Database = {
           comment?: string | null
           created_at?: string
           id?: string
+          is_featured?: boolean
           order_id: string
           product_id: string
           rating: number
@@ -449,6 +451,7 @@ export type Database = {
           comment?: string | null
           created_at?: string
           id?: string
+          is_featured?: boolean
           order_id?: string
           product_id?: string
           rating?: number

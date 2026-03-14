@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Star, Trash2, Search, Calendar as CalendarIcon, X, SortAsc, SortDesc, RefreshCw } from "lucide-react";
+import { Star, Trash2, Search, Calendar as CalendarIcon, X, SortAsc, SortDesc, RefreshCw, Home } from "lucide-react";
 import { toast } from "sonner";
 import { format, isToday, isYesterday, startOfDay, endOfDay } from "date-fns";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ interface ReviewRow {
   user_id: string;
   product_id: string;
   order_id: string;
+  is_featured: boolean;
   product_name?: string;
   user_name?: string;
 }
@@ -74,6 +75,13 @@ export default function AdminReviews() {
     toast.success("Review deleted");
     setDeleteTarget(null);
     load();
+  };
+
+  const toggleFeatured = async (review: ReviewRow) => {
+    const { error } = await supabase.from("reviews").update({ is_featured: !review.is_featured }).eq("id", review.id);
+    if (error) { toast.error("Failed to update"); return; }
+    toast.success(review.is_featured ? "Removed from homepage" : "Added to homepage");
+    setReviews(prev => prev.map(r => r.id === review.id ? { ...r, is_featured: !r.is_featured } : r));
   };
 
   // Unique product names for filter
@@ -335,14 +343,25 @@ export default function AdminReviews() {
                 {r.title && <p className="text-sm font-medium">{r.title}</p>}
                 {r.comment && <p className="text-sm text-muted-foreground line-clamp-2">{r.comment}</p>}
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0 text-muted-foreground hover:text-destructive active:scale-95"
-                onClick={() => setDeleteTarget(r)}
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
+              <div className="flex flex-col gap-1 shrink-0">
+                <Button
+                  variant={r.is_featured ? "default" : "outline"}
+                  size="icon"
+                  className={`active:scale-95 ${r.is_featured ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-primary"}`}
+                  onClick={() => toggleFeatured(r)}
+                  title={r.is_featured ? "Remove from homepage" : "Show on homepage"}
+                >
+                  <Home className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-destructive active:scale-95"
+                  onClick={() => setDeleteTarget(r)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           ))}
         </div>
