@@ -343,14 +343,25 @@ export default function AdminReviews() {
                 {r.title && <p className="text-sm font-medium">{r.title}</p>}
                 {r.comment && <p className="text-sm text-muted-foreground line-clamp-2">{r.comment}</p>}
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0 text-muted-foreground hover:text-destructive active:scale-95"
-                onClick={() => setDeleteTarget(r)}
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
+              <div className="flex flex-col gap-1 shrink-0">
+                <Button
+                  variant={r.is_featured ? "default" : "outline"}
+                  size="icon"
+                  className={`active:scale-95 ${r.is_featured ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-primary"}`}
+                  onClick={() => toggleFeatured(r)}
+                  title={r.is_featured ? "Remove from homepage" : "Show on homepage"}
+                >
+                  <Home className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-destructive active:scale-95"
+                  onClick={() => setDeleteTarget(r)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           ))}
         </div>
