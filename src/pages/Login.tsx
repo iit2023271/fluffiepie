@@ -37,8 +37,13 @@ export default function Login() {
     setLoading(true);
     try {
       if (isSignup) {
-        const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName }, emailRedirectTo: window.location.origin } });
+        const { data: signUpData, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName }, emailRedirectTo: window.location.origin } });
         if (error) throw error;
+        // If user already exists, Supabase returns a fake user with no identities
+        if (signUpData.user && signUpData.user.identities && signUpData.user.identities.length === 0) {
+          toast.error("Invalid credentials");
+          return;
+        }
         toast.success("Account created! Check your email to verify.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
