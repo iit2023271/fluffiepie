@@ -163,7 +163,7 @@ export default function AdminUsers() {
   const exportCSV = () => {
     const rows = [["Name", "Phone", "Joined", "Total Orders", "Total Spent", "Tags"]];
     filtered.forEach(u => {
-      const totalSpent = u.orders.reduce((s, o) => s + (o.total || 0), 0);
+      const totalSpent = u.orders.filter(o => o.status === "delivered").reduce((s, o) => s + (o.total || 0), 0);
       rows.push([
         u.profile.full_name || "", u.profile.phone || "",
         format(new Date(u.profile.created_at), "yyyy-MM-dd"),
