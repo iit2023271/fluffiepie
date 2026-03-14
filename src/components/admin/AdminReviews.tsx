@@ -77,6 +77,13 @@ export default function AdminReviews() {
     load();
   };
 
+  const toggleFeatured = async (review: ReviewRow) => {
+    const { error } = await supabase.from("reviews").update({ is_featured: !review.is_featured }).eq("id", review.id);
+    if (error) { toast.error("Failed to update"); return; }
+    toast.success(review.is_featured ? "Removed from homepage" : "Added to homepage");
+    setReviews(prev => prev.map(r => r.id === review.id ? { ...r, is_featured: !r.is_featured } : r));
+  };
+
   // Unique product names for filter
   const productNames = useMemo(() => {
     const names = [...new Set(reviews.map(r => r.product_name || ""))].filter(Boolean).sort();
