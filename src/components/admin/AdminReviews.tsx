@@ -19,6 +19,7 @@ interface ReviewRow {
   user_id: string;
   product_id: string;
   order_id: string;
+  is_featured: boolean;
   product_name?: string;
   user_name?: string;
 }
