@@ -321,7 +321,7 @@ export default function AdminUsers() {
         <div className="space-y-3">
           {paginated.map((u) => {
             const isExpanded = expandedUser === u.profile.user_id;
-            const totalSpent = u.orders.reduce((sum, o) => sum + (o.total || 0), 0);
+            const totalSpent = u.orders.filter(o => o.status === "delivered").reduce((sum, o) => sum + (o.total || 0), 0);
             const deliveredOrders = u.orders.filter(o => o.status === "delivered");
             const avgOrder = deliveredOrders.length > 0 ? Math.round(deliveredOrders.reduce((s, o) => s + (o.total || 0), 0) / deliveredOrders.length) : 0;
 
