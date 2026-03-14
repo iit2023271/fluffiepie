@@ -467,8 +467,8 @@ export default function AdminUsers() {
                                   <div className="flex items-center gap-2">
                                     <span className="font-mono text-xs text-muted-foreground">#{order.id.slice(0, 8)}</span>
                                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${getStatusColor(order.status)}`}>{order.status}</span>
-                                    {order.payment_status && (
-                                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-secondary text-muted-foreground">{order.payment_status}</span>
+                                    {order.status === "delivered" && (
+                                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-primary/10 text-primary font-medium">Paid</span>
                                     )}
                                   </div>
                                   <span className="font-semibold">₹{order.total?.toLocaleString()}</span>
