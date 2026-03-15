@@ -120,35 +120,98 @@ export default function ProductDetail() {
       </motion.div>
 
       <div className="grid md:grid-cols-2 gap-8 md:gap-12">
-        {/* Image Gallery */}
+        {/* Image Gallery with Swipe */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           className="space-y-3"
         >
-          <motion.div
-            className="relative rounded-3xl overflow-hidden bg-cream aspect-square cursor-zoom-in group"
-            onClick={() => setLightboxOpen(true)}
-            whileTap={{ scale: 0.98 }}
-            transition={{ duration: 0.15 }}
-          >
-            <AnimatePresence mode="wait">
-              <motion.img
-                key={selectedImage}
-                src={allImages[selectedImage] || product.image}
-                alt={product.name}
-                className="w-full h-full object-cover"
-                initial={{ opacity: 0, scale: 1.05 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-              />
-            </AnimatePresence>
-            <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/5 transition-colors flex items-center justify-center">
+          <div className="relative rounded-3xl overflow-hidden bg-cream aspect-square group">
+            {/* Swipeable image area */}
+            <div
+              className="w-full h-full touch-pan-y"
+              onTouchStart={(e) => {
+                const touch = e.touches[0];
+                (e.currentTarget as any)._touchStartX = touch.clientX;
+                (e.currentTarget as any)._touchStartY = touch.clientY;
+              }}
+              onTouchEnd={(e) => {
+                const startX = (e.currentTarget as any)._touchStartX;
+                const startY = (e.currentTarget as any)._touchStartY;
+                if (startX == null) return;
+                const endX = e.changedTouches[0].clientX;
+                const endY = e.changedTouches[0].clientY;
+                const diffX = startX - endX;
+                const diffY = Math.abs(startY - endY);
+                if (Math.abs(diffX) > 50 && diffX > diffY) {
+                  if (diffX > 0 && selectedImage < allImages.length - 1) setSelectedImage(selectedImage + 1);
+                  else if (diffX < 0 && selectedImage > 0) setSelectedImage(selectedImage - 1);
+                } else if (Math.abs(diffX) < 10 && diffY < 10) {
+                  setLightboxOpen(true);
+                }
+              }}
+            >
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={selectedImage}
+                  src={allImages[selectedImage] || product.image}
+                  alt={product.name}
+                  className="w-full h-full object-cover cursor-zoom-in"
+                  initial={{ opacity: 0, x: 40 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -40 }}
+                  transition={{ duration: 0.25 }}
+                />
+              </AnimatePresence>
+            </div>
+
+            {/* Navigation arrows (desktop) */}
+            {allImages.length > 1 && (
+              <>
+                {selectedImage > 0 && (
+                  <button
+                    onClick={() => setSelectedImage(selectedImage - 1)}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                )}
+                {selectedImage < allImages.length - 1 && (
+                  <button
+                    onClick={() => setSelectedImage(selectedImage + 1)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                )}
+              </>
+            )}
+
+            {/* Zoom icon */}
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
               <ZoomIn className="w-8 h-8 text-background opacity-0 group-hover:opacity-70 transition-opacity drop-shadow-lg" />
             </div>
-          </motion.div>
+
+            {/* Dot indicators */}
+            {allImages.length > 1 && (
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                {allImages.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setSelectedImage(i)}
+                    className={`rounded-full transition-all duration-300 ${
+                      selectedImage === i
+                        ? "w-6 h-2 bg-primary"
+                        : "w-2 h-2 bg-background/60 hover:bg-background/80"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Thumbnail strip */}
           {allImages.length > 1 && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
               {allImages.map((img, i) => (
