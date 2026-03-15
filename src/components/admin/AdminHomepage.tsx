@@ -50,6 +50,9 @@ export default function AdminHomepage() {
       .from("store_config")
       .select("*")
       .eq("config_type", "homepage_config")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
     if (data?.value) {
       try {
@@ -75,14 +78,20 @@ export default function AdminHomepage() {
   const saveConfig = async () => {
     setSaving(true);
     const value = JSON.stringify(config);
+    let error;
     if (existingId) {
-      const { error } = await supabase.from("store_config").update({ value }).eq("id", existingId);
-      if (error) toast.error("Failed to save");
-      else toast.success("Homepage saved! Changes are live.");
+      const result = await supabase.from("store_config").update({ value }).eq("id", existingId);
+      error = result.error;
     } else {
-      const { data, error } = await supabase.from("store_config").insert({ config_type: "homepage_config", value, is_active: true }).select().single();
-      if (error) toast.error("Failed to save");
-      else { toast.success("Homepage saved!"); if (data) setExistingId(data.id); }
+      const result = await supabase.from("store_config").insert({ config_type: "homepage_config", value, is_active: true }).select().single();
+      error = result.error;
+      if (!error && result.data) setExistingId(result.data.id);
+    }
+    if (error) {
+      console.error("Homepage save error:", error);
+      toast.error("Failed to save: " + (error.message || "Unknown error"));
+    } else {
+      toast.success("Homepage saved! Changes are live.");
     }
     setSaving(false);
   };
