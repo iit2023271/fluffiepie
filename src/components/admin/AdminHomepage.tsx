@@ -50,6 +50,9 @@ export default function AdminHomepage() {
       .from("store_config")
       .select("*")
       .eq("config_type", "homepage_config")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
     if (data?.value) {
       try {
