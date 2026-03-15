@@ -306,9 +306,7 @@ export default function Index() {
         .from("reviews")
         .select("*, products(name)")
         .eq("is_featured", true)
-        .not("comment", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(config.reviews.count);
+        .order("created_at", { ascending: false });
       
       // Fallback to top-rated if no featured reviews
       if (!data || data.length === 0) {
