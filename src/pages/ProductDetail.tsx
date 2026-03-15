@@ -342,9 +342,9 @@ export default function ProductDetail() {
 
           <motion.div variants={fadeUp} className="grid grid-cols-3 gap-3">
             {[
-              { icon: Truck, text: "Free Delivery" },
-              { icon: Clock, text: "Same Day" },
-              { icon: Shield, text: "100% Fresh" },
+              { icon: Award, text: "Premium Quality" },
+              { icon: Sparkles, text: "Handcrafted" },
+              { icon: Leaf, text: "100% Fresh" },
             ].map((badge, i) => (
               <motion.div
                 key={badge.text}
