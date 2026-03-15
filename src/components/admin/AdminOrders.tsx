@@ -641,13 +641,21 @@ export default function AdminOrders() {
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">Order Items</p>
                       <div className="space-y-1.5">
                         {(order.items as any[])?.map((item: any, i: number) => (
-                          <div key={i} className="flex items-center justify-between py-1.5 text-sm">
-                            <div className="flex items-center gap-2">
-                              <span className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">{item.quantity}</span>
-                              <span className="font-medium">{item.name}</span>
-                              <span className="text-xs text-muted-foreground">({item.weight})</span>
+                          <div key={i} className="py-1.5">
+                            <div className="flex items-center justify-between text-sm">
+                              <div className="flex items-center gap-2">
+                                <span className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">{item.quantity}</span>
+                                <span className="font-medium">{item.name}</span>
+                                <span className="text-xs text-muted-foreground">({item.weight})</span>
+                              </div>
+                              <span className="font-semibold">₹{(item.price * item.quantity).toLocaleString()}</span>
                             </div>
-                            <span className="font-semibold">₹{(item.price * item.quantity).toLocaleString()}</span>
+                            {item.message && (
+                              <div className="ml-8 mt-1 px-2.5 py-1.5 rounded-lg bg-accent/50 border border-border">
+                                <p className="text-[11px] text-muted-foreground font-medium">📝 Cake Message:</p>
+                                <p className="text-xs font-medium text-foreground">{item.message}</p>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
