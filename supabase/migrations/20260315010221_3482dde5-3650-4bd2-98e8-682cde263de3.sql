@@ -1,0 +1,1 @@
+ALTER TABLE store_config DROP CONSTRAINT store_config_config_type_value_key;
