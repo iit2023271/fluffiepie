@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format, parse, startOfDay, endOfDay, isToday, isYesterday } from "date-fns";
+import { format, startOfDay, endOfDay, isToday, isYesterday } from "date-fns";
 import { Search, Send, Download, ChevronDown, ChevronUp, Trash2, Calendar as CalendarIcon, X, Clock, Package, CheckCircle2, Timer, Copy, Undo2, RefreshCw, MapPin } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { useAuth } from "@/context/AuthContext";
@@ -32,20 +32,6 @@ function getRelativeDate(date: Date): string {
   return format(date, "dd MMM yyyy, hh:mm a");
 }
 
-function parseDeliveryInfo(slot: string | null): { label: string; isUrgent: boolean } {
-  if (!slot) return { label: "Not specified", isUrgent: false };
-  // Check if delivery is today
-  const lower = slot.toLowerCase();
-  const isUrgent = lower.includes("today") || lower.includes("express") || lower.includes("asap");
-  // For new format "dd MMM yyyy, time", check if date matches today
-  let urgentByDate = false;
-  try {
-    const datePart = slot.split(",")[0].trim();
-    const parsed = parse(datePart, "dd MMM yyyy", new Date());
-    if (!isNaN(parsed.getTime()) && isToday(parsed)) urgentByDate = true;
-  } catch {}
-  return { label: slot, isUrgent: isUrgent || urgentByDate };
-}
 
 export default function AdminOrders() {
   const { user } = useAuth();
@@ -556,9 +542,9 @@ export default function AdminOrders() {
 
                   {/* Address */}
                   {addr && (addr.address_line || addr.city) && (
-                    <p className="text-[10px] text-muted-foreground truncate mb-1.5 flex items-center gap-1">
-                      <MapPin className="w-3 h-3 shrink-0 text-primary/60" />
-                      {[addr.address_line, addr.city, addr.pincode].filter(Boolean).join(", ")}
+                    <p className="text-[10px] text-muted-foreground mb-1.5 flex items-start gap-1">
+                      <MapPin className="w-3 h-3 shrink-0 text-primary/60 mt-0.5" />
+                      <span>{[addr.full_name && addr.full_name !== addr.name ? addr.full_name : null, addr.address_line, addr.city, addr.pincode].filter(Boolean).join(", ")}</span>
                     </p>
                   )}
 
@@ -571,11 +557,6 @@ export default function AdminOrders() {
                   {/* Row 4: Delivery slot (if urgent) + Actions */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      {parseDeliveryInfo(order.delivery_slot).isUrgent && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-destructive/10 text-destructive font-semibold border border-destructive/20 animate-pulse">
-                          🔴 URGENT
-                        </span>
-                      )}
                       {order.discount > 0 && (
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600 font-medium">
                           -₹{order.discount}
