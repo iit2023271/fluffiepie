@@ -128,7 +128,7 @@ export default function AdminSettings() {
       supabase.from("store_config").select("*").order("sort_order", { ascending: true }),
       supabase.from("coupons").select("*").order("created_at", { ascending: false }),
       supabase.from("banners").select("*").order("sort_order", { ascending: true }),
-      supabase.from("orders").select("coupon_code, discount, total").not("coupon_code", "is", null),
+      supabase.from("orders").select("coupon_code, discount, total, status").not("coupon_code", "is", null),
     ]);
     if (configRes.data) {
       setConfigItems(configRes.data as ConfigItem[]);
