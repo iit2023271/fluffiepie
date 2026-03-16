@@ -541,11 +541,13 @@ export default function AdminOrders() {
                   </div>
 
                   {/* Address */}
-                  {addr && (addr.address_line || addr.city) && (
-                    <p className="text-[10px] text-muted-foreground mb-1.5 flex items-start gap-1">
+                  {addr && (addr.address || addr.address_line || addr.city) && (
+                    <div className="text-[10px] text-muted-foreground mb-1.5 flex items-start gap-1">
                       <MapPin className="w-3 h-3 shrink-0 text-primary/60 mt-0.5" />
-                      <span>{[addr.full_name && addr.full_name !== addr.name ? addr.full_name : null, addr.address_line, addr.city, addr.pincode].filter(Boolean).join(", ")}</span>
-                    </p>
+                      <span className="whitespace-normal break-words leading-relaxed">
+                        {[addr.address || addr.address_line, addr.city, addr.pincode].filter(Boolean).join(", ")}
+                      </span>
+                    </div>
                   )}
 
                   {/* Row 3: Items summary (1 line) */}
