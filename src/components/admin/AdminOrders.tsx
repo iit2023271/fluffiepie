@@ -554,6 +554,14 @@ export default function AdminOrders() {
                     <span className="text-base font-bold shrink-0">₹{order.total?.toLocaleString()}</span>
                   </div>
 
+                  {/* Address */}
+                  {addr && (addr.address_line || addr.city) && (
+                    <p className="text-[10px] text-muted-foreground truncate mb-1.5 flex items-center gap-1">
+                      <MapPin className="w-3 h-3 shrink-0 text-primary/60" />
+                      {[addr.address_line, addr.city, addr.pincode].filter(Boolean).join(", ")}
+                    </p>
+                  )}
+
                   {/* Row 3: Items summary (1 line) */}
                   <p className="text-[11px] text-muted-foreground truncate mb-2">
                     {itemCount} item{itemCount !== 1 ? "s" : ""}: {(order.items as any[])?.slice(0, 2).map((i: any) => i.name).join(", ")}
