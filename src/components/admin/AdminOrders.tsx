@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parse, startOfDay, endOfDay, isToday, isYesterday } from "date-fns";
-import { Search, Send, Download, ChevronDown, ChevronUp, Trash2, Calendar as CalendarIcon, X, Clock, Package, CheckCircle2, Timer, Copy, Undo2, RefreshCw } from "lucide-react";
+import { Search, Send, Download, ChevronDown, ChevronUp, Trash2, Calendar as CalendarIcon, X, Clock, Package, CheckCircle2, Timer, Copy, Undo2, RefreshCw, MapPin } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -553,6 +553,14 @@ export default function AdminOrders() {
                     </div>
                     <span className="text-base font-bold shrink-0">₹{order.total?.toLocaleString()}</span>
                   </div>
+
+                  {/* Address */}
+                  {addr && (addr.address_line || addr.city) && (
+                    <p className="text-[10px] text-muted-foreground truncate mb-1.5 flex items-center gap-1">
+                      <MapPin className="w-3 h-3 shrink-0 text-primary/60" />
+                      {[addr.address_line, addr.city, addr.pincode].filter(Boolean).join(", ")}
+                    </p>
+                  )}
 
                   {/* Row 3: Items summary (1 line) */}
                   <p className="text-[11px] text-muted-foreground truncate mb-2">
