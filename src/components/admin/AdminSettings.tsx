@@ -805,10 +805,10 @@ export default function AdminSettings() {
                       {c.max_discount && ` (max ₹${c.max_discount})`}
                       {c.min_order_amount > 0 && ` · Min ₹${c.min_order_amount}`}
                     </p>
-                    <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
-                      {c.usage_limit && <span>Used: {c.used_count}/{c.usage_limit}</span>}
+                    <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
+                      {c.usage_limit ? <span>Used: {c.used_count}/{c.usage_limit}</span> : <span>Used: {c.used_count} (unlimited)</span>}
                       {c.expires_at && <span>Expires: {new Date(c.expires_at).toLocaleDateString()}</span>}
-                      <span className="flex items-center gap-1"><BarChart3 className="w-3 h-3" /> {c.orderCount} orders · ₹{c.totalRevenue.toLocaleString()} revenue · ₹{c.totalDiscount.toLocaleString()} discounted</span>
+                      <span className="flex items-center gap-1"><BarChart3 className="w-3 h-3" /> {c.orderCount} orders · {c.deliveredCount} delivered · ₹{c.totalRevenue.toLocaleString()} revenue · ₹{c.totalDiscount.toLocaleString()} discounted</span>
                     </div>
                   </div>
                   <div className="flex gap-1">
