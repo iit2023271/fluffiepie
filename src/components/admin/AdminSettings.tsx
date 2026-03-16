@@ -379,12 +379,13 @@ export default function AdminSettings() {
     toast.success("Gmail compose opened with test email");
   };
 
-  // Coupon analytics
+  // Coupon analytics — only count delivered orders for revenue/discount stats
   const couponStats = coupons.map(c => {
     const couponOrders = orders.filter(o => o.coupon_code === c.code);
-    const totalRevenue = couponOrders.reduce((s, o) => s + (o.total || 0), 0);
-    const totalDiscount = couponOrders.reduce((s, o) => s + (o.discount || 0), 0);
-    return { ...c, orderCount: couponOrders.length, totalRevenue, totalDiscount };
+    const deliveredCouponOrders = couponOrders.filter(o => o.status === "delivered");
+    const totalRevenue = deliveredCouponOrders.reduce((s, o) => s + (o.total || 0), 0);
+    const totalDiscount = deliveredCouponOrders.reduce((s, o) => s + (o.discount || 0), 0);
+    return { ...c, orderCount: couponOrders.length, deliveredCount: deliveredCouponOrders.length, totalRevenue, totalDiscount };
   });
 
   const deleteSection = async (configType: string) => {
