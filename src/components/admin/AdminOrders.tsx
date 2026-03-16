@@ -556,9 +556,9 @@ export default function AdminOrders() {
 
                   {/* Address */}
                   {addr && (addr.address_line || addr.city) && (
-                    <p className="text-[10px] text-muted-foreground truncate mb-1.5 flex items-center gap-1">
-                      <MapPin className="w-3 h-3 shrink-0 text-primary/60" />
-                      {[addr.address_line, addr.city, addr.pincode].filter(Boolean).join(", ")}
+                    <p className="text-[10px] text-muted-foreground mb-1.5 flex items-start gap-1">
+                      <MapPin className="w-3 h-3 shrink-0 text-primary/60 mt-0.5" />
+                      <span>{[addr.full_name && addr.full_name !== addr.name ? addr.full_name : null, addr.address_line, addr.city, addr.pincode].filter(Boolean).join(", ")}</span>
                     </p>
                   )}
 
