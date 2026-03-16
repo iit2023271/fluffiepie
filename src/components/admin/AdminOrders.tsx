@@ -571,11 +571,6 @@ export default function AdminOrders() {
                   {/* Row 4: Delivery slot (if urgent) + Actions */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      {parseDeliveryInfo(order.delivery_slot).isUrgent && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-destructive/10 text-destructive font-semibold border border-destructive/20 animate-pulse">
-                          🔴 URGENT
-                        </span>
-                      )}
                       {order.discount > 0 && (
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600 font-medium">
                           -₹{order.discount}
