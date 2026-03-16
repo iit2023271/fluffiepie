@@ -128,7 +128,7 @@ export default function AdminSettings() {
       supabase.from("store_config").select("*").order("sort_order", { ascending: true }),
       supabase.from("coupons").select("*").order("created_at", { ascending: false }),
       supabase.from("banners").select("*").order("sort_order", { ascending: true }),
-      supabase.from("orders").select("coupon_code, discount, total").not("coupon_code", "is", null),
+      supabase.from("orders").select("coupon_code, discount, total, status").not("coupon_code", "is", null),
     ]);
     if (configRes.data) {
       setConfigItems(configRes.data as ConfigItem[]);
@@ -379,12 +379,13 @@ export default function AdminSettings() {
     toast.success("Gmail compose opened with test email");
   };
 
-  // Coupon analytics
+  // Coupon analytics — only count delivered orders for revenue/discount stats
   const couponStats = coupons.map(c => {
     const couponOrders = orders.filter(o => o.coupon_code === c.code);
-    const totalRevenue = couponOrders.reduce((s, o) => s + (o.total || 0), 0);
-    const totalDiscount = couponOrders.reduce((s, o) => s + (o.discount || 0), 0);
-    return { ...c, orderCount: couponOrders.length, totalRevenue, totalDiscount };
+    const deliveredCouponOrders = couponOrders.filter(o => o.status === "delivered");
+    const totalRevenue = deliveredCouponOrders.reduce((s, o) => s + (o.total || 0), 0);
+    const totalDiscount = deliveredCouponOrders.reduce((s, o) => s + (o.discount || 0), 0);
+    return { ...c, orderCount: couponOrders.length, deliveredCount: deliveredCouponOrders.length, totalRevenue, totalDiscount };
   });
 
   const deleteSection = async (configType: string) => {
@@ -804,10 +805,10 @@ export default function AdminSettings() {
                       {c.max_discount && ` (max ₹${c.max_discount})`}
                       {c.min_order_amount > 0 && ` · Min ₹${c.min_order_amount}`}
                     </p>
-                    <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
-                      {c.usage_limit && <span>Used: {c.used_count}/{c.usage_limit}</span>}
+                    <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
+                      {c.usage_limit ? <span>Used: {c.used_count}/{c.usage_limit}</span> : <span>Used: {c.used_count} (unlimited)</span>}
                       {c.expires_at && <span>Expires: {new Date(c.expires_at).toLocaleDateString()}</span>}
-                      <span className="flex items-center gap-1"><BarChart3 className="w-3 h-3" /> {c.orderCount} orders · ₹{c.totalRevenue.toLocaleString()} revenue · ₹{c.totalDiscount.toLocaleString()} discounted</span>
+                      <span className="flex items-center gap-1"><BarChart3 className="w-3 h-3" /> {c.orderCount} orders · {c.deliveredCount} delivered · ₹{c.totalRevenue.toLocaleString()} revenue · ₹{c.totalDiscount.toLocaleString()} discounted</span>
                     </div>
                   </div>
                   <div className="flex gap-1">
