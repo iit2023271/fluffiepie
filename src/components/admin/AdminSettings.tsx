@@ -437,6 +437,32 @@ export default function AdminSettings() {
     setSavingDelivery(false);
   };
 
+  const savePaymentConfig = async () => {
+    setSavingPayment(true);
+    let qrUrl = paymentConfig.qrImageUrl;
+    if (paymentQrImage) {
+      const ext = paymentQrImage.name.split(".").pop() || "jpg";
+      const path = `payment/qr-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("homepage-assets").upload(path, paymentQrImage, { upsert: true });
+      if (!uploadError) {
+        const { data: urlData } = supabase.storage.from("homepage-assets").getPublicUrl(path);
+        qrUrl = urlData.publicUrl;
+      }
+    }
+    const updatedConfig = { ...paymentConfig, qrImageUrl: qrUrl };
+    const payload = JSON.stringify(updatedConfig);
+    if (paymentConfigId) {
+      await supabase.from("store_config").update({ value: payload }).eq("id", paymentConfigId);
+    } else {
+      const { data } = await supabase.from("store_config").insert({ config_type: "payment_config", value: payload, is_active: true, sort_order: 0 }).select("id").single();
+      if (data) setPaymentConfigId(data.id);
+    }
+    setPaymentConfig(updatedConfig);
+    setPaymentQrImage(null);
+    toast.success("Payment settings saved!");
+    setSavingPayment(false);
+  };
+
   const addTimeSlot = () => {
     const slot = newTimeSlot.trim();
     if (!slot) return;
