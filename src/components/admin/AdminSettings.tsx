@@ -1271,6 +1271,132 @@ export default function AdminSettings() {
         </div>
       )}
 
+      {/* Payment Config */}
+      {activeSection === "payment" && (
+        <div className="bg-card rounded-2xl p-6 shadow-soft space-y-6">
+          <div>
+            <h3 className="font-display font-semibold text-lg flex items-center gap-2 mb-1">
+              <QrCode className="w-5 h-5 text-primary" /> Payment QR & Info
+            </h3>
+            <p className="text-xs text-muted-foreground mb-4">Upload your QR code and add payment details shown at checkout</p>
+          </div>
+
+          {/* Enable toggle */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">Show payment QR at checkout</span>
+            <button
+              onClick={() => setPaymentConfig(prev => ({ ...prev, enabled: !prev.enabled }))}
+              className={`relative w-11 h-6 rounded-full transition-colors ${paymentConfig.enabled ? "bg-primary" : "bg-muted"}`}
+            >
+              <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${paymentConfig.enabled ? "translate-x-5" : "translate-x-0.5"}`} />
+            </button>
+          </div>
+
+          {/* QR Image Upload */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">QR Code Image</label>
+            <div className="flex items-center gap-3">
+              {(paymentConfig.qrImageUrl || paymentQrImage) && (
+                <img src={paymentQrImage ? URL.createObjectURL(paymentQrImage) : paymentConfig.qrImageUrl} alt="QR" className="w-32 h-32 rounded-xl object-contain border border-border bg-white p-1" />
+              )}
+              <div className="flex flex-col gap-2">
+                <label className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm cursor-pointer hover:bg-secondary">
+                  <Upload className="w-4 h-4" /> Upload QR
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setPaymentCropSrc(URL.createObjectURL(file));
+                      setShowPaymentCropper(true);
+                    }
+                  }} />
+                </label>
+                {paymentQrImage && (
+                  <button onClick={() => { setPaymentCropSrc(URL.createObjectURL(paymentQrImage)); setShowPaymentCropper(true); }} className="flex items-center gap-1 px-3 py-2 border border-border rounded-xl text-sm hover:bg-secondary">
+                    <Crop className="w-4 h-4" /> Crop
+                  </button>
+                )}
+                {paymentConfig.qrImageUrl && !paymentQrImage && (
+                  <button onClick={() => setPaymentConfig(prev => ({ ...prev, qrImageUrl: "" }))} className="flex items-center gap-1 px-3 py-2 border border-destructive/30 rounded-xl text-sm text-destructive hover:bg-destructive/5">
+                    <Trash2 className="w-4 h-4" /> Remove
+                  </button>
+                )}
+              </div>
+            </div>
+            <ImageCropper
+              open={showPaymentCropper}
+              imageSrc={paymentCropSrc || ""}
+              aspect={1}
+              onClose={() => setShowPaymentCropper(false)}
+              onCropComplete={(blob) => {
+                const file = new File([blob], `qr-${Date.now()}.jpg`, { type: "image/jpeg" });
+                setPaymentQrImage(file);
+                setShowPaymentCropper(false);
+              }}
+            />
+          </div>
+
+          {/* Payment Info Lines */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">Payment Details (shown below QR)</label>
+            <div className="space-y-3">
+              {paymentConfig.infoLines.map((line, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input
+                    placeholder="Label (e.g. Bank Name)"
+                    value={line.label}
+                    onChange={(e) => {
+                      const lines = [...paymentConfig.infoLines];
+                      lines[i] = { ...lines[i], label: e.target.value };
+                      setPaymentConfig(prev => ({ ...prev, infoLines: lines }));
+                    }}
+                    className="w-1/3 px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background"
+                  />
+                  <input
+                    placeholder="Value (e.g. SBI)"
+                    value={line.value}
+                    onChange={(e) => {
+                      const lines = [...paymentConfig.infoLines];
+                      lines[i] = { ...lines[i], value: e.target.value };
+                      setPaymentConfig(prev => ({ ...prev, infoLines: lines }));
+                    }}
+                    className="flex-1 px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:border-primary bg-background"
+                  />
+                  <button onClick={() => {
+                    setPaymentConfig(prev => ({ ...prev, infoLines: prev.infoLines.filter((_, idx) => idx !== i) }));
+                  }} className="p-2 hover:text-destructive transition-colors">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+              <Button size="sm" variant="outline" className="text-xs" onClick={() => {
+                setPaymentConfig(prev => ({ ...prev, infoLines: [...prev.infoLines, { label: "", value: "" }] }));
+              }}>
+                <Plus className="w-3 h-3 mr-1" /> Add Line
+              </Button>
+            </div>
+          </div>
+
+          {/* Preview */}
+          {(paymentConfig.qrImageUrl || paymentQrImage) && (
+            <div>
+              <label className="text-sm font-medium mb-2 block">Preview</label>
+              <div className="max-w-xs mx-auto p-4 rounded-2xl border border-border bg-background text-center">
+                <img src={paymentQrImage ? URL.createObjectURL(paymentQrImage) : paymentConfig.qrImageUrl} alt="QR Preview" className="w-40 h-40 object-contain mx-auto mb-3" />
+                {paymentConfig.infoLines.filter(l => l.label || l.value).map((line, i) => (
+                  <p key={i} className="text-xs text-muted-foreground">
+                    <span className="font-medium text-foreground">{line.label}:</span> {line.value}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <Button onClick={savePaymentConfig} disabled={savingPayment} className="mt-2">
+            {savingPayment ? "Saving..." : "Save Payment Settings"}
+          </Button>
+        </div>
+      )}
+
       {activeSection === "account" && (
         <div className="space-y-6">
           <div className="bg-card rounded-2xl border border-border p-5">
