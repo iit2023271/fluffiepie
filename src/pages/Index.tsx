@@ -200,7 +200,7 @@ function HeroBannerCarousel() {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="relative aspect-[16/9] sm:aspect-[21/9] md:aspect-[3/1] w-full">
+      <div className="relative aspect-[3/1] w-full">
         <AnimatePresence custom={direction} mode="wait">
           <motion.div
             key={banner.id}
