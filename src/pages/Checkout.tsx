@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, Tag, MapPin, CalendarIcon, Clock, MessageCircle } from "lucide-react";
+import { ChevronLeft, Tag, MapPin, CalendarIcon, Clock, MessageCircle, QrCode, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays, isBefore, startOfDay } from "date-fns";
 import { z } from "zod";
@@ -26,6 +26,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import SavedAddresses from "@/components/SavedAddresses";
 import { useDeliveryConfig } from "@/hooks/useDeliveryConfig";
 
+interface PaymentConfig {
+  qrImageUrl: string;
+  infoLines: { label: string; value: string }[];
+  enabled: boolean;
+}
+
 const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
 
@@ -46,6 +52,26 @@ export default function Checkout() {
   });
   const [deliveryDate, setDeliveryDate] = useState<Date | undefined>(undefined);
   const [deliveryTime, setDeliveryTime] = useState("");
+  const [transactionId, setTransactionId] = useState("");
+  const [paymentConfig, setPaymentConfig] = useState<PaymentConfig | null>(null);
+
+  useEffect(() => {
+    const loadPaymentConfig = async () => {
+      const { data } = await supabase
+        .from("store_config")
+        .select("value")
+        .eq("config_type", "payment_config")
+        .eq("is_active", true)
+        .maybeSingle();
+      if (data?.value) {
+        try {
+          const parsed = JSON.parse(data.value);
+          if (parsed.enabled) setPaymentConfig(parsed);
+        } catch { /* ignore */ }
+      }
+    };
+    loadPaymentConfig();
+  }, []);
 
   const applyCoupon = async () => {
     const parsed = couponSchema.safeParse(coupon);
@@ -69,6 +95,7 @@ export default function Checkout() {
     else { const result = addressSchema.safeParse(form); if (!result.success) { toast.error(result.error.errors[0]?.message || "Invalid address fields"); return; } }
     if (!deliveryDate) { toast.error("Please select a delivery date"); return; }
     if (!deliveryTime) { toast.error("Please select a delivery time"); return; }
+    if (paymentConfig && !transactionId.trim()) { toast.error("Please enter your Transaction ID"); return; }
     if (!user) { toast.error("Please sign in to place an order"); navigate("/login"); return; }
 
     setPlacing(true);
@@ -80,6 +107,7 @@ export default function Checkout() {
     const { data: orderData, error } = await supabase.from("orders").insert({
       user_id: user.id, items: orderItems, delivery_address: deliveryAddress, delivery_slot: `${format(deliveryDate!, "dd MMM yyyy")}, ${deliveryTime}`,
       subtotal: totalPrice, discount, delivery_fee: deliveryFee, total: finalTotal, coupon_code: coupon || null, status: "placed", payment_status: "paid",
+      transaction_id: transactionId.trim() || null,
     }).select("id").single();
 
     setPlacing(false);
@@ -89,7 +117,8 @@ export default function Checkout() {
     const itemLines = orderItems.map((item: any) => `• ${item.name} (${item.weight}) x${item.quantity} — ₹${item.price * item.quantity}`).join("\n");
     const addrLine = `${deliveryAddress.name}, ${deliveryAddress.phone}\n${deliveryAddress.address}, ${deliveryAddress.city} - ${deliveryAddress.pincode}`;
     const slot = `${format(deliveryDate!, "dd MMM yyyy")}, ${deliveryTime}`;
-    const whatsappMsg = encodeURIComponent(`🎂 *New Order — #${orderId}*\n\n📋 *Items:*\n${itemLines}\n\n📦 *Subtotal:* ₹${totalPrice}\n${discount > 0 ? `🏷️ *Discount:* -₹${discount}\n` : ""}🚚 *Delivery:* ₹${deliveryFee}\n💰 *Total:* ₹${finalTotal}\n\n📍 *Delivery Address:*\n${addrLine}\n\n🕐 *Delivery Slot:* ${slot}\n\nPlease confirm this order. Thank you! 🙏`);
+    const txnLine = transactionId.trim() ? `\n💳 *Transaction ID:* ${transactionId.trim()}` : "";
+    const whatsappMsg = encodeURIComponent(`🎂 *New Order — #${orderId}*\n\n📋 *Items:*\n${itemLines}\n\n📦 *Subtotal:* ₹${totalPrice}\n${discount > 0 ? `🏷️ *Discount:* -₹${discount}\n` : ""}🚚 *Delivery:* ₹${deliveryFee}\n💰 *Total:* ₹${finalTotal}${txnLine}\n\n📍 *Delivery Address:*\n${addrLine}\n\n🕐 *Delivery Slot:* ${slot}\n\nPlease confirm this order. Thank you! 🙏`);
     const whatsappNum = storeInfo.whatsappNumber?.replace(/\D/g, "") || "";
     if (whatsappNum) window.open(`https://wa.me/${whatsappNum}?text=${whatsappMsg}`, "_blank");
 
@@ -196,6 +225,53 @@ export default function Checkout() {
               </div>
             </div>
           </motion.div>
+
+          {/* Payment QR & Transaction ID */}
+          {paymentConfig && (
+            <motion.div variants={fadeUp} className="p-6 rounded-2xl bg-card shadow-soft">
+              <h3 className="font-display font-semibold text-lg mb-4 flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-primary" /> Payment
+              </h3>
+              <div className="space-y-4">
+                {/* QR Code Display */}
+                {paymentConfig.qrImageUrl && (
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-3">Scan the QR code below to pay</p>
+                    <img
+                      src={paymentConfig.qrImageUrl}
+                      alt="Payment QR Code"
+                      className="w-48 h-48 object-contain mx-auto rounded-xl border border-border bg-white p-2"
+                    />
+                    {/* Payment Info Lines */}
+                    {paymentConfig.infoLines?.filter(l => l.label && l.value).length > 0 && (
+                      <div className="mt-3 space-y-1">
+                        {paymentConfig.infoLines.filter(l => l.label && l.value).map((line, i) => (
+                          <p key={i} className="text-xs text-muted-foreground">
+                            <span className="font-semibold text-foreground">{line.label}:</span> {line.value}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Transaction ID Input */}
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Transaction ID / UTR Number</label>
+                  <div className="relative">
+                    <QrCode className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <input
+                      placeholder="Enter your transaction ID after payment"
+                      value={transactionId}
+                      onChange={(e) => setTransactionId(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1.5">Enter the transaction ID from your payment app after scanning the QR</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
 
         {/* Order Summary */}
@@ -233,6 +309,14 @@ export default function Checkout() {
                 <span>Total</span><span>₹{finalTotal.toLocaleString()}</span>
               </motion.div>
             </div>
+
+            {transactionId.trim() && (
+              <div className="mt-3 p-2.5 rounded-xl bg-primary/5 border border-primary/20">
+                <p className="text-xs text-primary font-medium flex items-center gap-1.5">
+                  <CreditCard className="w-3.5 h-3.5" /> Txn ID: {transactionId.trim()}
+                </p>
+              </div>
+            )}
 
             <div className="mt-4 p-3 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 flex items-start gap-2.5">
               <MessageCircle className="w-4 h-4 text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
