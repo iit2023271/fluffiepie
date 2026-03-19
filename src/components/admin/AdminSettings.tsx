@@ -117,6 +117,28 @@ export default function AdminSettings() {
   const [editTagBg, setEditTagBg] = useState("#c0392b");
   const [editTagText, setEditTagText] = useState("#ffffff");
 
+  // Payment config state
+  interface PaymentConfig {
+    qrImageUrl: string;
+    infoLines: { label: string; value: string }[];
+    enabled: boolean;
+  }
+  const DEFAULT_PAYMENT_CONFIG: PaymentConfig = {
+    qrImageUrl: "",
+    infoLines: [
+      { label: "Bank Name", value: "" },
+      { label: "Account Holder", value: "" },
+      { label: "UPI ID", value: "" },
+    ],
+    enabled: true,
+  };
+  const [paymentConfig, setPaymentConfig] = useState<PaymentConfig>(DEFAULT_PAYMENT_CONFIG);
+  const [paymentConfigId, setPaymentConfigId] = useState<string | null>(null);
+  const [savingPayment, setSavingPayment] = useState(false);
+  const [paymentQrImage, setPaymentQrImage] = useState<File | null>(null);
+  const [paymentCropSrc, setPaymentCropSrc] = useState<string | null>(null);
+  const [showPaymentCropper, setShowPaymentCropper] = useState(false);
+
   // Confirm dialog state
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; type: "config" | "coupon" | "banner"; id: string; name: string }>({ open: false, type: "config", id: "", name: "" });
 
