@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, startOfDay, endOfDay, isToday, isYesterday } from "date-fns";
-import { Search, Send, Download, ChevronDown, ChevronUp, Trash2, Calendar as CalendarIcon, X, Clock, Package, CheckCircle2, Timer, Copy, Undo2, RefreshCw, MapPin } from "lucide-react";
+import { Search, Send, Download, ChevronDown, ChevronUp, Trash2, Calendar as CalendarIcon, X, Clock, Package, CheckCircle2, Timer, Copy, Undo2, RefreshCw, MapPin, CreditCard } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -547,6 +547,14 @@ export default function AdminOrders() {
                       <span className="whitespace-normal break-words leading-relaxed">
                         {[addr.address || addr.address_line, addr.city, addr.pincode].filter(Boolean).join(", ")}
                       </span>
+                    </div>
+                  )}
+
+                  {/* Transaction ID */}
+                  {order.transaction_id && (
+                    <div className="text-[10px] text-muted-foreground mb-1.5 flex items-center gap-1">
+                      <CreditCard className="w-3 h-3 shrink-0 text-primary/60" />
+                      <span className="font-medium">Txn: {order.transaction_id}</span>
                     </div>
                   )}
 
