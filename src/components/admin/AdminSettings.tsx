@@ -514,6 +514,7 @@ export default function AdminSettings() {
           { key: "coupons" as const, label: "Coupons", icon: Tag },
           { key: "banners" as const, label: "Banners", icon: Image },
           { key: "notifications" as const, label: "Notifications", icon: Bell },
+          { key: "payment" as const, label: "Payment", icon: CreditCard },
           { key: "account" as const, label: "Account", icon: UserCog },
         ].map(tab => (
           <button key={tab.key} onClick={() => setActiveSection(tab.key)}
