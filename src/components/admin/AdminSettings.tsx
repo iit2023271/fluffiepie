@@ -51,7 +51,7 @@ const BUILTIN_CONFIG_SECTIONS = [
 ];
 
 // Reserved config types that should not show as product filter sections
-const RESERVED_CONFIG_TYPES = ["homepage_config", "email_notification", "store_info", "filter_section", "delivery_settings", "active_theme"];
+const RESERVED_CONFIG_TYPES = ["homepage_config", "email_notification", "store_info", "filter_section", "delivery_settings", "active_theme", "payment_config"];
 
 const emptyCoupon = {
   code: "", discount_type: "percentage", discount_value: 10, min_order_amount: 0,
