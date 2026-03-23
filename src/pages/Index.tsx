@@ -268,9 +268,11 @@ function HeroBannerCarousel() {
           {banners.map((_, i) => (
             <button
               key={i}
+              type="button"
               aria-label={`Go to banner ${i + 1}`}
               onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
-              className={`p-0 border-0 rounded-full transition-all duration-300 ease-out ${i === current ? "w-4 h-1 md:w-6 md:h-1.5 bg-background" : "w-1 h-1 md:w-1.5 md:h-1.5 bg-background/50"}`}
+              style={{ minWidth: 0, minHeight: 0, padding: 0 }}
+              className={`shrink-0 border-0 rounded-full transition-all duration-300 ease-out ${i === current ? "w-3 h-1 md:w-6 md:h-1.5 bg-background" : "w-1.5 h-1.5 md:w-1.5 md:h-1.5 bg-background/50"}`}
             />
           ))}
         </div>
