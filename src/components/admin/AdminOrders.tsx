@@ -507,9 +507,14 @@ export default function AdminOrders() {
                     {isFinal && <span className="text-[10px] text-muted-foreground">🔒 Final</span>}
                   </div>
                   {/* Order date/time — own line so it's always visible on mobile */}
-                  <p className="text-[10px] text-muted-foreground mb-2" title={format(orderDate, "dd MMM yyyy, hh:mm a")}>
-                    🕐 {format(orderDate, "dd MMM yyyy, hh:mm a")}
-                  </p>
+                  <div className="text-[10px] text-muted-foreground mb-2 space-y-0.5">
+                    <p title={format(orderDate, "dd MMM yyyy, hh:mm a")}>
+                      🕐 Ordered: {format(orderDate, "dd MMM yyyy, hh:mm a")}
+                    </p>
+                    {order.delivery_slot && (
+                      <p>🚚 Delivery: {order.delivery_slot}</p>
+                    )}
+                  </div>
 
                   {/* Delivered/Cancelled timestamp */}
                   {isFinal && order.updated_at !== order.created_at && (
