@@ -425,7 +425,7 @@ export default function Index() {
           link: item.link || "/shop",
         }));
       } else {
-        const itemNames = filterItems.length > 0 ? filterItems : Object.keys(categoryImages);
+        const itemNames = filterItems;
         const paramKey = filterType === "occasion" ? "occasion" : filterType === "category" ? "category" : "flavour";
         displayItems = itemNames.map(name => ({
           name,
