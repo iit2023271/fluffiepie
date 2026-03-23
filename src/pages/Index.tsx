@@ -195,12 +195,12 @@ function HeroBannerCarousel() {
 
   return (
     <div 
-      className="relative w-full overflow-hidden rounded-3xl bg-muted shadow-elevated touch-pan-y" 
-      style={{ minHeight: '200px' }}
+      className="relative w-full overflow-hidden rounded-2xl md:rounded-3xl bg-muted shadow-elevated touch-pan-y" 
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="relative aspect-[3/1] w-full">
+      {/* Responsive aspect: 16:9 on mobile, 5:2 on tablet, 3:1 on desktop */}
+      <div className="relative aspect-[16/9] sm:aspect-[5/2] md:aspect-[3/1] w-full">
         <AnimatePresence custom={direction} mode="wait">
           <motion.div
             key={banner.id}
@@ -218,12 +218,12 @@ function HeroBannerCarousel() {
               <div className="w-full h-full bg-gradient-to-r from-primary/20 to-accent/20" />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-foreground/20 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
+            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-10">
               <motion.h2
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="text-2xl md:text-4xl font-display font-bold text-background mb-2"
+                className="text-lg sm:text-2xl md:text-4xl font-display font-bold text-background mb-1 md:mb-2"
               >
                 {banner.title}
               </motion.h2>
@@ -232,7 +232,7 @@ function HeroBannerCarousel() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.35 }}
-                  className="text-sm md:text-lg text-background/80 max-w-lg"
+                  className="text-xs sm:text-sm md:text-lg text-background/80 max-w-lg line-clamp-2"
                 >
                   {banner.subtitle}
                 </motion.p>
@@ -241,9 +241,9 @@ function HeroBannerCarousel() {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
                   <Link
                     to={banner.link_url}
-                    className="inline-flex items-center gap-2 mt-4 px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+                    className="inline-flex items-center gap-1.5 mt-2 md:mt-4 px-4 md:px-6 py-1.5 md:py-2.5 bg-primary text-primary-foreground rounded-xl text-xs md:text-sm font-medium hover:opacity-90 transition-opacity"
                   >
-                    Shop Now <ArrowRight className="w-4 h-4" />
+                    Shop Now <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   </Link>
                 </motion.div>
               )}
@@ -253,24 +253,24 @@ function HeroBannerCarousel() {
 
         {banners.length > 1 && (
           <>
-            <button onClick={prev} className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/70 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors z-10">
-              <ChevronLeft className="w-5 h-5" />
+            <button onClick={prev} className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 w-7 h-7 md:w-9 md:h-9 rounded-full bg-background/70 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors z-10">
+              <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
             </button>
-            <button onClick={next} className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/70 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors z-10">
-              <ChevronRight className="w-5 h-5" />
+            <button onClick={next} className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 w-7 h-7 md:w-9 md:h-9 rounded-full bg-background/70 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors z-10">
+              <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
             </button>
           </>
         )}
       </div>
 
       {banners.length > 1 && (
-        <div className="absolute bottom-2 md:bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1 md:gap-1.5 z-10">
+        <div className="absolute bottom-1.5 md:bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1 z-10">
           {banners.map((_, i) => (
             <button
               key={i}
               aria-label={`Go to banner ${i + 1}`}
               onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
-              className={`p-0 border-0 h-0.5 md:h-2 rounded-full transition-[width,background-color] duration-300 ease-out ${i === current ? "w-3 md:w-6 bg-background" : "w-1.5 md:w-2 bg-background/50"}`}
+              className={`p-0 border-0 rounded-full transition-all duration-300 ease-out ${i === current ? "w-4 h-1 md:w-6 md:h-1.5 bg-background" : "w-1 h-1 md:w-1.5 md:h-1.5 bg-background/50"}`}
             />
           ))}
         </div>
