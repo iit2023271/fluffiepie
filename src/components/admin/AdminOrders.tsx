@@ -492,8 +492,8 @@ export default function AdminOrders() {
             return (
               <div key={order.id} className={`bg-card rounded-2xl overflow-hidden border transition-all ${isFinal ? "opacity-70" : "hover:shadow-md"} ${order.status === "cancelled" ? "border-red-200" : "border-border"}`}>
                 <div className="p-3 md:p-4">
-                  {/* Row 1: Checkbox + ID + Status + Time */}
-                  <div className="flex items-center gap-2 mb-2">
+                  {/* Row 1: Checkbox + ID + Status */}
+                  <div className="flex flex-wrap items-center gap-1.5 mb-1">
                     {!isFinal && (
                       <input type="checkbox" checked={selectedOrders.has(order.id)} onChange={() => toggleSelect(order.id)} className="rounded shrink-0" />
                     )}
@@ -505,10 +505,11 @@ export default function AdminOrders() {
                       {statusCfg.emoji} {statusCfg.label}
                     </span>
                     {isFinal && <span className="text-[10px] text-muted-foreground">🔒 Final</span>}
-                    <span className="text-[10px] text-muted-foreground ml-auto" title={format(orderDate, "dd MMM yyyy, hh:mm a")}>
-                      🕐 {format(orderDate, "dd MMM, hh:mm a")}
-                    </span>
                   </div>
+                  {/* Order date/time — own line so it's always visible on mobile */}
+                  <p className="text-[10px] text-muted-foreground mb-2" title={format(orderDate, "dd MMM yyyy, hh:mm a")}>
+                    🕐 {format(orderDate, "dd MMM yyyy, hh:mm a")}
+                  </p>
 
                   {/* Delivered/Cancelled timestamp */}
                   {isFinal && order.updated_at !== order.created_at && (
