@@ -22,7 +22,7 @@ export interface StoreInfo {
 }
 
 export const DEFAULT_STORE_INFO: StoreInfo = {
-  storeName: "FluffiePie",
+  storeName: "",
   phone: "",
   phone2: "",
   email: "",

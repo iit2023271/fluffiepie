@@ -23,7 +23,7 @@ export default function Contact() {
 
   useSEO({
     title: "Contact Us",
-    description: "Get in touch with FluffiePie. Reach us by phone, email, or visit our store. We'd love to hear from you!",
+    description: "Get in touch with us. Reach us by phone, email, or visit our store. We'd love to hear from you!",
   });
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
