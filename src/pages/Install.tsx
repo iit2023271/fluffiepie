@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Download, Smartphone, Share, MoreVertical, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useStoreInfo } from "@/hooks/useStoreInfo";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -12,6 +13,8 @@ export default function Install() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const { storeInfo } = useStoreInfo();
+  const name = storeInfo.storeName || "Store";
 
   useEffect(() => {
     // Detect iOS
@@ -54,16 +57,16 @@ export default function Install() {
         </div>
 
         <h1 className="text-3xl font-display font-bold mb-3">
-          Install Fluffie<span className="text-primary">Pie</span>
+          Install {name}
         </h1>
         <p className="text-muted-foreground mb-8">
-          Add FluffiePie to your home screen for quick access, offline browsing, and a native app experience.
+          Add {name} to your home screen for quick access, offline browsing, and a native app experience.
         </p>
 
         {installed ? (
           <div className="flex items-center justify-center gap-2 text-primary font-medium py-3">
             <Check className="w-5 h-5" />
-            FluffiePie is installed!
+            {name} is installed!
           </div>
         ) : deferredPrompt ? (
           <Button size="lg" onClick={handleInstall} className="gap-2 text-base px-8">

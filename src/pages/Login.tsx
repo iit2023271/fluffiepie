@@ -61,7 +61,7 @@ export default function Login() {
         <AnimatePresence mode="wait">
           <motion.div key={isSignup ? "signup" : "signin"} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }} className="text-center mb-8">
             <h1 className="text-3xl font-display font-bold mb-2">{isSignup ? "Create Account" : "Welcome Back"}</h1>
-            <p className="text-muted-foreground">{isSignup ? "Join FluffiePie for delicious deliveries" : "Sign in to your FluffiePie account"}</p>
+            <p className="text-muted-foreground">{isSignup ? "Create your account to get started" : "Sign in to your account"}</p>
           </motion.div>
         </AnimatePresence>
 

@@ -1,9 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { products as mockProducts } from "@/data/products";
 import type { Product } from "@/data/products";
 
-// Map DB products to our Product interface, falling back to mock images
 export function useProducts() {
   return useQuery({
     queryKey: ["products"],
@@ -15,37 +13,32 @@ export function useProducts() {
         .order("created_at", { ascending: false });
 
       if (error || !data || data.length === 0) {
-        // Fallback to mock data
-        return mockProducts;
+        return [];
       }
 
-      return data.map((p) => {
-        // Find matching mock product for local image fallback
-        const mock = mockProducts.find((m) => m.slug === p.slug);
-        return {
-          id: p.id,
-          name: p.name,
-          slug: p.slug,
-          description: p.description,
-          category: p.category,
-          occasion: p.occasion || [],
-          flavour: p.flavour,
-          image: p.image_url || mock?.image || "",
-          images: (p as any).images || [],
-          basePrice: p.base_price,
-          originalPrice: (p as any).original_price || null,
-          rating: Number(p.rating),
-          reviewCount: p.review_count,
-          weights: (p.weights as any) || [],
-          isNew: p.is_new,
-          isBestseller: p.is_bestseller,
-          tags: (p as any).tags || [],
-          stockQuantity: p.stock_quantity ?? 100,
-          custom_attributes: (p as any).custom_attributes || {},
-        };
-      });
+      return data.map((p) => ({
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        description: p.description,
+        category: p.category,
+        occasion: p.occasion || [],
+        flavour: p.flavour,
+        image: p.image_url || "",
+        images: (p as any).images || [],
+        basePrice: p.base_price,
+        originalPrice: (p as any).original_price || null,
+        rating: Number(p.rating),
+        reviewCount: p.review_count,
+        weights: (p.weights as any) || [],
+        isNew: p.is_new,
+        isBestseller: p.is_bestseller,
+        tags: (p as any).tags || [],
+        stockQuantity: p.stock_quantity ?? 100,
+        custom_attributes: (p as any).custom_attributes || {},
+      }));
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
@@ -66,11 +59,9 @@ export function useProduct(slug: string | undefined) {
         .single();
 
       if (error || !data) {
-        // Fallback to mock
-        return mockProducts.find((m) => m.slug === slug) || null;
+        return null;
       }
 
-      const mock = mockProducts.find((m) => m.slug === data.slug);
       return {
         id: data.id,
         name: data.name,
@@ -79,14 +70,17 @@ export function useProduct(slug: string | undefined) {
         category: data.category,
         occasion: data.occasion || [],
         flavour: data.flavour,
-        image: data.image_url || mock?.image || "",
+        image: data.image_url || "",
         images: (data as any).images || [],
         basePrice: data.base_price,
+        originalPrice: (data as any).original_price || null,
         rating: Number(data.rating),
         reviewCount: data.review_count,
         weights: (data.weights as any) || [],
         isNew: data.is_new,
         isBestseller: data.is_bestseller,
+        tags: (data as any).tags || [],
+        stockQuantity: data.stock_quantity ?? 100,
         custom_attributes: (data as any).custom_attributes || {},
       };
     },
