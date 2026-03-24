@@ -7,7 +7,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSEO } from "@/hooks/useSEO";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
+import { useWishlist } from "@/hooks/useWishlist";
 import ProductCard from "@/components/ProductCard";
 import ProductReviews from "@/components/ProductReviews";
 import RecentlyViewed from "@/components/RecentlyViewed";
@@ -22,7 +24,9 @@ export default function ProductDetail() {
   const { data: product, isLoading } = useProduct(slug);
   const { data: allProducts = [] } = useProducts();
   const { dispatch } = useCart();
+  const { user } = useAuth();
   const { addViewed } = useRecentlyViewed();
+  const { isWishlisted, toggle: toggleWishlist } = useWishlist();
   const isMobile = useIsMobile();
 
   const [selectedWeight, setSelectedWeight] = useState(0);
@@ -327,11 +331,17 @@ export default function ProductDetail() {
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.85 }}
-              onClick={() => toast.success("Added to wishlist!")}
+              onClick={() => {
+                if (!user) { toast.error("Please sign in to save favorites"); return; }
+                if (product) {
+                  toggleWishlist(product.id);
+                  toast.success(isWishlisted(product.id) ? "Removed from favorites" : "Added to favorites! ❤️");
+                }
+              }}
               className="w-14 flex items-center justify-center border border-border rounded-xl hover:bg-secondary active:bg-secondary transition-colors"
-              aria-label="Add to wishlist"
+              aria-label={product && isWishlisted(product.id) ? "Remove from favorites" : "Add to favorites"}
             >
-              <Heart className="w-5 h-5 text-primary" />
+              <Heart className={`w-5 h-5 ${product && isWishlisted(product.id) ? "fill-destructive text-destructive" : "text-primary"}`} />
             </motion.button>
           </motion.div>
 
