@@ -331,11 +331,18 @@ export default function ProductDetail() {
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.85 }}
-              onClick={() => toast.success("Added to wishlist!")}
+              onClick={() => {
+                if (!user) { toast.error("Please sign in to save favorites"); return; }
+                if (product) {
+                  toggleWishlist(product.id);
+                  toast.success(isWishlisted(product.id) ? "Removed from favorites" : "Added to favorites! ❤️");
+                }
+              }}
               className="w-14 flex items-center justify-center border border-border rounded-xl hover:bg-secondary active:bg-secondary transition-colors"
-              aria-label="Add to wishlist"
+              aria-label={product && isWishlisted(product.id) ? "Remove from favorites" : "Add to favorites"}
             >
-              <Heart className="w-5 h-5 text-primary" />
+              <Heart className={`w-5 h-5 ${product && isWishlisted(product.id) ? "fill-destructive text-destructive" : "text-primary"}`} />
+            </motion.button>
             </motion.button>
           </motion.div>
 
