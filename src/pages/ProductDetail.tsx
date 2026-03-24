@@ -24,7 +24,9 @@ export default function ProductDetail() {
   const { data: product, isLoading } = useProduct(slug);
   const { data: allProducts = [] } = useProducts();
   const { dispatch } = useCart();
+  const { user } = useAuth();
   const { addViewed } = useRecentlyViewed();
+  const { isWishlisted, toggle: toggleWishlist } = useWishlist();
   const isMobile = useIsMobile();
 
   const [selectedWeight, setSelectedWeight] = useState(0);
