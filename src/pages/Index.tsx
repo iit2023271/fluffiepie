@@ -10,8 +10,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useHomepageConfig, BUILTIN_SECTION_IDS } from "@/hooks/useHomepageConfig";
 import type { HomepageSection, SectionNavItem } from "@/hooks/useHomepageConfig";
 
-// Placeholder for categories without images
-const PLACEHOLDER_IMG = "/placeholder.svg";
 
 // Reusable horizontal scroll carousel component with autoplay
 function HorizontalCarousel({ children, className = "", autoplay = true, interval = 4000 }: { children: React.ReactNode; className?: string; autoplay?: boolean; interval?: number }) {
