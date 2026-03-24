@@ -386,7 +386,7 @@ export default function Index() {
               </motion.div>
               <motion.div initial={{ opacity: 0, scale: 0.85, rotate: -3 }} animate={{ opacity: 1, scale: 1, rotate: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.32, 0.72, 0, 1] }} className="relative">
                 <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} className="relative rounded-3xl overflow-hidden shadow-elevated">
-                  <img src={config.hero.heroImage || heroCake} alt="Premium cake" className="w-full" loading="eager" decoding="async" />
+                  {config.hero.heroImage ? <img src={config.hero.heroImage} alt="Hero" className="w-full" loading="eager" decoding="async" /> : <div className="w-full aspect-square bg-secondary/50 flex items-center justify-center text-muted-foreground text-sm rounded-3xl">Upload hero image in admin</div>}
                 </motion.div>
                 <motion.div animate={{ y: [0, -12, 0], x: [0, 5, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }} className="absolute -top-4 -right-4 w-20 h-20 bg-accent/20 rounded-full blur-xl" />
                 <motion.div animate={{ y: [0, 10, 0], x: [0, -8, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute -bottom-6 -left-6 w-28 h-28 bg-primary/15 rounded-full blur-xl" />
@@ -411,7 +411,7 @@ export default function Index() {
       if (filterType === "custom") {
         displayItems = (config.categories.items || []).map(item => ({
           name: item.name,
-          image: item.image || catCustom,
+          image: item.image || "/placeholder.svg",
           link: item.link || "/shop",
         }));
       } else {
@@ -419,7 +419,7 @@ export default function Index() {
         const paramKey = filterType === "occasion" ? "occasion" : filterType === "category" ? "category" : "flavour";
         displayItems = itemNames.map(name => ({
           name,
-          image: categoryImages[name] || catCustom,
+          image: "/placeholder.svg",
           link: `/shop?${paramKey}=${encodeURIComponent(name)}`,
         }));
       }
