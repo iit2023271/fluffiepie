@@ -343,7 +343,6 @@ export default function ProductDetail() {
             >
               <Heart className={`w-5 h-5 ${product && isWishlisted(product.id) ? "fill-destructive text-destructive" : "text-primary"}`} />
             </motion.button>
-            </motion.button>
           </motion.div>
 
           {/* Share + Trust badges */}
