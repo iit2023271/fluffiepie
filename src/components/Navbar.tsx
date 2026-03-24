@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import SearchOverlay from "@/components/SearchOverlay";
+import { useStoreInfo } from "@/hooks/useStoreInfo";
 
 const navLinks = [
   { label: "Home", path: "/" },
@@ -22,6 +23,7 @@ function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const { storeInfo } = useStoreInfo();
 
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
@@ -41,7 +43,7 @@ function Navbar() {
             🧁
           </motion.span>
           <span className="text-xl font-display font-bold text-foreground">
-            Fluffie<span className="text-primary">Pie</span>
+            {storeInfo.storeName || "Store"}
           </span>
         </Link>
 

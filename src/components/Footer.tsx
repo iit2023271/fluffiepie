@@ -2,9 +2,11 @@ import { memo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useHomepageConfig } from "@/hooks/useHomepageConfig";
+import { useStoreInfo } from "@/hooks/useStoreInfo";
 
 function Footer() {
   const { config } = useHomepageConfig();
+  const { storeInfo } = useStoreInfo();
   const footer = config.footer;
 
   const footerSection = config.sections.find(s => s.id === "footer");
@@ -23,7 +25,7 @@ function Footer() {
           {/* Brand Column */}
           <div className="col-span-2 lg:col-span-1 mb-1 md:mb-0">
             <h3 className="text-base md:text-xl font-display font-bold text-background mb-1 md:mb-3">
-              Fluffie<span className="text-primary">Pie</span>
+              {storeInfo.storeName || "Store"}
             </h3>
             <p className="text-[11px] md:text-sm leading-relaxed text-background/50 max-w-xs">
               {footer.brandDescription}

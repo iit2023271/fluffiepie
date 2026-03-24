@@ -251,7 +251,7 @@ export default function AdminMessages() {
               </div>
               <div className="mt-4">
                 <a
-                  href={`mailto:${selectedMsg.email}?subject=Re: Your message to FluffiePie`}
+                  href={`mailto:${selectedMsg.email}?subject=Re: Your message`}
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
                 >
                   <Mail className="w-4 h-4" /> Reply via Email

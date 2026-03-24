@@ -46,7 +46,7 @@ export default function ProductDetail() {
       description: product.description,
       image: product.image,
       sku: product.id,
-      brand: { "@type": "Brand", name: "FluffiePie" },
+      brand: { "@type": "Brand", name: document.title.split("|").pop()?.trim() || "Store" },
       category: product.category,
       offers: {
         "@type": "AggregateOffer",
