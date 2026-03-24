@@ -10,18 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useHomepageConfig, BUILTIN_SECTION_IDS } from "@/hooks/useHomepageConfig";
 import type { HomepageSection, SectionNavItem } from "@/hooks/useHomepageConfig";
 
-import heroCake from "@/assets/hero-cake.jpg";
-import catBirthday from "@/assets/category-birthday.jpg";
-import catWedding from "@/assets/category-wedding.jpg";
-import catAnniversary from "@/assets/category-anniversary.jpg";
-import catCustom from "@/assets/category-custom.jpg";
-
-const categoryImages: Record<string, string> = {
-  Birthday: catBirthday,
-  Wedding: catWedding,
-  Anniversary: catAnniversary,
-  Custom: catCustom,
-};
+// Placeholder for categories without images
+const PLACEHOLDER_IMG = "/placeholder.svg";
 
 // Reusable horizontal scroll carousel component with autoplay
 function HorizontalCarousel({ children, className = "", autoplay = true, interval = 4000 }: { children: React.ReactNode; className?: string; autoplay?: boolean; interval?: number }) {
